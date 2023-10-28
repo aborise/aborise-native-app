@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "experiments": {
+      "tsconfigPaths": true
+    },
+    "name": "aborise-native-app",
+    "slug": "aborise-native-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.aborise.app",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "permissions": ["android.permission.INTERNET"],
+      "package": "com.aborise.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "af03aabe-215f-4aa5-9ce2-d421cd9e3cb8"
+      }
+    },
+    "owner": "aborise",
+    "plugins": ["expo-router"],
+    "scheme": "abo"
+  }
+}

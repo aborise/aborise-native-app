@@ -1,0 +1,11 @@
+{
+  "recommendations": [
+    "expo.vscode-expo-tools",
+    "dracula-theme.theme-dracula",
+    "irongeek.vscode-env",
+    "mhutchie.git-graph",
+    "esbenp.prettier-vscode",
+    "yoavbls.pretty-ts-errors",
+    "bradlc.vscode-tailwindcss"
+  ]
+}

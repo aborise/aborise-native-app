@@ -1,0 +1,276 @@
+import type {
+  AxiosError,
+  AxiosRequestConfig,
+  InternalAxiosRequestConfig,
+} from "axios";
+import axios from "axios";
+import axiosRetry from "axios-retry";
+import type { Cookie } from "playwright-core";
+import {
+  Err,
+  Ok,
+  fromPromise,
+  wrapAsync,
+  type AsyncResult,
+  type Result,
+} from "~/shared/Result";
+import type { AllServices } from "~/shared/allServices";
+import { strToCookie } from "~/shared/helpers";
+import { cookiesToString, getCookies } from "./cookie";
+import { filterHeaders } from "./headers";
+import { Storage } from "~/composables/useStorage";
+
+const axiosInterceptor = (config: InternalAxiosRequestConfig) => {
+  // consola.info(`Starting ${config.method} Request to`, config.url);
+  // consola.log('Headers: ', filterHeaders(config.headers, ['Cookie']));
+  // consola.log(
+  //   'Cookies',
+  //   config.headers['Cookie']
+  //     ?.split(';')
+  //     .map(strToCookie)
+  //     .map((cookie: Cookie) => cookie.name) ?? 'none',
+  // );
+  // consola.log('Data: ', config.data ?? 'none');
+  // consola.log('Params: ', config.params ?? 'none');
+
+  return config;
+};
+
+export type AboFetchOptions = {
+  url: string;
+  body?: Record<string, unknown> | FormData | object;
+  cookies?: Cookie[];
+  headers?: Record<string, unknown>;
+  method: "POST" | "GET" | "PUT";
+  params?: string | string[][] | Record<string, any> | URLSearchParams;
+  user?: string;
+  service?: keyof AllServices;
+  cookieKeys?: Array<string>;
+  storage?: Storage;
+};
+
+export type ApiError = {
+  statusCode: number;
+  message: string;
+  request?: RequestSummary;
+  response?: {
+    data: any;
+    headers: Record<string, string>;
+    cookies: Cookie[];
+  };
+  stack?: string;
+  errorMessage: string;
+  custom: string;
+  history?: ApiError | ApiResponse<any>;
+  code?: string;
+  userFriendly?: boolean;
+};
+
+export type ApiResponse<T> = {
+  data: T;
+  cookies: Cookie[];
+  headers?: Record<string, string>;
+  request?: RequestSummary;
+};
+
+export type AboFetchResult<T> = Result<ApiResponse<T>, ApiError>;
+export type AsyncAboFetchResult<T> = AsyncResult<ApiResponse<T>, ApiError>;
+
+type RequestSummary = {
+  url: string | undefined;
+  method: string | undefined;
+  headers: {
+    [x: string]: string;
+  };
+  data: any;
+  params: any;
+  cookies: any;
+} | null;
+
+const getRequesSummary = (
+  request?: InternalAxiosRequestConfig
+): RequestSummary => {
+  if (!request) return null;
+  return {
+    url: request.url,
+    method: request.method,
+    headers: filterHeaders(request.headers, ["Cookie"]),
+    data: request.data,
+    params: request.params,
+    cookies: request.headers?.Cookie?.split(";").map(strToCookie) ?? [],
+  };
+};
+
+export const aboFetch = <T extends string | JSON | object = string | JSON>(
+  options: AboFetchOptions,
+  axiosOptions?: AxiosRequestConfig
+) => {
+  return wrapAsync(async () => {
+    const {
+      url,
+      body,
+      headers,
+      method,
+      params,
+      user,
+      service,
+      cookieKeys,
+      storage,
+    } = options;
+
+    if (user && service && cookieKeys) {
+      const cookies = await getCookies(service, cookieKeys, storage);
+      options.cookies = cookies;
+    }
+
+    axiosRetry(axios, {
+      retries: 3,
+      retryCondition: () => true,
+    });
+
+    axios.interceptors.request.use(axiosInterceptor);
+
+    const Cookie = cookiesToString(options.cookies) || undefined;
+
+    let result = await fromPromise(
+      axios.request<T>({
+        url: url as string,
+        data: body,
+        method: method as any,
+        params: new URLSearchParams(params),
+        headers: {
+          ...headers,
+          Cookie,
+        },
+        ...axiosOptions,
+      })
+    );
+
+    if (result.ok) {
+      const response = result.val;
+      const cookies = response.headers["set-cookie"]?.map(strToCookie) ?? [];
+      const headers = filterHeaders(response.headers as any, ["set-cookie"]);
+
+      // parse to json if needed
+      let data: string | JSON | object = response.data;
+      if (response.headers["Content-Type"] === "application/json") {
+        data = JSON.parse(response.data as string);
+      }
+
+      const ret = Ok({
+        data: data as T,
+        request: getRequesSummary(response.config),
+        headers,
+        cookies,
+      });
+
+      return ret;
+    }
+
+    const error = result.val as AxiosError;
+
+    if (error.response) {
+      const cookies =
+        error.response.headers["set-cookie"]?.map(strToCookie) ?? [];
+      const headers = filterHeaders(error.response.headers as any, [
+        "set-cookie",
+      ]);
+
+      const err: AboFetchResult<T> = Err({
+        statusCode: error.response.status,
+        message: error.response.statusText,
+        request: getRequesSummary(error.config),
+        response: {
+          data: error.response.data,
+          headers: headers,
+          cookies,
+        },
+        stack: error.stack,
+        errorMessage: error.message,
+        custom:
+          "The request to the external API failed and a non 2xx status code was returned.",
+      });
+
+      return err;
+    } else if (error.request) {
+      const err: AboFetchResult<T> = Err({
+        statusCode: 500,
+        message: "No response",
+        request: getRequesSummary(error.config),
+        stack: error.stack,
+        errorMessage: error.message,
+        custom:
+          "The request to the external API failed and no response was received.",
+      });
+
+      return err;
+    } else {
+      const err: AboFetchResult<T> = Err({
+        statusCode: 500,
+        message: "Axios Error",
+        request: getRequesSummary(error.config),
+        stack: error.stack,
+        errorMessage: error.message,
+        custom: "Setting up the request failed",
+      });
+
+      return err;
+    }
+  });
+};
+
+export class Session {
+  requests: Array<ApiResponse<any> | ApiError> = [];
+
+  fetch<T extends string | object | JSON>(
+    options: AboFetchOptions,
+    axiosOptions?: AxiosRequestConfig
+  ) {
+    const result = aboFetch<T>(options, axiosOptions);
+
+    result.then((result) => {
+      if (result.ok) {
+        if (
+          result.val.headers?.["Content-Type"]?.startsWith("text/") ||
+          result.val.headers?.["content-type"]?.startsWith("text/")
+        ) {
+          return;
+        }
+      }
+      this.requests.push(result.val);
+    });
+
+    return result;
+  }
+
+  log(fakeResponse: ApiResponse<any> | ApiError) {
+    this.requests.push(fakeResponse);
+  }
+
+  post<T extends string | object | JSON>(
+    url: string,
+    body: AboFetchOptions["body"],
+    options: Omit<AboFetchOptions, "method" | "url" | "body"> = {}
+  ) {
+    return this.fetch<T>({ ...options, url, body, method: "POST" });
+  }
+
+  get<T extends string | object | JSON>(
+    url: string,
+    options: Omit<AboFetchOptions, "method" | "url"> = {}
+  ) {
+    return this.fetch<T>({ ...options, url, method: "GET" });
+  }
+
+  put<T extends string | object | JSON>(
+    url: string,
+    body: AboFetchOptions["body"],
+    options: Omit<AboFetchOptions, "method" | "url" | "body"> = {}
+  ) {
+    return this.fetch<T>({ ...options, url, body, method: "PUT" });
+  }
+
+  toJSON() {
+    return this.requests;
+  }
+}

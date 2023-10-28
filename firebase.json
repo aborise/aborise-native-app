@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/firebase/firebase-tools/master/schema/firebase-config.json",
+  "functions": [
+    {
+      "source": ".",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "**/.*",
+        "src",
+        "public",
+        "automations",
+        "locales",
+        "shared",
+        "tests"
+      ],
+      "predeploy": ["pnpm --prefix \"$RESOURCE_DIR\" build:cf"],
+      "runtime": "nodejs20"
+    }
+  ],
+  "hosting": {
+    "public": "dist",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "!/assets/**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
