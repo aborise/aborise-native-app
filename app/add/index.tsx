@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { View, Text, TextInput, Button } from "react-native";
+import { View, Text, TextInput, Button, Pressable } from "react-native";
 
 // import { useServices } from "@/composables/useService";
 // import { useEncryptedAuth, useSecret } from "@/composables/useServiceAuth";
@@ -15,15 +15,18 @@ const Item: React.FC<{ item: Service }> = ({ item }) => {
         v-for="logo in filteredLogos"
         href={`/add/${item.id}`}
         key={item.id}
-        className="w-full h-full rounded-lg shadow-md border border-gray-300 active:bg-gray-100 cursor-pointer"
+        className="w-full h-full rounded-lg shadow-md border border-gray-300 active:bg-gray-100 cursor-pointer m-0 justify-center items-center"
+        asChild
       >
-        <View className="flex flex-col gap-2 w-full h-full justify-center items-center">
-          <Image
-            source={{ uri: item.logo }}
-            style={{ width: 100, height: 100 }}
-          />
-          <Text className="text-center">{item.title}</Text>
-        </View>
+        <Pressable className="flex flex-col gap-2 w-full h-full">
+          <View className="relative -left-1 -top-1">
+            <Image
+              source={{ uri: item.logo }}
+              style={{ width: 100, height: 100 }}
+            />
+            <Text className="text-center">{item.title}</Text>
+          </View>
+        </Pressable>
       </Link>
     </View>
   );
