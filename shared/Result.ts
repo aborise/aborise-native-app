@@ -1,15 +1,3 @@
-import * as results from "ts-results";
-// import { Result as _Result, Ok as _OkType, Err as _ErrType } from "ts-results";
-
-// export type OkType<T> = _OkType<T>;
-// export type ErrType<T> = _ErrType<T>;
-
-// export type Result<T, U> = OkType<T> | ErrType<U>;
-
-// const { Ok: _Ok, Err: _Err } = results;
-// export const Ok = <T>(val: T): OkType<T> => _Ok(val);
-// export const Err = <T>(val: T): ErrType<T> => _Err(val);
-
 interface BaseResult<T, E> {
   /** `true` when the result is Ok */ readonly ok: boolean;
   /** `true` when the result is Err */ readonly err: boolean;
@@ -122,20 +110,16 @@ export class AsyncResult<T, E> extends Promise<Result<T, E>> {
   }
 
   andThen<T2>(mapper: (val: T) => Asyncs<T2, never>): AsyncResult<T2, E>;
-  andThen<E2>(
-    mapper: (val: T) => Asyncs<never, E2>
-  ): AsyncResult<never, E | E2>;
+  andThen<E2>(mapper: (val: T) => Asyncs<never, E2>): AsyncResult<never, E | E2>;
   andThen<T2, E2>(mapper: (val: T) => Asyncs<T2, E2>): AsyncResult<T2, E | E2>;
   andThen<T2, E2>(mapper: (val: T) => Asyncs<T2, E2>): AsyncResult<T2, E | E2> {
-    const mappedResult: Promise<Result<T2, E2 | E>> = this.then(
-      async (result) => {
-        if (result.ok) {
-          return wrapAsync(mapper(result.val));
-        } else {
-          return Err(result.val);
-        }
+    const mappedResult: Promise<Result<T2, E2 | E>> = this.then(async (result) => {
+      if (result.ok) {
+        return wrapAsync(mapper(result.val));
+      } else {
+        return Err(result.val);
       }
-    );
+    });
 
     return wrapAsync(mappedResult);
   }
@@ -240,12 +224,9 @@ export class AsyncResult<T, E> extends Promise<Result<T, E>> {
 }
 
 export const wrapAsync = <T, E>(
-  result:
-    | Promise<Result<T, E>>
-    | Result<T, E>
-    | (() => Promise<Result<T, E>> | Result<T, E>)
+  result: Promise<Result<T, E>> | Result<T, E> | (() => Promise<Result<T, E>> | Result<T, E>),
 ) =>
-  typeof result === "function"
+  typeof result === 'function'
     ? new AsyncResult<T, E>((resolve) => resolve(result()))
     : new AsyncResult<T, E>((resolve) => resolve(result));
 
@@ -253,6 +234,6 @@ export const fromPromise = <T, E = any>(promise: Promise<T>) =>
   wrapAsync(
     promise.then(
       (val) => Ok(val),
-      (val) => Err(val as E)
-    )
+      (val) => Err(val as E),
+    ),
   );

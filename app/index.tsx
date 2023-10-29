@@ -1,9 +1,9 @@
-import React from "react";
-import { ActivityIndicator, Text, View } from "react-native";
-import { Template } from "~/components/Template";
-import { useAsyncStateReadonly } from "~/composables/useAsyncState";
-import { ensureDataLoaded } from "~/shared/ensureDataLoaded";
-import App from "./app";
+import React from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
+import { Template } from '~/components/Template';
+import { useAsyncStateReadonly } from '~/composables/useAsyncState';
+import { ensureDataLoaded } from '~/shared/ensureDataLoaded';
+import App from './app';
 
 const AppLoader = () => {
   const { loading, error } = useAsyncStateReadonly(ensureDataLoaded);

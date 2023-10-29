@@ -1,7 +1,7 @@
-import { initializeApp, getApp } from "firebase/app";
-import { getDatabase, ref } from "firebase/database";
-import { getMessaging } from "firebase/messaging";
-import firebaseConfig from "~/firebase.config.json";
+import { initializeApp, getApp } from 'firebase/app';
+import { getDatabase, ref } from 'firebase/database';
+import { getMessaging } from 'firebase/messaging';
+import firebaseConfig from '~/firebase.config.json';
 
 export const useFirebaseApp = () => {
   try {

@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 
 export const useAsyncState = <T>(
   initialValue: () => Promise<T>,
-  save?: (val: T) => Promise<void>
+  deps?: React.DependencyList,
+  save?: (val: T) => Promise<void>,
 ) => {
   const [value, setValue] = useState<T>();
   const [error, setError] = useState<Error>();
@@ -20,7 +21,7 @@ export const useAsyncState = <T>(
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, deps);
 
   const setValueAndSave = (val: T) => {
     setSaving(true);
@@ -40,7 +41,7 @@ export const useAsyncState = <T>(
   return { value, error, loading, saving, setValue: setValueAndSave };
 };
 
-export const useAsyncStateReadonly = <T>(initialValue: () => Promise<T>) => {
+export const useAsyncStateReadonly = <T>(initialValue: () => Promise<T>, deps?: React.DependencyList) => {
   const [value, setValue] = useState<T>();
   const [error, setError] = useState<Error>();
   const [loading, setLoading] = useState(true);
@@ -56,7 +57,7 @@ export const useAsyncStateReadonly = <T>(initialValue: () => Promise<T>) => {
       .finally(() => {
         setLoading(false);
       });
-  }, []);
+  }, deps);
 
   return { value, error, loading };
 };

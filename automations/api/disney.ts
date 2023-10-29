@@ -1,42 +1,29 @@
-import { type AxiosProxyConfig } from "axios";
+import { type AxiosProxyConfig } from 'axios';
 // import { Reference } from 'firebase-admin/database';
 // import fs from "node:fs";
 // import { useFirebaseAdmin } from '~/server/useFirebaseAdmin';
-import dayjs from "dayjs";
-import {
-  get,
-  getDatabase,
-  ref,
-  set,
-  type DatabaseReference,
-} from "firebase/database";
-import { useFirebaseApp } from "~/composables/useFirebase";
-import {
-  Err,
-  Ok,
-  wrapAsync,
-  type AsyncResult,
-  type Result,
-} from "~/shared/Result";
-import { type FlowResult } from "../playwright/helpers";
-import { Session, type ApiError } from "./helpers/client";
-import { api } from "./helpers/setup";
-import { numberToDecimal } from "./helpers/strings";
+import dayjs from 'dayjs';
+import { get, getDatabase, ref, set, type DatabaseReference } from 'firebase/database';
+import { useFirebaseApp } from '~/composables/useFirebase';
+import { Err, Ok, wrapAsync, type AsyncResult, type Result } from '~/shared/Result';
+import { type FlowResult } from '../playwright/helpers';
+import { Session, type ApiError } from './helpers/client';
+import { api } from './helpers/setup';
+import { numberToDecimal } from './helpers/strings';
 
 // type SubscriberStatus = 'Churned'
 
 const app = useFirebaseApp();
 
-const dirname = "/tmp"; //new URL('.', import.meta.url).pathname;
+const dirname = '/tmp'; //new URL('.', import.meta.url).pathname;
 
-const graphqlEndpoint = "https://disney.api.edge.bamgrid.com/v1/public/graphql";
-const webPage = "https://www.disneyplus.com/login";
-const devicesUrl = "https://disney.api.edge.bamgrid.com/devices";
-const loginUrl = "https://disney.api.edge.bamgrid.com/idp/login";
-const tokenUrl = "https://disney.api.edge.bamgrid.com/token";
-const grantUrl = "https://disney.api.edge.bamgrid.com/accounts/grant";
-const graphqlDeviceEndpoint =
-  "https://disney.api.edge.bamgrid.com/graph/v1/device/graphql";
+const graphqlEndpoint = 'https://disney.api.edge.bamgrid.com/v1/public/graphql';
+const webPage = 'https://www.disneyplus.com/login';
+const devicesUrl = 'https://disney.api.edge.bamgrid.com/devices';
+const loginUrl = 'https://disney.api.edge.bamgrid.com/idp/login';
+const tokenUrl = 'https://disney.api.edge.bamgrid.com/token';
+const grantUrl = 'https://disney.api.edge.bamgrid.com/accounts/grant';
+const graphqlDeviceEndpoint = 'https://disney.api.edge.bamgrid.com/graph/v1/device/graphql';
 
 // https://bam-sdk-configs.bamgrid.com/bam-sdk/v5.0/disney-svod-3d9324fc/browser/v25.0/windows/chrome/prod.json
 
@@ -95,7 +82,7 @@ export type DisneySubscriptionDetails = {
   giftCardInfo: null;
   scheduledInvoice: EdInvoice;
   latestTransactedInvoice: EdInvoice;
-  billingFrequency: "MONTH" | "YEAR";
+  billingFrequency: 'MONTH' | 'YEAR';
   seasonalRenewal: string;
   hasScheduledInvoice: boolean;
   guid: string;
@@ -144,10 +131,7 @@ export class DisneyAPI {
 
     if (!this.useFile) {
       // this.ref = app.database().ref(`/users/${this.uid}/services/disney/api/`);
-      this.ref = ref(
-        getDatabase(app),
-        `/users/${this.uid}/services/disney/api/`
-      );
+      this.ref = ref(getDatabase(app), `/users/${this.uid}/services/disney/api/`);
     }
   }
 
@@ -170,7 +154,7 @@ export class DisneyAPI {
     };
 
     const url = `https://disney.api.edge.bamgrid.com/orders/transactionDetails/orderRef/${subscriptionId}/sku/${subIdToSku(
-      subscriptionId
+      subscriptionId,
     )}`;
 
     return this.getAuthToken()
@@ -178,8 +162,8 @@ export class DisneyAPI {
         return this.session.get<DisneySubscriptionDetails>(
           url,
           this.getAuthHeader(token, {
-            "x-subscription-id": subscriptionId,
-          })
+            'x-subscription-id': subscriptionId,
+          }),
         );
       })
       .map((res) => res.data);
@@ -250,22 +234,16 @@ export class DisneyAPI {
 
     return this.getAuthToken()
       .andThen((token) => {
-        return this.session
-          .post<Response>(
-            graphqlEndpoint,
-            graphqlQuery,
-            this.getAuthHeader(token)
-          )
-          .map((res) => {
-            return res.data.data.me.identity.subscriber.subscriptions;
-          });
+        return this.session.post<Response>(graphqlEndpoint, graphqlQuery, this.getAuthHeader(token)).map((res) => {
+          return res.data.data.me.identity.subscriber.subscriptions;
+        });
       })
       .andThen((details) => {
         if (details.length === 0) {
           const err: ApiError = {
-            custom: "Account is inactive",
-            errorMessage: "Account is inactive",
-            message: "Account is inactive",
+            custom: 'Account is inactive',
+            errorMessage: 'Account is inactive',
+            message: 'Account is inactive',
             statusCode: 500,
           };
           return Err(err);
@@ -280,15 +258,15 @@ export class DisneyAPI {
       .map((res) => clientKeyRegex.exec(res.data))
       .andThen((match) => {
         try {
-          const janson = JSON.parse(match?.[1] ?? "{}") as {
+          const janson = JSON.parse(match?.[1] ?? '{}') as {
             sdk: { clientApiKey: string };
           };
           return Ok(janson.sdk.clientApiKey);
         } catch (e) {
           const err: ApiError = {
-            custom: "Failed to parse clientApiKey",
-            errorMessage: "Failed to parse clientApiKey",
-            message: "Failed to parse clientApiKey",
+            custom: 'Failed to parse clientApiKey',
+            errorMessage: 'Failed to parse clientApiKey',
+            message: 'Failed to parse clientApiKey',
             statusCode: 500,
           };
           return Err(err);
@@ -298,34 +276,32 @@ export class DisneyAPI {
 
   private _assertion(clientApiKey: string) {
     const postdata = {
-      applicationRuntime: "firefox",
+      applicationRuntime: 'firefox',
       attributes: {},
-      deviceFamily: "browser",
-      deviceProfile: "macosx",
+      deviceFamily: 'browser',
+      deviceProfile: 'macosx',
     };
 
     const headers = {
       authorization: `Bearer ${clientApiKey}`,
-      Origin: "https://www.disneyplus.com",
+      Origin: 'https://www.disneyplus.com',
     };
-    return this.session
-      .post<{ assertion: string }>(devicesUrl, postdata, { headers })
-      .map((res) => res.data.assertion);
+    return this.session.post<{ assertion: string }>(devicesUrl, postdata, { headers }).map((res) => res.data.assertion);
   }
 
   private _accessToken(clientApiKey: string, assertion: string) {
     const headers = {
       authorization: `Bearer ${clientApiKey}`,
-      Origin: "https://www.disneyplus.com",
-      "Content-Type": "application/x-www-form-urlencoded",
+      Origin: 'https://www.disneyplus.com',
+      'Content-Type': 'application/x-www-form-urlencoded',
     };
     const postDate = {
-      grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-      latitude: "0",
-      longitude: "0",
-      platform: "browser",
+      grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+      latitude: '0',
+      longitude: '0',
+      platform: 'browser',
       subject_token: assertion,
-      subject_token_type: "urn:bamtech:params:oauth:token-type:device",
+      subject_token_type: 'urn:bamtech:params:oauth:token-type:device',
     };
 
     return this.session
@@ -343,7 +319,7 @@ export class DisneyAPI {
         let data: TokenData;
         if (this.useFile) {
           // fs.readFileSync(dirname + "/token.json").toString()
-          data = JSON.parse("null") as TokenData;
+          data = JSON.parse('null') as TokenData;
         } else {
           data = (await get(this.ref)).val() as TokenData;
         }
@@ -358,21 +334,21 @@ export class DisneyAPI {
         // Check if the token is still valid
         const currentTime = new Date();
         if (currentTime < expirationTime) {
-          console.info("Authenticating using saved token");
+          console.info('Authenticating using saved token');
 
           return Ok(token);
         } else {
-          console.info("Getting token through refresh token");
+          console.info('Getting token through refresh token');
 
           const graphMutation = {
             query:
-              "mutation refreshToken($input:RefreshTokenInput!){refreshToken(refreshToken:$input){activeSession{sessionId}}}",
+              'mutation refreshToken($input:RefreshTokenInput!){refreshToken(refreshToken:$input){activeSession{sessionId}}}',
             variables: {
               input: {
                 refreshToken: refresh,
               },
             },
-            operationName: "refreshToken",
+            operationName: 'refreshToken',
           };
 
           type RefreshTokenType = {
@@ -387,13 +363,9 @@ export class DisneyAPI {
             };
           };
 
-          const res = await this.session.post<RefreshTokenType>(
-            graphqlDeviceEndpoint,
-            graphMutation,
-            {
-              headers: { authorization: await this._clientApiKey() },
-            }
-          );
+          const res = await this.session.post<RefreshTokenType>(graphqlDeviceEndpoint, graphMutation, {
+            headers: { authorization: await this._clientApiKey() },
+          });
 
           if (res.err) {
             throw res.val;
@@ -405,8 +377,7 @@ export class DisneyAPI {
             token: resJson.extensions.sdk.token.accessToken,
             refresh: resJson.extensions.sdk.token.refreshToken,
             expirationTime: new Date(
-              new Date().getTime() +
-                resJson.extensions.sdk.token.expiresIn * 1000
+              new Date().getTime() + resJson.extensions.sdk.token.expiresIn * 1000,
             ).toISOString(),
           };
 
@@ -419,7 +390,7 @@ export class DisneyAPI {
           return Ok(resJson.extensions.sdk.token.accessToken as string);
         }
       } catch (err) {
-        console.log("No token found. Executing initial Login...");
+        console.log('No token found. Executing initial Login...');
         return this._getAuthTokenTruApi();
       }
     });
@@ -428,16 +399,16 @@ export class DisneyAPI {
   // Remaining methods
   private _login(accessToken: string) {
     const headers = {
-      accept: "application/json; charset=utf-8",
+      accept: 'application/json; charset=utf-8',
       authorization: `Bearer ${accessToken}`,
-      "content-type": "application/json; charset=UTF-8",
-      Origin: "https://www.disneyplus.com",
-      Referer: "https://www.disneyplus.com/login/password",
-      "Sec-Fetch-Mode": "cors",
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36",
-      "x-bamsdk-platform": "windows",
-      "x-bamsdk-version": "3.10",
+      'content-type': 'application/json; charset=UTF-8',
+      Origin: 'https://www.disneyplus.com',
+      Referer: 'https://www.disneyplus.com/login/password',
+      'Sec-Fetch-Mode': 'cors',
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36',
+      'x-bamsdk-platform': 'windows',
+      'x-bamsdk-version': '3.10',
     };
 
     const data = { email: this.email, password: this.password };
@@ -445,19 +416,12 @@ export class DisneyAPI {
       .post<{ id_token: string }>(loginUrl, data, { headers })
       .map((res) => res.data.id_token)
       .mapErr((err) => {
-        if (
-          err.response?.data?.errors.find(
-            (e: any) => e.code === "idp.error.identity.bad-credentials"
-          )
-        ) {
+        if (err.response?.data?.errors.find((e: any) => e.code === 'idp.error.identity.bad-credentials')) {
           const newError: ApiError = {
             ...err,
-            custom:
-              "Wrong email or password. Please check your credentials and try again.",
-            errorMessage:
-              "Wrong email or password. Please check your credentials and try again.",
-            message:
-              "Wrong email or password. Please check your credentials and try again.",
+            custom: 'Wrong email or password. Please check your credentials and try again.',
+            errorMessage: 'Wrong email or password. Please check your credentials and try again.',
+            message: 'Wrong email or password. Please check your credentials and try again.',
             statusCode: 500,
           };
           return newError;
@@ -468,41 +432,36 @@ export class DisneyAPI {
 
   private _grant(idToken: string, accessToken: string) {
     const headers = {
-      accept: "application/json; charset=utf-8",
+      accept: 'application/json; charset=utf-8',
       authorization: `Bearer ${accessToken}`,
-      "content-type": "application/json; charset=UTF-8",
-      Origin: "https://www.disneyplus.com",
-      Referer: "https://www.disneyplus.com/login/password",
-      "Sec-Fetch-Mode": "cors",
-      "User-Agent":
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36",
-      "x-bamsdk-platform": "windows",
-      "x-bamsdk-version": "3.10",
+      'content-type': 'application/json; charset=UTF-8',
+      Origin: 'https://www.disneyplus.com',
+      Referer: 'https://www.disneyplus.com/login/password',
+      'Sec-Fetch-Mode': 'cors',
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.132 Safari/537.36',
+      'x-bamsdk-platform': 'windows',
+      'x-bamsdk-version': '3.10',
     };
 
     const data = { id_token: idToken };
-    return this.session
-      .post<{ assertion: string }>(grantUrl, data, { headers })
-      .map((res) => res.data.assertion);
+    return this.session.post<{ assertion: string }>(grantUrl, data, { headers }).map((res) => res.data.assertion);
   }
 
-  private _finalToken(
-    subjectToken: string,
-    clientApiKey: string
-  ): AsyncResult<[string, number, string], ApiError> {
+  private _finalToken(subjectToken: string, clientApiKey: string): AsyncResult<[string, number, string], ApiError> {
     const headers = {
       authorization: `Bearer ${clientApiKey}`,
-      Origin: "https://www.disneyplus.com",
-      "Content-Type": "application/x-www-form-urlencoded",
+      Origin: 'https://www.disneyplus.com',
+      'Content-Type': 'application/x-www-form-urlencoded',
     };
 
     const postdata = {
-      grant_type: "urn:ietf:params:oauth:grant-type:token-exchange",
-      latitude: "0",
-      longitude: "0",
-      platform: "browser",
+      grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+      latitude: '0',
+      longitude: '0',
+      platform: 'browser',
       subject_token: subjectToken,
-      subject_token_type: "urn:bamtech:params:oauth:token-type:account",
+      subject_token_type: 'urn:bamtech:params:oauth:token-type:account',
     };
 
     return this.session
@@ -512,11 +471,7 @@ export class DisneyAPI {
         refresh_token: string;
       }>(tokenUrl, postdata, { headers })
       .map((res) => {
-        return [
-          res.data.access_token,
-          res.data.expires_in,
-          res.data.refresh_token,
-        ] as [string, number, string];
+        return [res.data.access_token, res.data.expires_in, res.data.refresh_token] as [string, number, string];
       });
   }
 
@@ -524,32 +479,26 @@ export class DisneyAPI {
     // console functionality...
     return this._clientApiKey()
       .andThen((clientApiKey) => {
-        console.log("clientApiKey", clientApiKey);
+        // console.log("clientApiKey", clientApiKey);
         return this._assertion(clientApiKey).andThen((assertion) => {
-          console.log("assertion", assertion);
-          return this._accessToken(clientApiKey, assertion).andThen(
-            (accessToken) => {
-              console.log("accessToken", accessToken);
-              return this._login(accessToken).andThen((idToken) => {
-                console.log("idToken", idToken);
-                return this._grant(idToken, accessToken).andThen(
-                  (userAssertion) => {
-                    return this._finalToken(userAssertion, clientApiKey);
-                  }
-                );
+          // console.log("assertion", assertion);
+          return this._accessToken(clientApiKey, assertion).andThen((accessToken) => {
+            // console.log("accessToken", accessToken);
+            return this._login(accessToken).andThen((idToken) => {
+              // console.log("idToken", idToken);
+              return this._grant(idToken, accessToken).andThen((userAssertion) => {
+                return this._finalToken(userAssertion, clientApiKey);
               });
-            }
-          );
+            });
+          });
         });
       })
       .map(async ([token, expire, refresh]) => {
-        console.log("token", token, expire, refresh);
+        // console.log("token", token, expire, refresh);
         const data = {
           token,
           refresh,
-          expirationTime: new Date(
-            new Date().getTime() + expire * 1000
-          ).toISOString(),
+          expirationTime: new Date(new Date().getTime() + expire * 1000).toISOString(),
         };
 
         if (this.useFile) {
@@ -617,9 +566,9 @@ export class DisneyAPI {
         .andThen((token) => {
           // alternatively post 'https://disney.api.edge.bamgrid.com/v2/order/restart'
           return this.session.put<{ data: { success: boolean } }>(
-            "https://disney.api.edge.bamgrid.com/execution/v1/subscription/restart",
+            'https://disney.api.edge.bamgrid.com/execution/v1/subscription/restart',
             { subscriptionId: subscription.id },
-            this.getAuthHeader(token)
+            this.getAuthHeader(token),
           );
         })
         .map(({ data }) => {
@@ -638,12 +587,12 @@ export class DisneyAPI {
         .andThen((token) => {
           // alternatively post 'https://disney.api.edge.bamgrid.com/v2/order/restart'
           return this.session.put<{ data: { success: boolean } }>(
-            "https://disney.api.edge.bamgrid.com/execution/v1/subscription/cancel",
+            'https://disney.api.edge.bamgrid.com/execution/v1/subscription/cancel',
             { subscriptionId: subscription.id },
             this.getAuthHeader(token, {
-              Accept: "application/json; charset=utf-8",
-              "Content-Type": "application/json; charset=utf-8",
-            })
+              Accept: 'application/json; charset=utf-8',
+              'Content-Type': 'application/json; charset=utf-8',
+            }),
           );
         })
         .map(({ data }) => {
@@ -661,10 +610,7 @@ export class DisneyAPI {
 //   subscriptionId: string;
 // };
 
-const ensureSuccess = <T extends { success: boolean }>(
-  result: T,
-  message: string
-): Result<typeof result, ApiError> => {
+const ensureSuccess = <T extends { success: boolean }>(result: T, message: string): Result<typeof result, ApiError> => {
   if (result.success) {
     return Ok(result);
   }
@@ -695,26 +641,20 @@ const ensureSuccess = <T extends { success: boolean }>(
 // };
 
 const wait = (seconds: number) => {
-  return <T>(res: T) =>
-    new Promise<T>((resolve) => setTimeout(() => resolve(res), seconds * 1000));
+  return <T>(res: T) => new Promise<T>((resolve) => setTimeout(() => resolve(res), seconds * 1000));
 };
 
 export const connect = api(({ item, auth, client }) => {
-  const api = new DisneyAPI(
-    { email: auth.email, password: auth.password, uid: item.user },
-    client
-  );
+  const api = new DisneyAPI({ email: auth.email, password: auth.password, uid: item.user }, client);
 
   return api
     .getSubscriptionDetails()
     .andThen((subscription) => api.getSubscriptionDetailsById(subscription.id))
     .map((details): FlowResult => {
       return {
-        membershipStatus: "canceled",
+        membershipStatus: 'canceled',
         expiresAt: details.latestTransactedInvoice.actualExecutionDate
-          ? dayjs(details.latestTransactedInvoice.actualExecutionDate)
-              .add(1, "month")
-              .toISOString()
+          ? dayjs(details.latestTransactedInvoice.actualExecutionDate).add(1, 'month').toISOString()
           : null,
         lastSyncedAt: new Date().toISOString(),
       };
@@ -723,23 +663,18 @@ export const connect = api(({ item, auth, client }) => {
 });
 
 export const cancel = api(({ item, auth, client }) => {
-  const api = new DisneyAPI(
-    { email: auth.email, password: auth.password, uid: item.user },
-    client
-  );
+  const api = new DisneyAPI({ email: auth.email, password: auth.password, uid: item.user }, client);
 
   return api
     .cancelSub2()
-    .andThen((res) => ensureSuccess(res, "Could not cancel subscription"))
+    .andThen((res) => ensureSuccess(res, 'Could not cancel subscription'))
     .map(wait(2))
     .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
     .map((details): FlowResult => {
       return {
-        membershipStatus: "canceled",
+        membershipStatus: 'canceled',
         expiresAt: details.latestTransactedInvoice.actualExecutionDate
-          ? dayjs(details.latestTransactedInvoice.actualExecutionDate)
-              .add(1, "month")
-              .toISOString()
+          ? dayjs(details.latestTransactedInvoice.actualExecutionDate).add(1, 'month').toISOString()
           : null,
         lastSyncedAt: new Date().toISOString(),
       };
@@ -748,21 +683,18 @@ export const cancel = api(({ item, auth, client }) => {
 });
 
 export const resume = api(({ item, auth, client }) => {
-  const api = new DisneyAPI(
-    { email: auth.email, password: auth.password, uid: item.user },
-    client
-  );
+  const api = new DisneyAPI({ email: auth.email, password: auth.password, uid: item.user }, client);
 
   return api
     .restartSub()
-    .andThen((res) => ensureSuccess(res, "Could not resume subscription"))
+    .andThen((res) => ensureSuccess(res, 'Could not resume subscription'))
     .map(wait(2))
     .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
     .map((res): FlowResult => {
       return {
-        membershipStatus: "active",
-        billingCycle: res.billingFrequency === "MONTH" ? "monthly" : "yearly",
-        membershipPlan: res.billingFrequency === "MONTH" ? "monthly" : "yearly",
+        membershipStatus: 'active',
+        billingCycle: res.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
+        membershipPlan: res.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
         nextPaymentDate: res.scheduledInvoice.expectedExecutionDate
           ? new Date(res.scheduledInvoice.expectedExecutionDate).toISOString()
           : null,

@@ -1,62 +1,56 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList } from "react-native";
-import AboItem from "~/components/AboItem";
-import { Link, Stack, router } from "expo-router";
-import { Pressable } from "react-native";
-import { Image } from "expo-image";
-import Icon from "react-native-vector-icons/FontAwesome";
-import { useConnectedServiceData } from "~/composables/useServiceData";
-import { Template } from "~/components/Template";
-import { ActivityIndicator } from "react-native";
-import { services } from "~/shared/allServices";
-import { objectEntries } from "~/shared/typeHelpers";
-import { AboItemUnconnected } from "~/components/AboItemUnconnected";
-import { getUserId } from "~/shared/ensureDataLoaded";
+import React, { useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import AboItem from '~/components/AboItem';
+import { Link, Stack, router } from 'expo-router';
+import { Pressable } from 'react-native';
+import { Image } from 'expo-image';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { useConnectedServiceData } from '~/composables/useServiceData';
+import { Template } from '~/components/Template';
+import { ActivityIndicator } from 'react-native';
+import { services } from '~/shared/allServices';
+import { objectEntries } from '~/shared/typeHelpers';
+import { AboItemUnconnected } from '~/components/AboItemUnconnected';
+import { getUserId } from '~/shared/ensureDataLoaded';
 
 function LogoTitle() {
   return (
     <>
       <View
         style={{
-          flexDirection: "row",
-          alignItems: "center",
+          flexDirection: 'row',
+          alignItems: 'center',
           gap: 8,
         }}
       >
-        <Image
-          style={{ width: 32, height: 32 }}
-          source={require("../assets/logo.svg")}
-        />
+        <Image style={{ width: 32, height: 32 }} source={require('../assets/logo.svg')} />
         <Text
           style={{
             fontSize: 24,
-            fontWeight: "bold",
-            color: "#fff",
+            fontWeight: 'bold',
+            color: '#fff',
           }}
         >
           aborise
         </Text>
-
-        <TouchableOpacity onPress={() => router.push("/settings")}>
-          <Icon name="cog" size={24} color="#fff" />
-        </TouchableOpacity>
       </View>
     </>
   );
 }
 
 const App = () => {
-  const {
-    value: connectedServices,
-    error,
-    loading,
-  } = useConnectedServiceData();
+  const { value: connectedServices, error, loading } = useConnectedServiceData();
 
   return (
     <>
       <Stack.Screen
         options={{
           headerTitle: () => <LogoTitle />,
+          headerRight: () => (
+            <TouchableOpacity onPress={() => router.push('/settings')}>
+              <Icon name="cog" size={24} color="#fff" />
+            </TouchableOpacity>
+          ),
         }}
       />
       <View style={{ flex: 1 }}>
@@ -94,6 +88,7 @@ const App = () => {
                         className="hover:bg-slate-100 cursor-pointer"
                         logo={services[item[0]].logo}
                         title={services[item[0]].title}
+                        id={item[0]}
                       />
                     </Template>
                     <Template vif={!item[1]}>

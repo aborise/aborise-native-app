@@ -1,18 +1,11 @@
-import { Stack, router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useMemo } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  StyleSheet,
-} from "react-native";
-import { AllServices, services } from "~/shared/allServices";
-import * as apis from "~/automations/api/index";
-import { ActivityIndicator } from "react-native";
-import { useServiceLogin } from "~/composables/useServiceLogin";
-import { getUserId } from "~/shared/ensureDataLoaded";
+import { Stack, router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useMemo } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { AllServices, services } from '~/shared/allServices';
+import * as apis from '~/automations/api/index';
+import { ActivityIndicator } from 'react-native';
+import { useServiceLogin } from '~/composables/useServiceLogin';
+import { getUserId } from '~/shared/ensureDataLoaded';
 
 type ConnectProps = {
   id: keyof AllServices;
@@ -24,25 +17,22 @@ const Connect: React.FC = () => {
     return services[local.id!];
   }, [local.id]);
 
-  const {
-    data,
-    setData,
-    loading: loadingLoginData,
-  } = useServiceLogin(service.id);
+  const { data, setData, loading: loadingLoginData } = useServiceLogin(service.id);
 
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   useEffect(() => {
     if (loadingLoginData) return;
-    setEmail(data?.email || "");
-    setPassword(data?.password || "");
+    setEmail(data?.email || '');
+    setPassword(data?.password || '');
   }, [loadingLoginData]);
 
   const doConnect = async () => {
-    const fn = (apis[local.id as keyof typeof apis] as (typeof apis)["netflix"])
-      ?.connect as (typeof apis)["netflix"]["connect"];
+    const fn = (apis[local.id as keyof typeof apis] as (typeof apis)['netflix'])
+      ?.connect as (typeof apis)['netflix']['connect'];
     if (fn) {
       setLoading(true);
       await setData({
@@ -51,23 +41,24 @@ const Connect: React.FC = () => {
       });
       fn({
         user: getUserId(),
-        queueId: "123",
-        service: "netflix",
-        type: "connect",
+        queueId: '123',
+        service: service.id,
+        type: 'connect',
       })
         .then((res) => {
           setLoading(false);
           if (res.ok) {
-            if (res.val.data?.membershipStatus === "active") {
+            if (res.val.data?.membershipStatus === 'active') {
               console.log(res.val.data.nextPaymentDate);
-            } else if (res.val.data?.membershipStatus === "canceled") {
+            } else if (res.val.data?.membershipStatus === 'canceled') {
               console.log(res.val.data.expiresAt);
-            } else if (res.val.data?.membershipStatus === "inactive") {
+            } else if (res.val.data?.membershipStatus === 'inactive') {
               console.log(res.val.data.membershipStatus);
             }
             router.push(`/`);
           } else {
-            console.log(res.val.message);
+            setError(res.val.message);
+            console.log(res.val.history);
           }
         })
         .catch((err) => {
@@ -87,12 +78,7 @@ const Connect: React.FC = () => {
       <View style={styles.container}>
         <Image source={{ uri: service.logo }} style={styles.image} />
         <View style={styles.inputContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            value={email}
-            onChangeText={(val) => setEmail(val)}
-          />
+          <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={(val) => setEmail(val)} />
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -108,6 +94,10 @@ const Connect: React.FC = () => {
             <Text style={styles.buttonText}>Connect</Text>
           )}
         </TouchableOpacity>
+
+        <View>
+          <Text>{error}</Text>
+        </View>
       </View>
     </>
   );
@@ -116,9 +106,9 @@ const Connect: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fff',
   },
   image: {
     width: 100,
@@ -126,25 +116,25 @@ const styles = StyleSheet.create({
     marginBottom: 50,
   },
   inputContainer: {
-    width: "80%",
+    width: '80%',
     marginBottom: 20,
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: '#ccc',
     padding: 10,
     marginBottom: 10,
     borderRadius: 5,
   },
   button: {
-    backgroundColor: "#007AFF",
+    backgroundColor: '#007AFF',
     padding: 10,
     borderRadius: 5,
   },
   buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
+    color: '#fff',
+    fontWeight: 'bold',
+    textAlign: 'center',
   },
 });
 
