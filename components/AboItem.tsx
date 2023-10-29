@@ -1,8 +1,9 @@
 import React, { useMemo } from "react";
-import { View, Text, Image, TouchableOpacity } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { FlowReturn } from "~/automations/playwright/setup/Runner";
+import { Image } from "expo-image";
 
 dayjs.extend(relativeTime);
 
@@ -64,6 +65,7 @@ const AboItem: React.FC<AboItemProps> = ({
           borderWidth: 1,
           borderColor: "#ccc",
           borderRadius: 8,
+          gap: 16,
           ...styles,
         }}
       >
