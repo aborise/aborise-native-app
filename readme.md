@@ -2,7 +2,7 @@ To get started with the "aborise" project, follow these steps:
 
 1. Clone the repository to your local machine.
 2. Install the latest version of Node.js and npm.
-3. Install Expo CLI by running `npm install -g expo-cli`.
+3. Install Expo CLI by running `npm install -g eas-cli`.
 4. Install the project dependencies by running `npm install`.
 
 Once you have completed these steps, you can use the following scripts to run the project:
