@@ -1,11 +1,12 @@
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Button } from 'react-native';
 import { AllServices, services } from '~/shared/allServices';
 import * as apis from '~/automations/api/index';
 import { ActivityIndicator } from 'react-native';
 import { useServiceLogin } from '~/composables/useServiceLogin';
 import { getUserId } from '~/shared/ensureDataLoaded';
+import { Image } from 'expo-image';
 
 type ConnectProps = {
   id: keyof AllServices;
@@ -87,18 +88,17 @@ const Connect: React.FC = () => {
             onChangeText={(val) => setPassword(val)}
           />
         </View>
-        <TouchableOpacity style={styles.button} onPress={doConnect}>
-          {loading ? (
-            <ActivityIndicator size="small" color="#0000ff" />
-          ) : (
-            <Text style={styles.buttonText}>Connect</Text>
-          )}
-        </TouchableOpacity>
+        <Button title="Connect" onPress={doConnect} />
 
         <View>
           <Text>{error}</Text>
         </View>
       </View>
+      {loading && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" />
+        </View>
+      )}
     </>
   );
 };
@@ -135,6 +135,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  overlay: {
+    // @ts-expect-error
+    ...StyleSheet.absoluteFill,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

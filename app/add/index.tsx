@@ -20,7 +20,7 @@ const Item: React.FC<{ item: Service }> = ({ item }) => {
       >
         <Pressable className="flex flex-col gap-2 w-full h-full">
           <View className="relative -left-1 -top-1">
-            <Image source={{ uri: item.logo }} style={{ width: 100, height: 100 }} />
+            <Image source={item.logo} className="w-24 h-24" />
             <Text className="text-center">{item.title}</Text>
           </View>
         </Pressable>
@@ -39,21 +39,28 @@ const Add = () => {
 
   return (
     <>
-      <View className="flex flex-col pt-4">
-        <TextInput
-          value={search}
-          onChangeText={(value) => {
-            setSearch(value);
-          }}
-          placeholder="Search for a service"
-          returnKeyType="done"
-          autoCapitalize="none"
-          autoCorrect={false}
-          className="px-4"
-        />
+      <View className="flex flex-col">
+        <View className="w-full flex flex-row p-4 shadow shadow-black bg-white">
+          <TextInput
+            value={search}
+            onChangeText={(value) => {
+              setSearch(value);
+            }}
+            placeholder="Search for a service"
+            returnKeyType="done"
+            autoCapitalize="none"
+            autoCorrect={false}
+            className="grow"
+          />
+        </View>
 
-        <View className="flex flex-row flex-wrap gap-4 grow overflow-auto px-4 justify-between">
-          {selectedService.length === 0 && <Text className="text-center text-gray-500">No services found</Text>}
+        <View className="flex grow flex-row justify-center">
+          {selectedService.length === 0 && (
+            <View className="flex flex-col gap-4 grow items-center justify-center py-4">
+              {/* <Image source={require('../../assets/no-results.png')} className="w-4/5 h-4/5" /> */}
+              <Text className="text-center text-gray-500">No services found</Text>
+            </View>
+          )}
 
           {selectedService.length > 0 && (
             <FlatList
@@ -61,6 +68,7 @@ const Add = () => {
               numColumns={2}
               renderItem={({ item }) => <Item item={item} />}
               keyExtractor={(item) => item.id}
+              style={{ flex: 1, paddingHorizontal: 4 }}
             />
           )}
         </View>
