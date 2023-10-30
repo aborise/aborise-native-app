@@ -8,8 +8,10 @@ declare global {
   }
 }
 
-declare module "react-native-html-parser" {
+declare module 'react-native-html-parser' {
   export default class Parser {
     static DOMParser: { new (): DOMParser };
   }
 }
+
+declare module '*.png' {}

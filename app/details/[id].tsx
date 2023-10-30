@@ -1,18 +1,52 @@
+import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Image } from 'expo-image';
-import { Stack, useLocalSearchParams } from 'expo-router';
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useServiceData } from '~/composables/useServiceData';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import * as apis from '~/automations/api/index';
+import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
+import { useServicesQuery } from '~/queries/useServicesQuery';
 import { AllServices, Service, services } from '~/shared/allServices';
+import { getUserId } from '~/shared/ensureDataLoaded';
+import { getLogo } from '~/shared/logos';
+
+const confirmDelete = (serviceTitle: string, cb: () => void) =>
+  Alert.alert(
+    'Deleting ' + serviceTitle,
+    `Are you sure you want to remove ${serviceTitle}? All data will be deleted and you will need to reconnect again.`,
+    [
+      {
+        text: 'Cancel',
+        style: 'cancel',
+      },
+      { text: 'OK', onPress: cb },
+    ],
+  );
+
+const confirmAction = (serviceTitle: string, action: string, cb: () => void) =>
+  Alert.alert('Confirm ' + action, `Are you sure you want to ${action} ${serviceTitle}?`, [
+    {
+      text: 'Cancel',
+      style: 'cancel',
+    },
+    { text: 'OK', onPress: cb },
+  ]);
 
 const Details: React.FC = () => {
+  const [executing, setExecuting] = useState(false);
+  const [actionError, setActionError] = useState<string | undefined>(undefined);
+
   const local = useLocalSearchParams<{ id: keyof AllServices }>();
   const service = useMemo(() => {
     return services[local.id!];
   }, [local.id]);
 
-  const { value: serviceData, loading, error } = useServiceData(service.id);
+  const queryClient = useQueryClient();
+  const { deleteServiceMutation } = useServicesQuery();
+  const { mutateAsync: deleteConnectedService } = deleteServiceMutation();
+  const { serviceDataQuery } = useServiceDataQuery(service.id);
+  const { data: serviceData, isLoading, error } = serviceDataQuery();
 
   const lastSyncDate = useMemo(
     () => dayjs(serviceData?.lastSyncedAt ?? new Date()).format('DD.MM.YYYY'),
@@ -35,11 +69,45 @@ const Details: React.FC = () => {
   );
 
   const handleAction = (serviceId: keyof AllServices, action: Service['actions'][number]) => {
-    // handle action
+    confirmAction(service.title, action.name, () => {
+      setExecuting(true);
+
+      apis[serviceId][action.name]({
+        queueId: 'foo',
+        service: serviceId,
+        type: action.name,
+        user: getUserId(),
+      })
+        .then(async (res) => {
+          await queryClient.invalidateQueries({ queryKey: ['services'] });
+          setExecuting(false);
+          if (res.ok) {
+            if (res.val.data?.membershipStatus === 'active') {
+              console.log(res.val.data.nextPaymentDate);
+            } else if (res.val.data?.membershipStatus === 'canceled') {
+              console.log(res.val.data.expiresAt);
+            } else if (res.val.data?.membershipStatus === 'inactive') {
+              console.log(res.val.data.membershipStatus);
+            }
+            router.push(`/`);
+          } else {
+            setActionError(res.val.message);
+            console.log(res.val.history);
+          }
+        })
+        .catch((err) => {
+          setExecuting(false);
+          console.log(err);
+        });
+    });
   };
 
   const deleteSubscription = () => {
-    // delete subscription logic
+    confirmDelete(service.title, () => {
+      deleteConnectedService(service.id).then(() => {
+        router.push('/');
+      });
+    });
   };
 
   if (!service || !serviceData) {
@@ -60,7 +128,7 @@ const Details: React.FC = () => {
       <View style={styles.flexContainer}>
         {/* First Column */}
         <View style={styles.firstColumn}>
-          <Image source={{ uri: service.logo }} style={styles.logo} />
+          <Image source={getLogo(service.id)} style={styles.logo} className="rounded-3xl" />
           <View style={styles.syncBox}>
             <Text style={styles.syncText}>Synchronised</Text>
           </View>
@@ -116,7 +184,22 @@ const Details: React.FC = () => {
         <TouchableOpacity style={[styles.btn, styles.btnCancel, styles.mb2]} onPress={deleteSubscription}>
           <Text>Delete</Text>
         </TouchableOpacity>
+        <View>
+          <Text>{actionError}</Text>
+        </View>
       </View>
+      {executing && (
+        <View
+          style={{
+            // @ts-expect-error
+            ...StyleSheet.absoluteFill,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <ActivityIndicator size="large" />
+        </View>
+      )}
     </>
   );
 };

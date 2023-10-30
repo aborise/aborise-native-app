@@ -1,29 +1,29 @@
 import { Stack } from 'expo-router/stack';
-import { View } from 'react-native';
-import { ActivityIndicator } from 'react-native';
-import { useAsyncStateReadonly } from '~/composables/useAsyncState';
-import { ensureDataLoaded } from '~/shared/ensureDataLoaded';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export default function Layout() {
+  const queryClient = new QueryClient();
   return (
-    <Stack
-      screenOptions={{
-        headerStyle: {
-          backgroundColor: '#f4511e',
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-      }}
-    >
-      <Stack.Screen
-        name="add/index"
-        options={{
-          title: 'Add Subscription',
-          presentation: 'modal',
+    <QueryClientProvider client={queryClient}>
+      <Stack
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#f4511e',
+          },
+          headerTintColor: '#fff',
+          headerTitleStyle: {
+            fontWeight: 'bold',
+          },
         }}
-      />
-    </Stack>
+      >
+        <Stack.Screen
+          name="add/index"
+          options={{
+            title: 'Add Subscription',
+            presentation: 'modal',
+          }}
+        />
+      </Stack>
+    </QueryClientProvider>
   );
 }

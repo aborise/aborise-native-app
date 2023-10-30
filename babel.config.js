@@ -1,11 +1,11 @@
 module.exports = function (api) {
   api.cache(true);
   return {
-    presets: ["babel-preset-expo"],
+    presets: ['babel-preset-expo'],
     plugins: [
       // "babel-plugin-tsconfig-paths",
-      "expo-router/babel",
-      "nativewind/babel",
+      'expo-router/babel',
+      'nativewind/babel',
       // "react-native-reanimated/plugin",
     ],
   };

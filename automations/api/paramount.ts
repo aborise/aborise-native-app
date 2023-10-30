@@ -1,58 +1,48 @@
 // import console from 'console';
-import { Err, Ok } from "~/shared/Result";
-import { solveCaptcha } from "./helpers/captcha";
-import {
-  ApiResponse,
-  AsyncAboFetchResult,
-  Session,
-  toFormData,
-} from "./helpers/client";
-import { api } from "./helpers/setup";
-import { getJsonFromHtmlResponse } from "./helpers/strings";
+import { Err, Ok } from '~/shared/Result';
+import { solveCaptcha } from './helpers/captcha';
+import { ApiResponse, AsyncAboFetchResult, Session } from './helpers/client';
+import { api } from './helpers/setup';
+import { getJsonFromHtmlResponse } from './helpers/strings';
+import { toFormData } from 'axios';
 
 // TODO: test me later
 
-const getAuthToken = (
-  client: Session,
-  userId: string
-): AsyncAboFetchResult<string> => {
-  console.info("Getting auth token");
+const getAuthToken = (client: Session, userId: string): AsyncAboFetchResult<string> => {
+  console.info('Getting auth token');
   return client
     .fetch<string>({
-      method: "GET",
-      url: "https://www.paramountplus.com/account/",
-      cookieKeys: ["CBS_COM"],
-      service: "paramount",
+      method: 'GET',
+      url: 'https://www.paramountplus.com/account/',
+      cookieKeys: ['CBS_COM'],
+      service: 'paramount',
       user: userId,
     })
     .andThen(({ data, cookies }) =>
-      getJsonFromHtmlResponse<{ authToken: string }>(
-        data,
-        "#php-to-js-var"
-      ).map((json) => {
-        console.info("Authtoken:", json.authToken);
+      getJsonFromHtmlResponse<{ authToken: string }>(data, '#php-to-js-var').map((json) => {
+        console.info('Authtoken:', json.authToken);
         return {
           data: json.authToken,
           cookies,
         };
-      })
+      }),
     );
 };
 
 const getAuthTokenAndCaptchaKeyForLogin = (client: Session) => {
   return client
     .fetch<string>({
-      method: "GET",
-      url: "https://www.paramountplus.com/de/account/signin/",
+      method: 'GET',
+      url: 'https://www.paramountplus.com/de/account/signin/',
     })
     .andThen(({ data, cookies }) =>
       getJsonFromHtmlResponse<{
         tk_trp: string;
         recaptcha: { recaptchaPublicKey: string };
-      }>(data, "#app-config").map((json) => {
+      }>(data, '#app-config').map((json) => {
         // console.log(JSON.stringify(json, null, 2));
-        console.info("Authtoken:", json.tk_trp);
-        console.info("Captcha key:", json.recaptcha.recaptchaPublicKey);
+        console.info('Authtoken:', json.tk_trp);
+        console.info('Captcha key:', json.recaptcha.recaptchaPublicKey);
         return {
           data: {
             authToken: json.tk_trp,
@@ -60,34 +50,27 @@ const getAuthTokenAndCaptchaKeyForLogin = (client: Session) => {
           },
           cookies,
         };
-      })
+      }),
     );
 };
 
-const doResumeSubscription = (
-  client: Session,
-  authToken: string,
-  userId: string
-) => {
+const doResumeSubscription = (client: Session, authToken: string, userId: string) => {
   return client.fetch<{ success: boolean }>({
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "multipart/form-data",
+      'Content-Type': 'multipart/form-data',
     },
-    url: "https://www.paramountplus.com/account/xhr/resume-subscription/",
+    url: 'https://www.paramountplus.com/account/xhr/resume-subscription/',
     body: {
       tk_trp: authToken,
     },
-    service: "paramount",
+    service: 'paramount',
     user: userId,
-    cookieKeys: ["CBS_COM"],
+    cookieKeys: ['CBS_COM'],
   });
 };
 
-const failOnError = <T extends { success: boolean }>(
-  response: ApiResponse<T>,
-  message: string
-) => {
+const failOnError = <T extends { success: boolean }>(response: ApiResponse<T>, message: string) => {
   if (response.data.success) {
     return Ok(response);
   }
@@ -95,7 +78,7 @@ const failOnError = <T extends { success: boolean }>(
   return Err({
     custom: message,
     errorMessage: message,
-    message: "Bad Request",
+    message: 'Bad Request',
     statusCode: 400,
   });
 };
@@ -110,26 +93,19 @@ type CancelResponse = {
   success: boolean;
 };
 
-const getCancelInfo = (
-  client: Session,
-  userId: string
-): AsyncAboFetchResult<{ id: string; authToken: string }> => {
-  console.info("Getting cancel info");
+const getCancelInfo = (client: Session, userId: string): AsyncAboFetchResult<{ id: string; authToken: string }> => {
+  console.info('Getting cancel info');
   return client
     .fetch<CancelResponse>({
-      method: "GET",
-      url: "https://www.paramountplus.com/account/xhr/cancel/",
-      service: "paramount",
+      method: 'GET',
+      url: 'https://www.paramountplus.com/account/xhr/cancel/',
+      service: 'paramount',
       user: userId,
-      cookieKeys: ["CBS_COM"],
+      cookieKeys: ['CBS_COM'],
     })
-    .andThen((response) => failOnError(response, "Failed to get cancel info"))
+    .andThen((response) => failOnError(response, 'Failed to get cancel info'))
     .map(({ data, cookies }) => {
-      console.info(
-        "Cancel info: ",
-        data.result.survey.surveyId,
-        data.result.authToken
-      );
+      console.info('Cancel info: ', data.result.survey.surveyId, data.result.authToken);
       return {
         data: {
           id: data.result.survey.surveyId,
@@ -140,41 +116,33 @@ const getCancelInfo = (
     });
 };
 
-const doCancelConfirm = (
-  client: Session,
-  authToken: string,
-  userId: string
-) => {
+const doCancelConfirm = (client: Session, authToken: string, userId: string) => {
   return client.fetch<{ success: boolean }>({
-    method: "POST",
-    url: "https://www.paramountplus.com/account/xhr/cancel/confirm/",
+    method: 'POST',
+    url: 'https://www.paramountplus.com/account/xhr/cancel/confirm/',
     body: toFormData({
       tk_trp: authToken,
       id: null,
       reasonId: null,
-      reasonStr: "1",
+      reasonStr: '1',
     }),
-    service: "paramount",
+    service: 'paramount',
     user: userId,
-    cookieKeys: ["CBS_COM"],
+    cookieKeys: ['CBS_COM'],
   });
 };
 
 export const cancel = api(({ item, client }) => {
   return getCancelInfo(client, item.user)
     .andThen(({ data }) => doCancelConfirm(client, data.authToken, item.user))
-    .andThen((response) =>
-      failOnError(response, "Failed to cancel subscription")
-    )
+    .andThen((response) => failOnError(response, 'Failed to cancel subscription'))
     .map((result) => ({ debug: result }));
 });
 
 export const resume = api(({ item, client }) => {
   return getAuthToken(client, item.user)
     .andThen(({ data }) => doResumeSubscription(client, data, item.user))
-    .andThen((response) =>
-      failOnError(response, "Failed to resume subscription")
-    )
+    .andThen((response) => failOnError(response, 'Failed to resume subscription'))
     .map((result) => ({ debug: result }));
 });
 
@@ -183,8 +151,8 @@ export const connect = api(({ client, auth }) => {
     .andThen(({ data, cookies }) => {
       return solveCaptcha({
         siteKey: data.captchaKey,
-        url: "https://www.paramountplus.com/de/account/signin/",
-        action: "FORM_SIGN_IN",
+        url: 'https://www.paramountplus.com/de/account/signin/',
+        action: 'FORM_SIGN_IN',
       })
         .map((recaptchaToken) => ({
           recaptchaToken,
@@ -194,22 +162,22 @@ export const connect = api(({ client, auth }) => {
         .mapErr((e) => {
           return {
             errorMessage: e.message,
-            message: "Failed to solve captcha",
+            message: 'Failed to solve captcha',
             statusCode: 400,
-            custom: "Failed to solve captcha",
+            custom: 'Failed to solve captcha',
           };
         });
     })
     .andThen(({ recaptchaToken, authToken, cookies }) => {
-      console.info("logging in");
+      console.info('logging in');
       return client.fetch<{ isExSubscriber: boolean; isSubscriber: boolean }>({
-        method: "POST",
+        method: 'POST',
         cookies,
         headers: {
-          "Content-Type": "multipart/form-data",
-          "X-Requested-With": "XMLHttpRequest",
+          'Content-Type': 'multipart/form-data',
+          'X-Requested-With': 'XMLHttpRequest',
         },
-        url: "https://www.paramountplus.com/de/account/xhr/login/",
+        url: 'https://www.paramountplus.com/de/account/xhr/login/',
         body: toFormData({
           tk_trp: authToken,
           email: auth.email,
@@ -223,7 +191,7 @@ export const connect = api(({ client, auth }) => {
       if (response.data.isExSubscriber) {
         return {
           data: {
-            membershipStatus: "inactive",
+            membershipStatus: 'inactive',
             lastSyncedAt: new Date().toISOString(),
           },
           cookies: response.cookies,
@@ -231,9 +199,9 @@ export const connect = api(({ client, auth }) => {
       } else {
         return {
           data: {
-            membershipStatus: "active",
+            membershipStatus: 'active',
             lastSyncedAt: new Date().toISOString(),
-            billingCycle: "monthly",
+            billingCycle: 'monthly',
             membershipPlan: null,
             nextPaymentDate: null,
             nextPaymentPrice: null,

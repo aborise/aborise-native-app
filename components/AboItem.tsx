@@ -6,11 +6,11 @@ import { FlowReturn } from '~/automations/playwright/setup/Runner';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router/src/exports';
 import { AllServices } from '~/shared/allServices';
+import { getLogo } from '~/shared/logos';
 
 dayjs.extend(relativeTime);
 
 interface AboItemProps {
-  logo: string;
   title: string;
   data: NonNullable<FlowReturn['data']>;
   styles?: any;
@@ -19,7 +19,7 @@ interface AboItemProps {
   onContextMenu?: (event: any) => void; // Note: React Native doesn't have native context menu
 }
 
-const AboItem: React.FC<AboItemProps> = ({ logo, title, data, onContextMenu, styles, id }) => {
+const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, id }) => {
   const nextPaymentRelativeDate = useMemo(
     () => (data.membershipStatus === 'active' ? dayjs(data.nextPaymentDate).fromNow() : undefined),
     [data],
@@ -53,10 +53,12 @@ const AboItem: React.FC<AboItemProps> = ({ logo, title, data, onContextMenu, sty
             borderColor: '#ccc',
             borderRadius: 8,
             gap: 16,
+            marginBottom: 8,
+            backgroundColor: 'white',
             ...styles,
           }}
         >
-          <Image source={{ uri: logo }} style={{ width: 48, height: 48 }} />
+          <Image source={getLogo(id)} style={{ width: 48, height: 48 }} className="rounded-xl" />
           <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start' }}>
             <Text style={{ fontSize: 24 }}>{title}</Text>
             {renewsDate && <Text style={{ fontSize: 12, color: 'gray' }}>Renews {renewsDate}</Text>}

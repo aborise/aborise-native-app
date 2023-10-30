@@ -35,7 +35,7 @@ export type AnswerRequest = z.infer<typeof answerRequestValidator>;
 export const ServiceSchema = z.object({
   id: z.string(), // unique id
   title: z.string(),
-  logo: z.string().url(),
+  appleId: z.string(),
   description: z.string(),
   auth: z.string().array(),
   optionalDataKeys: z.array(z.string()),

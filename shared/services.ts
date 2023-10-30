@@ -1,10 +1,17 @@
 import { DeepWriteable } from './plumbing';
 import { Service } from './validators';
 
+// SPOTIFY = 324684580
+// DISNEY+ = 1446075923
+// PARAMOUNT+ = 1340650234
+// AMAZON PRIME VIDEO = 545519333
+// DAZN = 1129523589
+// RTL+ = 1057991212
+
 const _netflix = {
   id: 'netflix',
   title: 'Netflix',
-  logo: 'https://upload.wikimedia.org/wikipedia/commons/0/0c/Netflix_2015_N_logo.svg',
+  appleId: '363590051',
   description: 'Watch movies and series',
   auth: ['email', 'password'],
   optionalDataKeys: ['creditcard'],
@@ -23,10 +30,10 @@ const _netflix = {
       name: 'connect',
       type: 'manual',
     },
-    {
-      name: 'register',
-      type: 'manual',
-    },
+    // {
+    //   name: 'register',
+    //   type: 'manual',
+    // },
     {
       name: 'cancel',
       type: 'manual',
@@ -45,7 +52,7 @@ export const netflix = _netflix as DeepWriteable<Netflix> satisfies Service;
 const _amazon = {
   id: 'amazon',
   title: 'Amazon Prime',
-  logo: 'https://upload.wikimedia.org/wikipedia/commons/e/e3/Amazon_Prime_Logo.svg',
+  appleId: '545519333',
   description: 'Watch movies and series',
   auth: ['email', 'password'],
   optionalDataKeys: [],
@@ -53,6 +60,14 @@ const _amazon = {
   actions: [
     {
       name: 'connect',
+      type: 'manual',
+    },
+    {
+      name: 'cancel',
+      type: 'manual',
+    },
+    {
+      name: 'resume',
       type: 'manual',
     },
   ],
@@ -65,7 +80,7 @@ export const amazon = _amazon as DeepWriteable<Amazon> satisfies Service;
 const _disney = {
   id: 'disney',
   title: 'Disney+',
-  logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3e/Disney%2B_logo.svg',
+  appleId: '1446075923',
   description: 'Watch movies and series',
   auth: ['email', 'password'],
   optionalDataKeys: [],
@@ -87,10 +102,10 @@ const _disney = {
       name: 'resume',
       type: 'manual',
     },
-    {
-      name: 'register',
-      type: 'manual',
-    },
+    // {
+    //   name: 'register',
+    //   type: 'manual',
+    // },
   ],
 } as const;
 
@@ -101,7 +116,7 @@ export const disney = _disney as DeepWriteable<Disney> satisfies Service;
 const _spotify = {
   id: 'spotify',
   title: 'Spotify',
-  logo: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Spotify_logo_without_text.svg',
+  appleId: '324684580',
   description: 'Listen to music',
   auth: ['email', 'password'],
   optionalDataKeys: [],
@@ -137,7 +152,7 @@ export const spotify = _spotify as DeepWriteable<Spotify> satisfies Service;
 const _paramount = {
   id: 'paramount',
   title: 'Paramount',
-  logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Paramount%2B_logo.svg',
+  appleId: '1340650234',
   description: 'Listen to music',
   auth: ['email', 'password'], // , 'name'
   optionalDataKeys: [],
@@ -159,10 +174,10 @@ const _paramount = {
       name: 'resume',
       type: 'manual',
     },
-    {
-      name: 'register',
-      type: 'manual',
-    },
+    // {
+    //   name: 'register',
+    //   type: 'manual',
+    // },
   ],
 } as const;
 

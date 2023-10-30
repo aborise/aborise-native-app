@@ -1,13 +1,14 @@
-import React, { useState, useCallback } from "react";
-import { View, Text, Image, TouchableOpacity, Button } from "react-native";
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-import { router } from "expo-router";
+import React, { useState, useCallback } from 'react';
+import { View, Text, TouchableOpacity, Button } from 'react-native';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { router } from 'expo-router';
+import { Image } from 'expo-image';
+import { getLogo } from '~/shared/logos';
 
 dayjs.extend(relativeTime);
 
 interface AboItemUnconnectedProps {
-  logo: string;
   title: string;
   styles?: any;
   className?: string;
@@ -15,13 +16,7 @@ interface AboItemUnconnectedProps {
   onContextMenu?: (event: any) => void;
 }
 
-export const AboItemUnconnected: React.FC<AboItemUnconnectedProps> = ({
-  logo,
-  title,
-  id,
-  styles,
-  onContextMenu,
-}) => {
+export const AboItemUnconnected: React.FC<AboItemUnconnectedProps> = ({ title, id, styles, onContextMenu }) => {
   const [buttonDisabled, setButtonDisabled] = useState(false);
 
   const connect = useCallback(async () => {
@@ -39,29 +34,23 @@ export const AboItemUnconnected: React.FC<AboItemUnconnectedProps> = ({
     <TouchableOpacity onLongPress={onContextMenu}>
       <View
         style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
           padding: 16,
           borderWidth: 1,
-          borderColor: "#ccc",
+          borderColor: '#ccc',
           borderRadius: 8,
           ...styles,
         }}
       >
-        <Image source={{ uri: logo }} style={{ width: 48, height: 48 }} />
-        <View
-          style={{ flex: 1, flexDirection: "column", alignItems: "flex-start" }}
-        >
+        <Image source={getLogo(id)} style={{ width: 48, height: 48 }} className="rounded-xl" />
+        <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start' }}>
           <Text style={{ fontSize: 24 }}>{title}</Text>
-          <Text style={{ fontSize: 12, color: "gray" }}>Not Synced</Text>
+          <Text style={{ fontSize: 12, color: 'gray' }}>Not Synced</Text>
         </View>
-        <View style={{ flexDirection: "column", alignItems: "flex-end" }}>
-          <Button
-            title="Connect Now"
-            onPress={connect}
-            disabled={buttonDisabled}
-          />
+        <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+          <Button title="Connect Now" onPress={connect} disabled={buttonDisabled} />
         </View>
       </View>
     </TouchableOpacity>

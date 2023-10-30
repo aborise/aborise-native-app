@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { View, Text, Switch, Button, Alert } from 'react-native';
 import { clearConnectedServices } from '~/composables/useServiceData';
 import { useStorage } from '~/composables/useStorage';
+import { useServicesQuery } from '~/queries/useServicesQuery';
 
 const Settings = () => {
+  const { clearServicesMutation } = useServicesQuery();
+  const { mutate: clearServices } = clearServicesMutation();
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const storage = useStorage('local');
 
   const handleClearStorage = () => {
     Alert.alert('Clear Storage', 'Are you sure you want to clear all stored data?', [
@@ -15,9 +17,7 @@ const Settings = () => {
       },
       {
         text: 'OK',
-        onPress: () => {
-          clearConnectedServices();
-        },
+        onPress: () => clearServices(),
       },
     ]);
   };

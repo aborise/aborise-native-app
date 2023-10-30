@@ -7,6 +7,8 @@ import { ActivityIndicator } from 'react-native';
 import { useServiceLogin } from '~/composables/useServiceLogin';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { Image } from 'expo-image';
+import { getLogo } from '~/shared/logos';
+import { useQueryClient } from '@tanstack/react-query';
 
 type ConnectProps = {
   id: keyof AllServices;
@@ -24,6 +26,8 @@ const Connect: React.FC = () => {
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
+
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (loadingLoginData) return;
@@ -46,7 +50,8 @@ const Connect: React.FC = () => {
         service: service.id,
         type: 'connect',
       })
-        .then((res) => {
+        .then(async (res) => {
+          await queryClient.invalidateQueries({ queryKey: ['services'] });
           setLoading(false);
           if (res.ok) {
             if (res.val.data?.membershipStatus === 'active') {
@@ -74,10 +79,11 @@ const Connect: React.FC = () => {
       <Stack.Screen
         options={{
           title: service.title,
+          animation: 'fade',
         }}
       />
       <View style={styles.container}>
-        <Image source={{ uri: service.logo }} style={styles.image} />
+        <Image source={getLogo(service.id)} style={styles.image} className="rounded-3xl" />
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={(val) => setEmail(val)} />
           <TextInput

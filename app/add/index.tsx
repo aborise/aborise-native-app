@@ -7,22 +7,21 @@ import { Link, Stack } from 'expo-router';
 import { Service, services } from '~/shared/allServices';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native';
+import { getLogo } from '~/shared/logos';
 
 const Item: React.FC<{ item: Service }> = ({ item }) => {
   return (
-    <View className="w-1/2 aspect-square p-2">
+    <View className="w-1/2 aspect-square p-2 ">
       <Link
         v-for="logo in filteredLogos"
         href={`/add/${item.id}`}
         key={item.id}
-        className="w-full h-full rounded-lg shadow-md border border-gray-300 active:bg-gray-100 cursor-pointer m-0 justify-center items-center"
+        className="bg-white w-full h-full rounded-lg shadow border border-gray-300 active:bg-gray-100 cursor-pointer justify-center items-center"
         asChild
       >
-        <Pressable className="flex flex-col gap-2 w-full h-full">
-          <View className="relative -left-1 -top-1">
-            <Image source={item.logo} className="w-24 h-24" />
-            <Text className="text-center">{item.title}</Text>
-          </View>
+        <Pressable className="flex flex-col w-full h-full">
+          <Image source={getLogo(item.id)} className="w-24 h-24 rounded-3xl" />
+          <Text className="text-center mt-2">{item.title}</Text>
         </Pressable>
       </Link>
     </View>
@@ -30,7 +29,6 @@ const Item: React.FC<{ item: Service }> = ({ item }) => {
 };
 
 const Add = () => {
-  const addService = () => {};
   const [search, setSearch] = useState('');
 
   const selectedService = useMemo(() => {
@@ -40,7 +38,7 @@ const Add = () => {
   return (
     <>
       <View className="flex flex-col">
-        <View className="w-full flex flex-row p-4 shadow shadow-black bg-white">
+        <View className="w-full flex flex-row p-4  bg-white relative z-10" style={{ elevation: 10 }}>
           <TextInput
             value={search}
             onChangeText={(value) => {
@@ -51,14 +49,14 @@ const Add = () => {
             autoCapitalize="none"
             autoCorrect={false}
             className="grow"
+            autoFocus
           />
         </View>
 
         <View className="flex grow flex-row justify-center">
           {selectedService.length === 0 && (
-            <View className="flex flex-col gap-4 grow items-center justify-center py-4">
-              {/* <Image source={require('../../assets/no-results.png')} className="w-4/5 h-4/5" /> */}
-              <Text className="text-center text-gray-500">No services found</Text>
+            <View className="flex flex-col grow items-center justify-center">
+              <Image source={require('../../assets/no-results.png')} className="w-full aspect-square" />
             </View>
           )}
 
@@ -68,7 +66,7 @@ const Add = () => {
               numColumns={2}
               renderItem={({ item }) => <Item item={item} />}
               keyExtractor={(item) => item.id}
-              style={{ flex: 1, paddingHorizontal: 4 }}
+              style={{ flex: 1, paddingHorizontal: 4, paddingTop: 2 }}
             />
           )}
         </View>

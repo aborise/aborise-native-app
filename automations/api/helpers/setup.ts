@@ -1,17 +1,14 @@
-import type {
-  FlowReturn,
-  RequestTypeDone,
-} from "~/automations/playwright/setup/Runner";
-import { getServiceLogin } from "~/composables/useServiceLogin";
-import { Storage, useStorage } from "~/composables/useStorage";
-import type { AsyncResult } from "~/shared/Result";
-import { AllServices } from "~/shared/allServices";
-import type { BaseQueueItem } from "~/shared/validators/queueItem";
-import { BaseError } from "./BaseError";
-import { Session, type ApiError } from "./client";
-import { setCookies } from "./cookie";
-import { setFlowData } from "./data";
-import { addConnectedService } from "~/composables/useServiceData";
+import type { FlowReturn, RequestTypeDone } from '~/automations/playwright/setup/Runner';
+import { getServiceLogin } from '~/composables/useServiceLogin';
+import { Storage, useStorage } from '~/composables/useStorage';
+import type { AsyncResult } from '~/shared/Result';
+import { AllServices } from '~/shared/allServices';
+import type { BaseQueueItem } from '~/shared/validators/queueItem';
+import { BaseError } from './BaseError';
+import { Session, type ApiError } from './client';
+import { setCookies } from './cookie';
+import { setFlowData } from './data';
+import { addConnectedService } from '~/composables/useServiceData';
 
 // globalThis.process = globalThis.process ?? {};
 
@@ -21,7 +18,7 @@ const sanitizeDebug = (debug: Record<string, unknown> = {}) => {
 
   const keys = Object.keys(debug);
   for (const key of keys) {
-    const sanitized = key.replace(/\.|#|\$|\/|\[|\]/g, "_");
+    const sanitized = key.replace(/\.|#|\$|\/|\[|\]/g, '_');
     if (key !== sanitized) {
       debug[sanitized] = debug[key];
       delete debug[key];
@@ -29,10 +26,8 @@ const sanitizeDebug = (debug: Record<string, unknown> = {}) => {
 
     debug[sanitized] = debug[sanitized] ?? null;
 
-    if (typeof debug[sanitized] === "object" && debug[sanitized] !== null) {
-      debug[sanitized] = sanitizeDebug(
-        debug[sanitized] as Record<string, unknown>
-      );
+    if (typeof debug[sanitized] === 'object' && debug[sanitized] !== null) {
+      debug[sanitized] = sanitizeDebug(debug[sanitized] as Record<string, unknown>);
     }
   }
 
@@ -52,10 +47,8 @@ type ApiOptions = {
 
 export const api = (
   cb: ApiCallback,
-  { storage = useStorage("local") }: ApiOptions = {}
-): ((
-  item: BaseQueueItem
-) => AsyncResult<Partial<RequestTypeDone>, BaseError>) => {
+  { storage = useStorage('local') }: ApiOptions = {},
+): ((item: BaseQueueItem) => AsyncResult<Partial<RequestTypeDone>, BaseError>) => {
   return (item: BaseQueueItem) => {
     return getServiceLogin(item.service).andThen((login) => {
       const client = new Session();
@@ -68,7 +61,7 @@ export const api = (
               item.service,
               // @ts-expect-error
               flowReturn.cookies.map(sanitizeDebug),
-              storage
+              storage,
             );
           }
 
@@ -76,12 +69,12 @@ export const api = (
             await setFlowData(item.service, flowReturn.data);
           }
 
-          if (item.type === "connect") {
+          if (item.type === 'connect') {
             await addConnectedService(item.service);
           }
 
           const response: RequestTypeDone = {
-            status: "done",
+            status: 'done',
             debug: flowReturn.debug,
             history: client.toJSON(),
             data: flowReturn.data,
@@ -94,7 +87,7 @@ export const api = (
             message: error.message,
             meta: error,
             history: client.toJSON(),
-            name: "ApiError",
+            name: 'ApiError',
           });
         });
     });
