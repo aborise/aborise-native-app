@@ -23,6 +23,12 @@ export default function Layout() {
             presentation: 'modal',
           }}
         />
+        <Stack.Screen
+          name="add/[id]"
+          options={{
+            presentation: 'modal',
+          }}
+        />
       </Stack>
     </QueryClientProvider>
   );

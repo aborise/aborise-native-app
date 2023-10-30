@@ -79,7 +79,7 @@ const Connect: React.FC = () => {
       <Stack.Screen
         options={{
           title: service.title,
-          animation: 'fade',
+          // animation: 'fade',
         }}
       />
       <View style={styles.container}>

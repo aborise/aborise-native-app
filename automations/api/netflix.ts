@@ -1,4 +1,5 @@
 import { AsyncResult, Err, Ok } from '~/shared/Result';
+import { FlowResult } from '../playwright/helpers';
 import { extractAmount, extractDate } from '../playwright/strings';
 import { ApiError, ApiResponse, Session } from './helpers/client';
 import { api } from './helpers/setup';
@@ -11,8 +12,6 @@ import {
   getReactContextWithCookies,
 } from './utils/netflix.helpers';
 import { NetflixCancelResponse, NetflixResumeResponse, ReactContext } from './utils/netflix.types';
-import { FlowReturn } from '../playwright/setup/Runner';
-import { FlowResult } from '../playwright/helpers';
 
 const failOnNotLoggedIn = (context: ReactContext) => {
   const isLoggedIn = !!context?.models?.memberContext?.data?.userInfo?.authURL;
@@ -289,6 +288,7 @@ export const connect = api(({ auth, client }) => {
       }
     })
     .andThen(({ cookies }) => {
+      console.log(cookies);
       return client
         .fetch<string>({
           url: 'https://www.netflix.com/YourAccount',
@@ -304,8 +304,8 @@ export const connect = api(({ auth, client }) => {
           },
           cookies,
         })
-        .map(({ data }) => stringToDocument(data))
-        .map((document) => ({ cookies, data: extractReactContext(document) }));
+        .map(async ({ data, cookies }) => ({ cookies, document: await stringToDocument(data) }))
+        .map(({ document, cookies }) => ({ cookies, data: extractReactContext(document) }));
     })
     .andThen(({ data, cookies }) => {
       const membershipStatus = data?.models?.userInfo?.data.membershipStatus;

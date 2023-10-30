@@ -49,6 +49,7 @@ const App = () => {
     <>
       <Stack.Screen
         options={{
+          title: 'Home',
           headerTitle: () => <LogoTitle />,
           headerRight: () => (
             <TouchableOpacity onPress={() => router.push('/settings')}>
