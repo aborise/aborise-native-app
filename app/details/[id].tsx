@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import * as apis from '~/automations/api/index';
 import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
 import { useServicesQuery } from '~/queries/useServicesQuery';
@@ -20,7 +21,7 @@ const confirmDelete = (serviceTitle: string, cb: () => void) =>
         text: 'Cancel',
         style: 'cancel',
       },
-      { text: 'OK', onPress: cb },
+      { text: 'Confirm', onPress: cb },
     ],
   );
 
@@ -30,7 +31,7 @@ const confirmAction = (serviceTitle: string, action: string, cb: () => void) =>
       text: 'Cancel',
       style: 'cancel',
     },
-    { text: 'OK', onPress: cb },
+    { text: 'Confirm', onPress: cb },
   ]);
 
 const Details: React.FC = () => {
@@ -129,43 +130,48 @@ const Details: React.FC = () => {
         {/* First Column */}
         <View style={styles.firstColumn}>
           <Image source={getLogo(service.id)} style={styles.logo} className="rounded-3xl" />
-          <View style={styles.syncBox}>
-            <Text style={styles.syncText}>Synchronised</Text>
-          </View>
-          <Text style={styles.lastSyncDateText}>Last updated: {lastSyncDate}</Text>
         </View>
         {/* Second Column */}
         <View style={styles.secondColumn}>
-          {/* Render based on membershipStatus */}
-          {serviceData.membershipStatus === 'active' ? (
-            <>
-              <View style={styles.statusBox}>
-                <Text style={styles.statusText}>Plan: {serviceData.membershipPlan ?? 'Basic'}</Text>
-              </View>
-              <Text style={styles.priceText}>
-                {serviceData.nextPaymentPrice?.integer}.
-                <Text style={styles.decimalText}>{serviceData.nextPaymentPrice?.decimal}</Text> /{' '}
-                {serviceData.billingCycle ?? 'monthly'}
-              </Text>
-            </>
-          ) : serviceData.membershipStatus === 'canceled' ? (
-            <>
-              <View style={styles.statusBox}>
-                <Text style={styles.statusText}>Canceled</Text>
-              </View>
-              <Text style={styles.priceText}>Expires {expiresRelativeDate}</Text>
-            </>
-          ) : (
-            <View style={styles.statusBox}>
-              <Text style={styles.statusText}>Inactive</Text>
-            </View>
-          )}
+          <View style={styles.syncBox}>
+            <Text style={styles.syncText}>Connected</Text>
+          </View>
+          <Text style={styles.lastSyncDateText}>Last updated: {lastSyncDate}</Text>
+        </View>
+        <View style={styles.thirdColumn}>
+          <Icon name="edit" size={24} color="#667160" />
+          <Icon name="refresh" size={24} color="#667160" />
+          <Icon name="unlink  " size={24} color="#667160" />
         </View>
       </View>
       {/* Second Section */}
       <View style={[styles.flexContainer, styles.flexColumn]}>
+        {/* Render based on membershipStatus */}
+        {serviceData.membershipStatus === 'active' ? (
+          <>
+            <View style={styles.statusBox}>
+              <Text style={styles.statusText}>Plan: {serviceData.membershipPlan ?? 'Basic'}</Text>
+            </View>
+            <Text style={styles.priceText}>
+              {serviceData.nextPaymentPrice?.integer}.
+              <Text style={styles.decimalText}>{serviceData.nextPaymentPrice?.decimal}</Text> /{' '}
+              {serviceData.billingCycle ?? 'monthly'}
+            </Text>
+          </>
+        ) : serviceData.membershipStatus === 'canceled' ? (
+          <>
+            <View style={styles.statusBox}>
+              <Text style={styles.statusText}>Canceled</Text>
+            </View>
+            <Text style={styles.priceText}>Expires {expiresRelativeDate}</Text>
+          </>
+        ) : (
+          <View style={styles.statusBox}>
+            <Text style={styles.statusText}>Inactive</Text>
+          </View>
+        )}
         <View style={styles.flexItemsCenter}>
-          <Text style={styles.textLg}>Next Payment</Text>
+          <Text style={styles.textBase}>Next Payment</Text>
           <Text style={[styles.textBase, styles.ml4]}>{nextPaymentDate}</Text>
         </View>
       </View>
@@ -188,6 +194,8 @@ const Details: React.FC = () => {
           <Text>{actionError}</Text>
         </View>
       </View>
+      {/* Fourth Section */}
+
       {executing && (
         <View
           style={{
@@ -207,28 +215,32 @@ const Details: React.FC = () => {
 const styles = StyleSheet.create({
   flexContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
     padding: 16,
-    marginBottom: 24,
-    backgroundColor: '#f0f0f0',
-    borderRadius: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    margin: 16,
+    borderWidth: 2,
+    borderColor: '#000',
+    borderRadius: 16,
+    marginBottom: 8,
+    backgroundColor: '#fff',
+    // backgroundColor: '#f0f0f0',
+    // borderRadius: 4,
+    // shadowColor: '#000',
+    // shadowOffset: { width: 0, height: 2 },
+    // shadowOpacity: 0.2,
   },
   firstColumn: {
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 32,
   },
   logo: {
     width: 80,
     height: 80,
-    marginBottom: 16,
   },
   syncBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFD700',
+    backgroundColor: '#eaf4e4',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -243,6 +255,12 @@ const styles = StyleSheet.create({
   secondColumn: {
     flexDirection: 'column',
     alignItems: 'flex-start',
+    justifyContent: 'center',
+  },
+  thirdColumn: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    justifyContent: 'space-evenly',
   },
   statusBox: {
     backgroundColor: '#000',

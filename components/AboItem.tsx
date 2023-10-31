@@ -7,6 +7,7 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router/src/exports';
 import { AllServices } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 dayjs.extend(relativeTime);
 
@@ -49,12 +50,12 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
             justifyContent: 'space-between',
             alignItems: 'center',
             padding: 16,
-            borderWidth: 1,
-            borderColor: '#ccc',
-            borderRadius: 8,
+            borderWidth: 2,
+            borderColor: '#000',
+            borderRadius: 16,
             gap: 16,
             marginBottom: 8,
-            backgroundColor: 'white',
+            backgroundColor: '#fff',
             ...styles,
           }}
         >
@@ -76,6 +77,9 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
                 <Text style={{ fontSize: 10, color: 'lightgray' }}>{nextPaymentRelativeDate}</Text>
               </>
             )}
+          </View>
+          <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
+            <Icon name="angle-right" size={24} color="#000000" />
           </View>
         </View>
       </TouchableOpacity>

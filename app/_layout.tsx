@@ -7,10 +7,10 @@ export default function Layout() {
     <QueryClientProvider client={queryClient}>
       <Stack
         screenOptions={{
-          headerStyle: {
-            backgroundColor: '#f4511e',
-          },
-          headerTintColor: '#fff',
+          // headerStyle: {
+          //   backgroundColor: '#0000ff',
+          // },
+          headerTintColor: '#000',
           headerTitleStyle: {
             fontWeight: 'bold',
           },

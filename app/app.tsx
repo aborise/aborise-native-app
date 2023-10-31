@@ -11,9 +11,9 @@ import { objectEntries } from '~/shared/typeHelpers';
 
 const MonthlyExpenses: React.FC<{ amount: string }> = ({ amount }) => {
   return (
-    <View className="p-4 bg-white border border-gray-300 rounded">
-      <Text className="text-base font-medium">Monthly expenses</Text>
-      <Text className="text-xl font-bold">{amount}€</Text>
+    <View className="p-4 bg-coldYellow-500 border-2 border-solid border-black rounded-2xl shadow-md">
+      <Text className="text-slate-800 text-md font-medium mb-2">Monthly expenses</Text>
+      <Text className="text-slate-800 text-xl font-bold">€{amount}</Text>
     </View>
   );
 };
@@ -24,12 +24,13 @@ const LogoTitle: React.FC = () => {
       <View
         style={{
           flexDirection: 'row',
+          alignContent: 'flex-start',
           alignItems: 'center',
           gap: 8,
         }}
       >
-        <Image style={{ width: 32, height: 32 }} source={require('../assets/logo.svg')} />
-        <Text
+        <Image style={{ width: 32, height: 32 }} source={require('../assets/logo2.svg')} />
+        {/* <Text
           style={{
             fontSize: 24,
             fontWeight: 'bold',
@@ -37,7 +38,7 @@ const LogoTitle: React.FC = () => {
           }}
         >
           aborise
-        </Text>
+        </Text> */}
       </View>
     </>
   );
@@ -53,7 +54,7 @@ const App = () => {
           headerTitle: () => <LogoTitle />,
           headerRight: () => (
             <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Icon name="cog" size={24} color="#fff" />
+              <Icon name="navicon" size={24} color="#000000" />
             </TouchableOpacity>
           ),
         }}
@@ -63,7 +64,7 @@ const App = () => {
           <MonthlyExpenses amount="100" />
           {connectedServices && Object.keys(connectedServices).length ? (
             <>
-              <Text className="text-xl font-bold">Subscriptions</Text>
+              <Text className="text-xl font-bold">Active Subscriptions</Text>
               <FlatList
                 data={objectEntries(connectedServices)}
                 keyExtractor={([id]) => id}
@@ -80,7 +81,7 @@ const App = () => {
             <View className="flex w-full items-center pt-10">
               <Text>You don't have any subscriptions yet</Text>
               <Link href="/add" asChild>
-                <Text className="text-indigo-600">Add one</Text>
+                <Text className="text-classicBlue-500">Add one</Text>
               </Link>
             </View>
           )}
@@ -88,9 +89,9 @@ const App = () => {
           <Link href="/add" asChild>
             <Pressable
               style={{ elevation: 3 }}
-              className="rounded-full absolute bottom-8 right-8 bg-indigo-600 text-white text-xl h-12 w-12 flex justify-center items-center active:bg-blue-600"
+              className="rounded-full absolute right-5 bottom-8 bg-slate-500 text-black shadow-lg text-xl h-14 w-14 flex justify-center items-center active:bg-slate-600"
             >
-              <Icon name="plus" size={24} color="#fff" />
+              <Icon name="plus" size={32} color="#fff" />
             </Pressable>
           </Link>
         </View>
