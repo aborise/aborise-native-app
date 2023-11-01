@@ -13,6 +13,7 @@ import {
 } from './utils/netflix.helpers';
 import { NetflixCancelResponse, NetflixResumeResponse, ReactContext } from './utils/netflix.types';
 import { FlowReturn } from '../playwright/setup/Runner';
+import { ERROR_CODES } from '~/shared/errors';
 
 const failOnNotLoggedIn = (context: ReactContext) => {
   const isLoggedIn = !!context?.models?.memberContext?.data?.userInfo?.authURL;
@@ -96,6 +97,7 @@ export const cancelOrResume = <
 // TODO: instead of blindly typing the response, pass in validator to cancelOrResume to validate the response
 // if the response does NOT match the validator, log an error but try to recover
 
+// check if the response let us know that the account might have been inactive
 export const cancel = api(({ item, client }) => {
   return cancelOrResume<NetflixCancelResponse>('cancel', client, item).map((json) => ({
     data: {
@@ -113,11 +115,11 @@ export const cancel = api(({ item, client }) => {
 const ensurCorrectMembershipStatus = (context: GetFields<NetflixResumeResponse>) => {
   if (context.errorCode?.value === 'invalid_membership_status') {
     return Err({
-      message: 'invalid_membership_status',
+      message: 'invalid-membership-status',
       custom: 'Your account cant be resumbed because it is inactive',
       errorMessage: 'Your account cant be resumbed because it is inactive',
       statusCode: 400,
-      code: 'invalid_membership_status',
+      code: ERROR_CODES.INVALID_MEMBERSHIP_STATUS,
       userFriendly: true,
     } satisfies ApiError);
   }
@@ -128,7 +130,6 @@ const ensurCorrectMembershipStatus = (context: GetFields<NetflixResumeResponse>)
       custom: 'Unknown error',
       errorMessage: 'Unknown error',
       statusCode: 400,
-      code: 'unknown_error',
     } satisfies ApiError);
   }
 
@@ -344,7 +345,7 @@ export const connect = api(({ auth, client }) => {
           message: 'Unauthorized',
           statusCode: 401,
           userFriendly: true,
-          code: 'not-logged-in',
+          code: ERROR_CODES.NOT_LOGGED_IN,
         });
       }
 

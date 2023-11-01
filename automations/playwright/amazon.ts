@@ -86,7 +86,7 @@ export const connect = run(async ({ page, info, ask, Ok, Err }) => {
   return Ok({
     cookies,
     data: {
-      membershipStatus: 'active',
+      membershipStatus: 'active' as const,
       membershipPlan: null,
       nextPaymentPrice: extractAmount(nextPaymentPrice),
       nextPaymentDate: extractDate(nextPaymentDate) ?? nextPaymentDate,

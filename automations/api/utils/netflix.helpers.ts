@@ -1,12 +1,6 @@
-import { Session } from "../helpers/client";
-import { stringToDocument } from "../helpers/strings";
-import {
-  ApiData,
-  Credentials,
-  LoginPayload,
-  PAGE_ITEMS_API_URL,
-  ReactContext,
-} from "./netflix.types";
+import { Session } from '../helpers/client';
+import { stringToDocument } from '../helpers/strings';
+import { ApiData, Credentials, LoginPayload, PAGE_ITEMS_API_URL, ReactContext } from './netflix.types';
 
 // This function also exists in the browser but is deprecated. Hence, we use our own implementation.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/unescape
@@ -14,14 +8,14 @@ var hex2 = /^[\da-f]{2}$/i;
 var hex4 = /^[\da-f]{4}$/i;
 export function unescape(string: string) {
   var str = String(string);
-  var result = "";
+  var result = '';
   var length = str.length;
   var index = 0;
   var chr, part;
   while (index < length) {
     chr = str.charAt(index++);
-    if (chr === "%") {
-      if (str.charAt(index) === "u") {
+    if (chr === '%') {
+      if (str.charAt(index) === 'u') {
         part = str.slice(index + 1, index + 5);
         if (hex4.exec(part)) {
           result += String.fromCharCode(parseInt(part, 16));
@@ -50,26 +44,19 @@ export const extractReactContext = (document: Document): ReactContext => {
   //   2
   // ).stringValue;
 
-  const scripts = Array.from(document.getElementsByTagName("script"));
-  const targetScript = scripts.find((script) =>
-    script.textContent!.includes("netflix.reactContext = ")
-  );
+  const scripts = Array.from(document.getElementsByTagName('script'));
+  const targetScript = scripts.find((script) => script.textContent!.includes('netflix.reactContext = '));
 
   try {
     const javascript = targetScript!.textContent!;
-    let jsonString = javascript.slice(
-      javascript.indexOf("netflix.reactContext = ") + 23
-    );
+    let jsonString = javascript.slice(javascript.indexOf('netflix.reactContext = ') + 23);
 
     // escape backslashes
-    jsonString = jsonString
-      .replace(/\\x/g, "%")
-      .replace(/\\u/g, "%u")
-      .slice(0, -1);
+    jsonString = jsonString.replace(/\\x/g, '%').replace(/\\u/g, '%u').slice(0, -1);
 
-    return JSON.parse(unescape(jsonString));
+    return JSON.parse(unescape(jsonString)) as ReactContext;
   } catch (e) {
-    console.error("Error parsing react context", document.body.innerHTML);
+    console.error('Error parsing react context', document.body.innerHTML);
     throw e;
   }
 };
@@ -78,20 +65,18 @@ export const getReactContext = (client: Session, uid: string) => {
   return client
     .fetch<string>({
       url: `https://www.netflix.com/YourAccount`,
-      method: "GET",
+      method: 'GET',
       headers: {
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "de,en-US;q=0.7,en;q=0.3",
-        Host: "www.netflix.com",
-        Referer: "https://www.netflix.com/browse",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0",
-        Connection: "keep-alive",
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
+        Host: 'www.netflix.com',
+        Referer: 'https://www.netflix.com/browse',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
+        Connection: 'keep-alive',
       },
-      cookieKeys: ["nfvdid", "flwssn", "SecureNetflixId", "NetflixId"],
-      service: "netflix",
+      cookieKeys: ['nfvdid', 'flwssn', 'SecureNetflixId', 'NetflixId'],
+      service: 'netflix',
       user: uid,
     })
     .map(({ data }) => stringToDocument(data))
@@ -101,25 +86,23 @@ export const getReactContext = (client: Session, uid: string) => {
 export const getReactContextWithCookies = (
   client: Session,
   uid: string,
-  url: string = "https://www.netflix.com/YourAccount"
+  url: string = 'https://www.netflix.com/YourAccount',
 ) => {
   return client
     .fetch<string>({
       url: url,
-      method: "GET",
+      method: 'GET',
       headers: {
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "de,en-US;q=0.7,en;q=0.3",
-        Host: "www.netflix.com",
-        Referer: "https://www.netflix.com/browse",
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0",
-        Connection: "keep-alive",
+        Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
+        Host: 'www.netflix.com',
+        Referer: 'https://www.netflix.com/browse',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
+        Connection: 'keep-alive',
       },
-      cookieKeys: ["nfvdid", "flwssn", "SecureNetflixId", "NetflixId"],
-      service: "netflix",
+      cookieKeys: ['nfvdid', 'flwssn', 'SecureNetflixId', 'NetflixId'],
+      service: 'netflix',
       user: uid,
     })
     .map(async ({ data, cookies }) => ({
@@ -132,9 +115,7 @@ export const getReactContextWithCookies = (
     }));
 };
 
-export const getApiData = async (
-  reactContext: ReactContext | Promise<ReactContext>
-): Promise<ApiData> => {
+export const getApiData = async (reactContext: ReactContext | Promise<ReactContext>): Promise<ApiData> => {
   const json = await reactContext;
   const apiData = {} as unknown as ApiData;
 
@@ -147,7 +128,7 @@ export const getApiData = async (
 };
 
 export const checkMembershipStatus = (membershipStatus: string): void => {
-  if (membershipStatus !== "CURRENT_MEMBER") {
+  if (membershipStatus !== 'CURRENT_MEMBER') {
     throw new Error(`User membership status is ${membershipStatus}`);
   }
 };
@@ -155,7 +136,7 @@ export const checkMembershipStatus = (membershipStatus: string): void => {
 export const getLoginPayload = async (
   credentials: Credentials,
   authUrl: string,
-  _reactContext: ReactContext
+  _reactContext: ReactContext,
 ): Promise<LoginPayload> => {
   // const countryId = reactContext.models.loginContext.data.geo.requestCountry.id;
   // const countryCodes = reactContext.models.countryCodes.data.codes;
@@ -191,20 +172,20 @@ export const getLoginPayload = async (
     userLoginId: credentials.email,
     password: credentials.password,
     // rememberMe: 'false',
-    flow: "websiteSignUp",
-    mode: "login",
-    action: "loginAction",
+    flow: 'websiteSignUp',
+    mode: 'login',
+    action: 'loginAction',
     withFields:
-      "rememberMe,nextPage,userLoginId,password,countryCode,countryIsoCode,recaptchaResponseToken,recaptchaError,recaptchaResponseTime",
+      'rememberMe,nextPage,userLoginId,password,countryCode,countryIsoCode,recaptchaResponseToken,recaptchaError,recaptchaResponseTime',
     authURL: authUrl,
-    nextPage: "",
-    showPassword: "",
-    countryCode: "+49",
-    countryIsoCode: "DE",
-    recaptchaResponseToken: "", //response.data,
+    nextPage: '',
+    showPassword: '',
+    countryCode: '+49',
+    countryIsoCode: 'DE',
+    recaptchaResponseToken: '', //response.data,
     // recaptchaResponseTime: 10,
-    recaptchaError: "LOAD_TIMED_OUT",
-    cancelType: "",
-    cancelReason: "",
+    recaptchaError: 'LOAD_TIMED_OUT',
+    cancelType: '',
+    cancelReason: '',
   };
 };

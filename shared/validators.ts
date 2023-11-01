@@ -64,6 +64,7 @@ export const ServiceSchema = z.object({
       z.object({
         name: z.string(),
         type: z.literal('manual'),
+        url: z.string().url().optional(),
       }),
     ]),
   ),

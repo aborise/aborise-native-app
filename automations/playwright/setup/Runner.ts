@@ -1,11 +1,11 @@
-import { Cookie, Page } from "playwright-core";
-import { Err, Ok, Result } from "~/shared/Result";
-import { QueueItem } from "~/shared/validators/queueItem";
-import { FlowResult } from "../helpers";
-import { CancelToken } from "./CancelToken";
-import { launchBrowser } from "./createBrowser";
-import { ApiError, ApiResponse } from "~/automations/api/helpers/client";
-import { BaseError } from "~/automations/api/helpers/BaseError";
+import { Cookie, Page } from 'playwright-core';
+import { Err, Ok, Result } from '~/shared/Result';
+import { QueueItem } from '~/shared/validators/queueItem';
+import { FlowResult } from '../helpers';
+import { CancelToken } from './CancelToken';
+import { launchBrowser } from './createBrowser';
+import { ApiError, ApiResponse } from '~/automations/api/helpers/client';
+import { BaseError } from '~/automations/api/helpers/BaseError';
 
 const runners = new Map<string, Runner<any>>();
 
@@ -25,34 +25,28 @@ export type FlowReturn = {
   token?: string;
 };
 
-export type RequestTypeAsk = { status: "ask"; key: string; id: string };
-export type RequestTypeCanceled = { status: "canceled" };
+export type RequestTypeAsk = { status: 'ask'; key: string; id: string };
+export type RequestTypeCanceled = { status: 'canceled' };
 export type RequestTypeDone = {
-  status: "done";
+  status: 'done';
   debug?: Record<string, any>;
   history?: Array<ApiResponse<any> | ApiError>;
-  data?: FlowReturn["data"];
+  data?: FlowReturn['data'];
 };
 export type RequestType =
   | RequestTypeDone
   // | { status: 'ask'; key: string; id: string }
   | RequestTypeCanceled;
 
-export type StripAsk<T> = T extends { status: "ask"; key: string; id: string }
-  ? never
-  : T;
+export type StripAsk<T> = T extends { status: 'ask'; key: string; id: string } ? never : T;
 
 export class Runner<T> {
-  private requestPromise!: Promise<
-    Result<RequestType | RequestTypeAsk, BaseError>
-  >;
-  private requestResolve!: (
-    value: Result<RequestType | RequestTypeAsk, BaseError>
-  ) => void;
+  private requestPromise!: Promise<Result<RequestType | RequestTypeAsk, BaseError>>;
+  private requestResolve!: (value: Result<RequestType | RequestTypeAsk, BaseError>) => void;
 
   private responseResolve: (value: string) => void;
 
-  private runnerPromise!: Promise<Result<{ status: "done" }, BaseError>>;
+  private runnerPromise!: Promise<Result<{ status: 'done' }, BaseError>>;
 
   private cancelToken: CancelToken;
 
@@ -70,71 +64,69 @@ export class Runner<T> {
     runner: RunnerFn<T, string>,
     item: QueueItem,
     info: Record<string, string>,
-    callback: (value: T) => Promise<void> | void
+    callback: (value: T) => Promise<void> | void,
   ) {
-    return new Promise<Result<RequestType | RequestTypeAsk, BaseError>>(
-      (resolve) => {
-        launchBrowser(
-          async ({ page }) => {
-            this.runnerPromise = runner({
-              info,
-              page,
-              item,
-              Err,
-              Ok,
-              ask: this.ask.bind(this),
-            })
-              .then(async (result) => {
-                if (result.err) {
-                  const error = new BaseError({
-                    message: result.val as string,
-                    name: "UserError",
-                  });
-
-                  return Err(error);
-                }
-
-                await callback(result.val);
-
-                return Ok({ status: "done" } as const);
-              })
-              .catch((err) => {
-                // This is an error in the flow. Also a server error but in our control
-
+    return new Promise<Result<RequestType | RequestTypeAsk, BaseError>>((resolve) => {
+      launchBrowser(
+        async ({ page }) => {
+          this.runnerPromise = runner({
+            info,
+            page,
+            item,
+            Err,
+            Ok,
+            ask: this.ask.bind(this),
+          })
+            .then(async (result) => {
+              if (result.err) {
                 const error = new BaseError({
-                  message: "An unexpected error happened in a flow",
-                  cause: err,
-                  name: "FlowError",
+                  message: result.val as string,
+                  name: 'UserError',
                 });
 
                 return Err(error);
+              }
+
+              await callback(result.val);
+
+              return Ok({ status: 'done' } as const);
+            })
+            .catch((err) => {
+              // This is an error in the flow. Also a server error but in our control
+
+              const error = new BaseError({
+                message: 'An unexpected error happened in a flow',
+                cause: err,
+                name: 'FlowError',
               });
 
-            resolve(Promise.race([this.requestPromise, this.runnerPromise]));
-
-            await this.runnerPromise;
-          },
-          this.cookies,
-          this.cancelToken
-        )
-          .then(() => {
-            console.log("Browser closed");
-          })
-          .catch((err) => {
-            // The browser crashed. This is a server error but not in our control (playwright)
-            // We have to check if we achieved the goal or not and restart if needed
-            // For now, we log the error and notify the user that something went wrong
-
-            const error = new BaseError({
-              message: "Playwright crashed",
-              cause: err,
-              name: "PlaywrightError",
+              return Err(error);
             });
 
-            resolve(Err(error));
+          resolve(Promise.race([this.requestPromise, this.runnerPromise]));
+
+          await this.runnerPromise;
+        },
+        this.cookies,
+        this.cancelToken,
+      )
+        .then(() => {
+          console.log('Browser closed');
+        })
+        .catch((err) => {
+          // The browser crashed. This is a server error but not in our control (playwright)
+          // We have to check if we achieved the goal or not and restart if needed
+          // For now, we log the error and notify the user that something went wrong
+
+          const error = new BaseError({
+            message: 'Playwright crashed',
+            cause: err,
+            name: 'PlaywrightError',
           });
-      }
-    );
+
+          resolve(Err(error));
+        });
+    });
   }
 
   public async answer(value: string) {
@@ -144,22 +136,18 @@ export class Runner<T> {
 
   public async ask(key: string) {
     return new Promise<string>((resolve) => {
-      this.resolveRequestPromise(
-        Ok({ status: "ask", key, id: this.id } as const)
-      );
+      this.resolveRequestPromise(Ok({ status: 'ask', key, id: this.id } as const));
       this.responseResolve = resolve;
     });
   }
 
   public cancel() {
     this.cancelToken.revoke();
-    this.requestResolve(Ok({ status: "canceled" as const }));
+    this.requestResolve(Ok({ status: 'canceled' as const }));
     return this.requestPromise; // as Promise<Ok<RequestTypeCanceled>>;
   }
 
-  private resolveRequestPromise(
-    value: Result<RequestType | RequestTypeAsk, BaseError>
-  ) {
+  private resolveRequestPromise(value: Result<RequestType | RequestTypeAsk, BaseError>) {
     this.requestResolve(value);
     this.setupRequestPromise();
   }

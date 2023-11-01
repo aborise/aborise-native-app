@@ -1,14 +1,14 @@
+import { useQueryClient } from '@tanstack/react-query';
+import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Button } from 'react-native';
-import { AllServices, services } from '~/shared/allServices';
+import { ActivityIndicator, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import * as apis from '~/automations/api/index';
-import { ActivityIndicator } from 'react-native';
 import { useServiceLogin } from '~/composables/useServiceLogin';
+import { AllServices, services } from '~/shared/allServices';
+import { getAction } from '~/shared/apis';
 import { getUserId } from '~/shared/ensureDataLoaded';
-import { Image } from 'expo-image';
 import { getLogo } from '~/shared/logos';
-import { useQueryClient } from '@tanstack/react-query';
 
 type ConnectProps = {
   id: keyof AllServices;
@@ -36,41 +36,35 @@ const Connect: React.FC = () => {
   }, [loadingLoginData]);
 
   const doConnect = async () => {
-    const fn = (apis[local.id as keyof typeof apis] as (typeof apis)['netflix'])
-      ?.connect as (typeof apis)['netflix']['connect'];
-    if (fn) {
-      setLoading(true);
-      await setData({
-        email,
-        password,
-      });
-      fn({
-        user: getUserId(),
-        queueId: '123',
-        service: service.id,
-        type: 'connect',
-      })
-        .then(async (res) => {
-          await queryClient.invalidateQueries({ queryKey: ['services'] });
-          setLoading(false);
-          if (res.ok) {
-            if (res.val.data?.membershipStatus === 'active') {
-              console.log(res.val.data.nextPaymentDate);
-            } else if (res.val.data?.membershipStatus === 'canceled') {
-              console.log(res.val.data.expiresAt);
-            } else if (res.val.data?.membershipStatus === 'inactive') {
-              console.log(res.val.data.membershipStatus);
-            }
-            router.push(`/`);
-          } else {
-            setError(res.val.message);
-            // console.log(res.val.history);
-          }
-        })
-        .catch((err) => {
-          setLoading(false);
-          console.log(err);
-        });
+    const connect = getAction(apis[local.id!], 'connect');
+
+    if (!connect) {
+      return;
+    }
+
+    setLoading(true);
+
+    await setData({
+      email,
+      password,
+    });
+
+    const res = await connect({
+      user: getUserId(),
+      queueId: '123',
+      service: service.id,
+      type: 'connect',
+    });
+
+    await queryClient.invalidateQueries({ queryKey: ['services'] });
+
+    setLoading(false);
+
+    if (res.ok) {
+      console.log(res.val.data);
+      router.push(`/`);
+    } else {
+      setError(res.val.message);
     }
   };
 

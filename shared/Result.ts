@@ -79,6 +79,9 @@ export function Err<T>(val: T): ErrType<T> {
 
 type Asyncs<T, E> = AsyncResult<T, E> | Promise<Result<T, E>> | Result<T, E>;
 
+// type AsyncOk<T> = Asyncs<T, never>;
+// type AsyncErr<E> = Asyncs<never, E>;
+
 export class AsyncResult<T, E> extends Promise<Result<T, E>> {
   // private result: Promise<Result<T, E>>;
 

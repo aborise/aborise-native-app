@@ -2,15 +2,28 @@ import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { Cookie } from 'playwright-core';
 import React, { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import WebView from 'react-native-webview';
+import { cookiesToString, getCookies } from '~/automations/api/helpers/cookie';
 import * as apis from '~/automations/api/index';
 import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
 import { useServicesQuery } from '~/queries/useServicesQuery';
 import { AllServices, Service, services } from '~/shared/allServices';
+import { getAction } from '~/shared/apis';
 import { getUserId } from '~/shared/ensureDataLoaded';
+import { ERROR_CODES } from '~/shared/errors';
 import { getLogo } from '~/shared/logos';
+
+type ActionsWithUrl<
+  T extends AllServices[keyof AllServices]['actions'][number] = AllServices[keyof AllServices]['actions'][number],
+> = T extends { url: string } ? T : never;
+
+const INJECTED_JAVASCRIPT = `(function() {
+  window.ReactNativeWebView.postMessage(JSON.stringify(window.location));
+})();`;
 
 const confirmDelete = (serviceTitle: string, cb: () => void) =>
   Alert.alert(
@@ -69,37 +82,72 @@ const Details: React.FC = () => {
     [service?.actions],
   );
 
-  const handleAction = (serviceId: keyof AllServices, action: Service['actions'][number]) => {
-    confirmAction(service.title, action.name, () => {
+  const [webviewUrl, setWebviewUrl] = useState<string>();
+  const [webviewCookies, setWebviewCookies] = useState<Cookie[]>([]);
+
+  const handleReactivate = async (serviceId: keyof AllServices) => {
+    // we have to handle reactivation in webview
+
+    // getCookies(serviceId).then((cookies) => {
+    //   setWebviewCookies(cookies);
+    //   setWebviewUrl(
+    //     (services[serviceId].actions.find((action) => action.name === 'reactivate') as ActionsWithUrl)?.url!,
+    //   );
+    // });
+    router.push(`/details/${serviceId}/webview`);
+  };
+
+  const handleWebViewMessage = (event: any) => {
+    console.log('event', event.nativeEvent.data);
+  };
+
+  const handleAction = (serviceId: keyof AllServices, actionName: Service['actions'][number]['name']) => {
+    confirmAction(service.title, actionName, async () => {
+      if (actionName === 'reactivate') {
+        return handleReactivate(serviceId);
+      }
+
       setExecuting(true);
 
-      apis[serviceId][action.name]({
+      const api = apis[serviceId];
+
+      const action = getAction(api, actionName);
+
+      if (!action) return;
+
+      const res = await action({
         queueId: 'foo',
         service: serviceId,
-        type: action.name,
+        type: actionName,
         user: getUserId(),
-      })
-        .then(async (res) => {
-          await queryClient.invalidateQueries({ queryKey: ['services'] });
-          setExecuting(false);
-          if (res.ok) {
-            if (res.val.data?.membershipStatus === 'active') {
-              console.log(res.val.data.nextPaymentDate);
-            } else if (res.val.data?.membershipStatus === 'canceled') {
-              console.log(res.val.data.expiresAt);
-            } else if (res.val.data?.membershipStatus === 'inactive') {
-              console.log(res.val.data.membershipStatus);
-            }
-            router.push(`/`);
-          } else {
-            setActionError(res.val.message);
-            console.log(res.val.history);
-          }
-        })
-        .catch((err) => {
-          setExecuting(false);
-          console.log(err);
-        });
+      });
+
+      await queryClient.invalidateQueries({ queryKey: ['services'] });
+
+      setExecuting(false);
+
+      if (res.ok) {
+        console.log(res.val.data);
+        return router.push(`/`);
+      }
+
+      const err = res.val;
+
+      if (err.code === ERROR_CODES.INVALID_MEMBERSHIP_STATUS) {
+        return Alert.alert(
+          'Invalid membership status',
+          'It seems like your account is inactive. Do you want to reactivate it?',
+          [
+            {
+              text: 'Cancel',
+              style: 'cancel',
+            },
+            { text: 'Confirm', onPress: () => handleReactivate(serviceId) },
+          ],
+        );
+      }
+
+      setActionError(res.val.message);
     });
   };
 
@@ -182,7 +230,7 @@ const Details: React.FC = () => {
           <TouchableOpacity
             key={index}
             style={[styles.btn, styles.btnResume, styles.mb2]}
-            onPress={() => handleAction(service.id, action)}
+            onPress={() => handleAction(service.id, action.name)}
           >
             <Text>{action.name}</Text>
           </TouchableOpacity>
@@ -208,6 +256,20 @@ const Details: React.FC = () => {
           <ActivityIndicator size="large" />
         </View>
       )}
+      {/* {webviewUrl && (
+        <WebView
+          source={{
+            uri: webviewUrl,
+            headers: {
+              Cookie: cookiesToString(webviewCookies),
+            },
+          }}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          injectedJavaScript={INJECTED_JAVASCRIPT}
+          onMessage={handleWebViewMessage}
+        />
+      )} */}
     </>
   );
 };

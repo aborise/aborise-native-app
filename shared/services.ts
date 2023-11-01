@@ -42,6 +42,11 @@ const _netflix = {
       name: 'resume',
       type: 'manual',
     },
+    {
+      name: 'reactivate',
+      type: 'manual',
+      url: 'https://www.netflix.com/signup/planform',
+    },
   ],
 } as const;
 

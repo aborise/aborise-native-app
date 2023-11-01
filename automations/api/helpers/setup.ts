@@ -48,14 +48,14 @@ type ApiOptions = {
 export const api = (
   cb: ApiCallback,
   { storage = useStorage('local') }: ApiOptions = {},
-): ((item: BaseQueueItem) => AsyncResult<Partial<RequestTypeDone>, BaseError>) => {
+): ((item: BaseQueueItem) => AsyncResult<Partial<RequestTypeDone>, ApiError>) => {
   return (item: BaseQueueItem) => {
-    return getServiceLogin(item.service).andThen((login) => {
-      const client = new Session();
-      const result = cb({ item, auth: login, client, storage });
+    return getServiceLogin(item.service)
+      .andThen((login) => {
+        const client = new Session();
+        const result = cb({ item, auth: login, client, storage });
 
-      return result
-        .map(async (flowReturn) => {
+        return result.map(async (flowReturn) => {
           if (flowReturn.cookies) {
             await setCookies(item.service, flowReturn.cookies, storage);
           }
@@ -76,16 +76,20 @@ export const api = (
           };
 
           return response;
-        })
-        .mapErr((error) => {
-          console.log(JSON.stringify(error, null, 2), error.response?.data);
-          return new BaseError({
-            message: error.message,
-            meta: error,
-            history: client.toJSON(),
-            name: 'ApiError',
-          });
         });
-    });
+      })
+      .mapErr((err) => {
+        if (err.userFriendly) {
+          return err;
+        }
+
+        console.error(err);
+
+        return {
+          ...err,
+          userFriendly: true,
+          message: 'Something went wrong',
+        };
+      });
   };
 };

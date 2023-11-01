@@ -110,7 +110,7 @@ export const connect = run(async ({ page, info, Ok, Err, ask }) => {
     return Ok({
       cookies,
       data: {
-        membershipStatus: 'canceled',
+        membershipStatus: 'canceled' as const,
         expiresAt: extractDate(expiresAt) ?? expiresAt,
         lastSyncedAt: new Date().toISOString(),
       },
@@ -128,7 +128,7 @@ export const connect = run(async ({ page, info, Ok, Err, ask }) => {
   return Ok({
     cookies,
     data: {
-      membershipStatus: 'active',
+      membershipStatus: 'active' as const,
       membershipPlan: null,
       nextPaymentPrice: extractAmount(nextPaymentPrice),
       nextPaymentDate: extractDate(nextPaymentDate) ?? nextPaymentDate,
