@@ -57,12 +57,7 @@ export const api = (
       return result
         .map(async (flowReturn) => {
           if (flowReturn.cookies) {
-            await setCookies(
-              item.service,
-              // @ts-expect-error
-              flowReturn.cookies.map(sanitizeDebug),
-              storage,
-            );
+            await setCookies(item.service, flowReturn.cookies, storage);
           }
 
           if (flowReturn.data) {
@@ -83,6 +78,7 @@ export const api = (
           return response;
         })
         .mapErr((error) => {
+          console.log(JSON.stringify(error, null, 2), error.response?.data);
           return new BaseError({
             message: error.message,
             meta: error,

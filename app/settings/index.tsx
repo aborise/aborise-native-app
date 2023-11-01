@@ -1,3 +1,4 @@
+import CookieManager from '@react-native-cookies/cookies';
 import React, { useState } from 'react';
 import { View, Text, Switch, Button, Alert } from 'react-native';
 import { clearConnectedServices } from '~/composables/useServiceData';
@@ -22,6 +23,12 @@ const Settings = () => {
     ]);
   };
 
+  const getCookies = async () => {
+    CookieManager.get('https://asd1.netflix.com/nq/aasds/~2.8.0/pathEvaluator').then((res) => {
+      console.log('CookieManager.get =>', res);
+    });
+  };
+
   return (
     <View>
       <Text>Settings</Text>
@@ -30,6 +37,8 @@ const Settings = () => {
         <Switch value={notificationsEnabled} onValueChange={setNotificationsEnabled} />
       </View>
       <Button title="Clear Storage" onPress={handleClearStorage} />
+      <Button title="Get Cookies" onPress={getCookies} />
+      <Button title="Clear Cookies" onPress={() => CookieManager.clearAll()} />
     </View>
   );
 };

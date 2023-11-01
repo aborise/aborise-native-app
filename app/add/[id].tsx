@@ -64,7 +64,7 @@ const Connect: React.FC = () => {
             router.push(`/`);
           } else {
             setError(res.val.message);
-            console.log(res.val.history);
+            // console.log(res.val.history);
           }
         })
         .catch((err) => {

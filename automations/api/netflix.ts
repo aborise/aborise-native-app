@@ -1,4 +1,4 @@
-import { AsyncResult, Err, Ok } from '~/shared/Result';
+import { AsyncResult, Err, Ok, Result } from '~/shared/Result';
 import { FlowResult } from '../playwright/helpers';
 import { extractAmount, extractDate } from '../playwright/strings';
 import { ApiError, ApiResponse, Session } from './helpers/client';
@@ -12,6 +12,7 @@ import {
   getReactContextWithCookies,
 } from './utils/netflix.helpers';
 import { NetflixCancelResponse, NetflixResumeResponse, ReactContext } from './utils/netflix.types';
+import { FlowReturn } from '../playwright/setup/Runner';
 
 const failOnNotLoggedIn = (context: ReactContext) => {
   const isLoggedIn = !!context?.models?.memberContext?.data?.userInfo?.authURL;
@@ -251,8 +252,8 @@ export const connect = api(({ auth, client }) => {
         esn: 'NFAPPL-04-APPLETV6=2-0B92801A5FFB87159165E9838D9786A8348BF17146A938E12A2E6F3E0B5F5C76',
       },
     })
-    .andThen(({ cookies }) =>
-      client.fetch<LoginResponse>({
+    .andThen(({ cookies }) => {
+      return client.fetch<LoginResponse>({
         method: 'POST',
         url: 'https://tvos.prod.http1.netflix.com/nq/appletv/tvos/~2.8.0/pathEvaluator',
         cookies,
@@ -270,8 +271,8 @@ export const connect = api(({ auth, client }) => {
             auth.password +
             '"}}',
         },
-      }),
-    )
+      });
+    })
     .andThen(({ cookies, data }) => {
       if (!data.value.moneyball.appleSignUp.login.accountOwnerGuid) {
         console.log('Error', data.value.moneyball.appleSignUp.login.fields?.errorCode?.value);
@@ -288,7 +289,6 @@ export const connect = api(({ auth, client }) => {
       }
     })
     .andThen(({ cookies }) => {
-      console.log(cookies);
       return client
         .fetch<string>({
           url: 'https://www.netflix.com/YourAccount',
@@ -304,13 +304,13 @@ export const connect = api(({ auth, client }) => {
           },
           cookies,
         })
-        .map(async ({ data, cookies }) => ({ cookies, document: await stringToDocument(data) }))
-        .map(({ document, cookies }) => ({ cookies, data: extractReactContext(document) }));
+        .map(async ({ data }) => stringToDocument(data))
+        .map((document) => ({ cookies, data: extractReactContext(document) }));
     })
-    .andThen(({ data, cookies }) => {
+    .andThen(({ data, cookies }): Result<FlowReturn, ApiError> => {
       const membershipStatus = data?.models?.userInfo?.data.membershipStatus;
 
-      if (membershipStatus !== 'CURRENT_MEMBER') {
+      if (membershipStatus === 'ANONYMOUS') {
         return Err({
           custom: 'You are not connected anymore. Please reconnect',
           errorMessage: 'User is not logged in',
@@ -325,6 +325,16 @@ export const connect = api(({ auth, client }) => {
       const nextBillingDate = data?.models?.signupContext?.data?.flow?.fields?.nextBillingDate?.value;
       const planName = data?.models?.signupContext?.data?.flow?.fields?.currentPlan?.fields?.localizedPlanName?.value;
       const planPrice = data?.models?.signupContext?.data?.flow?.fields?.currentPlan?.fields?.planPrice?.value;
+
+      if (membershipStatus === 'FORMER_MEMBER') {
+        return Ok({
+          cookies,
+          data: {
+            membershipStatus: 'inactive' as const,
+            lastSyncedAt: new Date().toISOString(),
+          },
+        });
+      }
 
       const flowResult: FlowResult = periodEndDate
         ? {

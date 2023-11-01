@@ -1,18 +1,13 @@
-import { getDatabase, ref, get, set } from "firebase/database";
-import { AllServices } from "~/shared/allServices";
-import type { Cookie } from "playwright-core";
-import { useFirebaseApp } from "~/composables/useFirebase";
-import { Storage, useStorage } from "~/composables/useStorage";
+import type { Cookie } from 'playwright-core';
+import { Storage, useStorage } from '~/composables/useStorage';
+import { AllServices } from '~/shared/allServices';
 
 export const getCookies = async (
   service: keyof AllServices,
   cookieKeys?: Array<string>,
-  storage: Storage = useStorage("local")
+  storage: Storage = useStorage('local'),
 ) => {
-  const cookies = await storage.get<Cookie[]>(
-    `services/${service}/cookies`,
-    []
-  );
+  const cookies = await storage.get<Cookie[]>(`services/${service}/cookies`, []);
 
   if (cookieKeys) {
     return cookies.filter((cookie) => cookieKeys.includes(cookie.name));
@@ -21,15 +16,8 @@ export const getCookies = async (
   return cookies;
 };
 
-export const setCookies = (
-  service: keyof AllServices,
-  cookies: Cookie[],
-  storage: Storage = useStorage("local")
-) => {
-  return storage.set(
-    `services/${service}/cookies`,
-    deduplicateCookies(cookies)
-  );
+export const setCookies = (service: keyof AllServices, cookies: Cookie[], storage: Storage = useStorage('local')) => {
+  return storage.set(`services/${service}/cookies`, deduplicateCookies(cookies));
 };
 
 export const mergeCookies = (oldCookies: Cookie[], newCookies: Cookie[]) => {
@@ -64,5 +52,42 @@ const cookieToString = (cookie: Cookie) => {
 };
 
 export const cookiesToString = (cookies: Cookie[] = []) => {
-  return cookies.map(cookieToString).join("; ");
+  return cookies.map(cookieToString).join('; ');
+};
+
+export const parseCookieString = (cookieString: string) => {
+  cookieString = cookieString.replace(/Mon,|Tue,|Wed,|Thu,|Fri,|Sat,|Sun,/gi, (match) => {
+    return match.slice(0, 3) + '!!';
+  });
+
+  return cookieString.split(',').map((str) => {
+    const sections = str.split(';');
+    const cookie: Partial<Cookie> = {};
+    const [name, value] = sections[0].split('=');
+
+    cookie.name = name.trim();
+    // maybe urldecode
+    cookie.value = value.trim();
+
+    const parsed: Record<string, string> = {};
+
+    sections.slice(1).forEach((section) => {
+      const [key, value] = section.split('=');
+      parsed[key.trim().toLowerCase()] = value?.trim() ?? 'true';
+    });
+
+    cookie.domain = parsed.domain;
+    cookie.expires = parsed.expires ? new Date(parsed.expires.replace('!!', ',')).getTime() : undefined;
+
+    if (parsed['max-age']) {
+      cookie.expires = Date.now() + Number(parsed['max-age']) * 1000;
+    }
+
+    cookie.httpOnly = parsed['http-only'] === 'true';
+    cookie.path = parsed.path;
+    cookie.sameSite = parsed['same-site'] as 'Strict' | 'Lax' | 'None' | undefined;
+    cookie.secure = parsed.secure === 'true';
+
+    return cookie as Cookie;
+  });
 };
