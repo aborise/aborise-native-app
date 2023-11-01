@@ -38,7 +38,7 @@ const doCancelResumeRequest = <T extends object>(
     params: {
       falcor_server: '0.1.0',
       method: 'call',
-      callPath: '["aui", "moneyball", "next"]',
+      callPath: '["aui","moneyball","next"]',
     },
     url: 'https://www.netflix.com/api/aui/pathEvaluator/web/%5E2.0.0',
     body: {
@@ -76,8 +76,8 @@ export const cancelOrResume = <
 ) => {
   const paramToUse =
     endpoint === 'cancel'
-      ? '{ "flow": "websiteMember", "mode": "cancelMembership", "action": "cancelMembershipAction", "fields": {} }'
-      : '{ "flow": "websiteMember", "mode": "yourAccount", "action": "continueMembershipAction", "fields": {}}';
+      ? '{"flow":"websiteMember","mode":"cancelMembership","action":"cancelMembershipAction","fields":{}}'
+      : '{"flow":"websiteMember","mode":"yourAccount","action":"continueMembershipAction","fields":{}}';
 
   return getReactContext(client, item.user)
     .andThen(failOnNotLoggedIn)
@@ -110,17 +110,44 @@ export const cancel = api(({ item, client }) => {
 //   '4001': 'Basic',
 // };
 
+const ensurCorrectMembershipStatus = (context: GetFields<NetflixResumeResponse>) => {
+  if (context.errorCode?.value === 'invalid_membership_status') {
+    return Err({
+      message: 'invalid_membership_status',
+      custom: 'Your account cant be resumbed because it is inactive',
+      errorMessage: 'Your account cant be resumbed because it is inactive',
+      statusCode: 400,
+      code: 'invalid_membership_status',
+      userFriendly: true,
+    } satisfies ApiError);
+  }
+
+  if (context.errorCode) {
+    return Err({
+      message: context.errorCode.value,
+      custom: 'Unknown error',
+      errorMessage: 'Unknown error',
+      statusCode: 400,
+      code: 'unknown_error',
+    } satisfies ApiError);
+  }
+
+  return Ok(context);
+};
+
 export const resume = api(({ item, client }) => {
-  return cancelOrResume<NetflixResumeResponse>('resume', client, item).map((json) => ({
-    data: {
-      billingCycle: 'monthly',
-      membershipStatus: 'active',
-      membershipPlan: json.currentPlan.fields.localizedPlanName.value,
-      nextPaymentDate: extractDate(json.periodEndDate?.value ?? json.nextBillingDate?.value ?? ''),
-      nextPaymentPrice: extractAmount(json.currentPlan.fields.planPrice.value),
-      lastSyncedAt: new Date().toISOString(),
-    },
-  }));
+  return cancelOrResume<NetflixResumeResponse>('resume', client, item)
+    .andThen(ensurCorrectMembershipStatus)
+    .map((json) => ({
+      data: {
+        billingCycle: 'monthly',
+        membershipStatus: 'active',
+        membershipPlan: json.currentPlan.fields.localizedPlanName.value,
+        nextPaymentDate: extractDate(json.periodEndDate?.value ?? json.nextBillingDate?.value ?? ''),
+        nextPaymentPrice: extractAmount(json.currentPlan.fields.planPrice.value),
+        lastSyncedAt: new Date().toISOString(),
+      },
+    }));
 });
 
 const PAGE_ITEM_ERROR_CODE = (json: any) => json?.models?.flow?.data?.fields?.errorCode?.value;
@@ -331,6 +358,16 @@ export const connect = api(({ auth, client }) => {
           cookies,
           data: {
             membershipStatus: 'inactive' as const,
+            lastSyncedAt: new Date().toISOString(),
+          },
+        });
+      }
+
+      if (membershipStatus === 'NEVER_MEMBER') {
+        return Ok({
+          cookies,
+          data: {
+            membershipStatus: 'preactive' as const,
             lastSyncedAt: new Date().toISOString(),
           },
         });

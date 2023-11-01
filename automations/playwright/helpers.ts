@@ -44,10 +44,16 @@ const FlowResultDataInactiveSchema = z.object({
   lastSyncedAt: z.string().datetime().optional(),
 });
 
+const FlowResultDataPreactiveSchema = z.object({
+  membershipStatus: z.literal('preactive'),
+  lastSyncedAt: z.string().datetime().optional(),
+});
+
 export const FlowResultSchema = z.discriminatedUnion('membershipStatus', [
   FlowResultDataActiveSchema,
   FlowResultDataCanceledSchema,
   FlowResultDataInactiveSchema,
+  FlowResultDataPreactiveSchema,
 ]);
 
 export type FlowResult = z.infer<typeof FlowResultSchema>;

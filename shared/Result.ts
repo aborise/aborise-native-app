@@ -204,6 +204,13 @@ export class AsyncResult<T, E> extends Promise<Result<T, E>> {
     });
   }
 
+  logData(): AsyncResult<T, E> {
+    return this.map((val) => {
+      console.log(JSON.stringify(val, null, 2));
+      return val;
+    });
+  }
+
   // async unwrapErrOr(defaultValue: E): Promise<E> {
   //   const result = await this.result;
   //   if (result.err) {

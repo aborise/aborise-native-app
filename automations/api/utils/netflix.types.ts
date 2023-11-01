@@ -193,6 +193,7 @@ type NetflixResumeResponseFields = {
   paymentMethods: PaymentMethods;
   periodEndDate?: PeriodEndDate;
   nextBillingDate?: PeriodEndDate;
+  errorCode?: { value: string };
 };
 
 type CurrentPlanFields = {

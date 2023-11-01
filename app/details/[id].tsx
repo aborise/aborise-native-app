@@ -141,7 +141,7 @@ const Details: React.FC = () => {
         <View style={styles.thirdColumn}>
           <Icon name="edit" size={24} color="#667160" />
           <Icon name="refresh" size={24} color="#667160" />
-          <Icon name="unlink  " size={24} color="#667160" />
+          <Icon name="unlink" size={24} color="#667160" />
         </View>
       </View>
       {/* Second Section */}

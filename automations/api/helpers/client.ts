@@ -136,10 +136,9 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
 
     let result = await fromPromise(
       axios.request<T>({
-        url: url as string,
+        url: (url as string) + (params ? `?${new URLSearchParams(params).toString()}` : ''),
         data: body,
         method: method as any,
-        params: new URLSearchParams(params),
         headers: {
           ...headers,
           Cookie,
