@@ -1,22 +1,28 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import dayjs from 'dayjs';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { Cookie } from 'playwright-core';
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import WebView from 'react-native-webview';
 import { cookiesToString, getCookies } from '~/automations/api/helpers/cookie';
+import { setFlowData } from '~/automations/api/helpers/data';
+import { UserContext } from '~/automations/api/utils/netflix.types';
+import { extractAmount } from '~/automations/playwright/strings';
+import { useStorage } from '~/composables/useStorage';
 import { AllServices, services } from '~/shared/allServices';
 
 type ActionsWithUrl<
   T extends AllServices[keyof AllServices]['actions'][number] = AllServices[keyof AllServices]['actions'][number],
 > = T extends { url: string } ? T : never;
 
-const INJECTED_JAVASCRIPT = `(function() {-
-  window.ReactNativeWebView.postMessage(JSON.stringify(window.location));
-  
-  document.addEventListener('click', () => {
-    window.ReactNativeWebView.postMessage('click');
-  })
-})();`;
+// 3. https://www.netflix.com/signup/creditoption
+// 4. https://www.netflix.com/simpleSetup/orderfinal
+// 5. https://www.netflix.com/simpleSetup/devicesurvey
+// 6. https://www.netflix.com/simpleSetup/newprofiles
+// 7. https://www.netflix.com/simpleSetup/democollection
+// 8. https://www.netflix.com/simpleSetup/secondarylanguages
+// 9. https://www.netflix.com/simpleSetup/onramp
+// 10. https://www.netflix.com/browse
 
 export const ServiceWebView: React.FC = () => {
   const local = useLocalSearchParams<{ id: keyof AllServices }>();
@@ -26,6 +32,7 @@ export const ServiceWebView: React.FC = () => {
 
   const [webviewUrl, setWebviewUrl] = useState<string>();
   const [webviewCookies, setWebviewCookies] = useState<Cookie[]>([]);
+  const [webviewRef, setWebviewRef] = useState<WebView | null>(null);
 
   const [loading, setLoading] = useState(true);
 
@@ -38,8 +45,49 @@ export const ServiceWebView: React.FC = () => {
     });
   }, []);
 
-  const handleWebViewMessage = (event: any) => {
-    console.log('event', event.nativeEvent.data);
+  const handleWebViewMessage = (event: { nativeEvent: { data: string } }) => {
+    const { userInfo, signupContext, cookies } = JSON.parse(event.nativeEvent.data) as {
+      userInfo: UserContext;
+      signupContext: { fields: { localizedPlanName: string; planPrice: string } };
+      cookies: string;
+    };
+
+    if (userInfo.membershipStatus !== 'CURRENT_MEMBER') {
+      console.log('Something went wrong');
+      console.log(JSON.stringify({ userInfo, signupContext }, null, 2));
+      return router.back();
+    }
+
+    setFlowData(local.id!, {
+      membershipStatus: 'active',
+      billingCycle: 'monthly',
+      membershipPlan: signupContext.fields.localizedPlanName,
+      nextPaymentDate: dayjs().add(1, 'month').toISOString(),
+      lastSyncedAt: new Date().toISOString(),
+      nextPaymentPrice: extractAmount(signupContext.fields.planPrice),
+    }).then(() => {
+      router.back();
+    });
+  };
+
+  const checkNavigationState = (navState: any) => {
+    console.log(navState);
+    if (navState.url === 'https://www.netflix.com/simpleSetup/orderfinal') {
+      // if (
+      //   navState.url === 'https://www.netflix.com/signup/creditoption' ||
+      //   navState.url === 'https://www.netflix.com/signup/editcredit'
+      // ) {
+      const JS = /*javascript*/ `(function() {
+        const { signupContext, userInfo } = window.netflix.reactContext.models;
+        const cookies = document.cookie;
+
+        window.ReactNativeWebView.postMessage(JSON.stringify({ signupContext: signupContext.data.flow, userInfo: userInfo.data, cookies }));
+
+        true; // required by "react-native-webview"
+      })();`;
+
+      webviewRef?.injectJavaScript(JS);
+    }
   };
 
   return (
@@ -71,13 +119,11 @@ export const ServiceWebView: React.FC = () => {
           }}
           javaScriptEnabled={true}
           domStorageEnabled={true}
-          injectedJavaScript={INJECTED_JAVASCRIPT}
           onMessage={handleWebViewMessage}
-          onNavigationStateChange={(navState) => {
-            console.log('onNavigationChange', navState);
-          }}
+          onNavigationStateChange={checkNavigationState}
           onLoadEnd={() => setLoading(false)}
           style={{ opacity: loading ? 0 : 1 }}
+          ref={setWebviewRef}
         />
       )}
     </>

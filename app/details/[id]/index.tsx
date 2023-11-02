@@ -3,8 +3,10 @@ import dayjs from 'dayjs';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { Cookie } from 'playwright-core';
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
+import { RefreshControl, ToastAndroid } from 'react-native';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import WebView from 'react-native-webview';
 import { cookiesToString, getCookies } from '~/automations/api/helpers/cookie';
@@ -84,6 +86,34 @@ const Details: React.FC = () => {
 
   const [webviewUrl, setWebviewUrl] = useState<string>();
   const [webviewCookies, setWebviewCookies] = useState<Cookie[]>([]);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+
+    getAction(
+      apis[service.id],
+      'connect',
+    )?.({
+      type: 'connect',
+      service: service.id,
+      user: getUserId(),
+      queueId: 'foo',
+    })
+      .then((res) => {
+        if (res.ok) {
+          ToastAndroid.show('Updated', ToastAndroid.SHORT);
+        } else {
+          console.error(res.val);
+          ToastAndroid.show('Error while updating', ToastAndroid.SHORT);
+        }
+      })
+      .finally(() => {
+        setRefreshing(false);
+        queryClient.invalidateQueries({ queryKey: ['servicesData', local.id!] });
+      });
+  }, []);
 
   const handleReactivate = async (serviceId: keyof AllServices) => {
     router.push(`/details/${serviceId}/webview`);
@@ -167,88 +197,90 @@ const Details: React.FC = () => {
           title: service.title,
         }}
       />
-      <View style={styles.flexContainer}>
-        {/* First Column */}
-        <View style={styles.firstColumn}>
-          <Image source={getLogo(service.id)} style={styles.logo} className="rounded-3xl" />
-        </View>
-        {/* Second Column */}
-        <View style={styles.secondColumn}>
-          <View style={styles.syncBox}>
-            <Text style={styles.syncText}>Connected</Text>
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+        <View style={styles.flexContainer}>
+          {/* First Column */}
+          <View style={styles.firstColumn}>
+            <Image source={getLogo(service.id)} style={styles.logo} className="rounded-3xl" />
           </View>
-          <Text style={styles.lastSyncDateText}>Last updated: {lastSyncDate}</Text>
-        </View>
-        <View style={styles.thirdColumn}>
-          <Icon name="edit" size={24} color="#667160" />
-          <Icon name="refresh" size={24} color="#667160" />
-          <Icon name="unlink" size={24} color="#667160" />
-        </View>
-      </View>
-      {/* Second Section */}
-      <View style={[styles.flexContainer, styles.flexColumn]}>
-        {/* Render based on membershipStatus */}
-        {serviceData.membershipStatus === 'active' ? (
-          <>
-            <View style={styles.statusBox}>
-              <Text style={styles.statusText}>Plan: {serviceData.membershipPlan ?? 'Basic'}</Text>
+          {/* Second Column */}
+          <View style={styles.secondColumn}>
+            <View style={styles.syncBox}>
+              <Text style={styles.syncText}>Connected</Text>
             </View>
-            <Text style={styles.priceText}>
-              {serviceData.nextPaymentPrice?.integer}.
-              <Text style={styles.decimalText}>{serviceData.nextPaymentPrice?.decimal}</Text> /{' '}
-              {serviceData.billingCycle ?? 'monthly'}
-            </Text>
-          </>
-        ) : serviceData.membershipStatus === 'canceled' ? (
-          <>
+            <Text style={styles.lastSyncDateText}>Last updated: {lastSyncDate}</Text>
+          </View>
+          <View style={styles.thirdColumn}>
+            <Icon name="edit" size={24} color="#667160" />
+            <Icon name="refresh" size={24} color="#667160" />
+            <Icon name="unlink" size={24} color="#667160" />
+          </View>
+        </View>
+        {/* Second Section */}
+        <View style={[styles.flexContainer, styles.flexColumn]}>
+          {/* Render based on membershipStatus */}
+          {serviceData.membershipStatus === 'active' ? (
+            <>
+              <View style={styles.statusBox}>
+                <Text style={styles.statusText}>Plan: {serviceData.membershipPlan ?? 'Basic'}</Text>
+              </View>
+              <Text style={styles.priceText}>
+                {serviceData.nextPaymentPrice?.integer}.
+                <Text style={styles.decimalText}>{serviceData.nextPaymentPrice?.decimal}</Text> /{' '}
+                {serviceData.billingCycle ?? 'monthly'}
+              </Text>
+            </>
+          ) : serviceData.membershipStatus === 'canceled' ? (
+            <>
+              <View style={styles.statusBox}>
+                <Text style={styles.statusText}>Canceled</Text>
+              </View>
+              <Text style={styles.priceText}>Expires {expiresRelativeDate}</Text>
+            </>
+          ) : (
             <View style={styles.statusBox}>
-              <Text style={styles.statusText}>Canceled</Text>
+              <Text style={styles.statusText}>Inactive</Text>
             </View>
-            <Text style={styles.priceText}>Expires {expiresRelativeDate}</Text>
-          </>
-        ) : (
-          <View style={styles.statusBox}>
-            <Text style={styles.statusText}>Inactive</Text>
+          )}
+          <View style={styles.flexItemsCenter}>
+            <Text style={styles.textBase}>Next Payment</Text>
+            <Text style={[styles.textBase, styles.ml4]}>{nextPaymentDate}</Text>
+          </View>
+        </View>
+
+        {/* Third Section */}
+        <View style={[styles.flexContainer, styles.flexColumn]}>
+          {actions.map((action, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[styles.btn, styles.btnResume, styles.mb2]}
+              onPress={() => handleAction(service.id, action.name)}
+            >
+              <Text>{action.name}</Text>
+            </TouchableOpacity>
+          ))}
+          <TouchableOpacity style={[styles.btn, styles.btnCancel, styles.mb2]} onPress={deleteSubscription}>
+            <Text>Delete</Text>
+          </TouchableOpacity>
+          <View>
+            <Text>{actionError}</Text>
+          </View>
+        </View>
+        {/* Fourth Section */}
+
+        {executing && (
+          <View
+            style={{
+              // @ts-expect-error
+              ...StyleSheet.absoluteFill,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <ActivityIndicator size="large" />
           </View>
         )}
-        <View style={styles.flexItemsCenter}>
-          <Text style={styles.textBase}>Next Payment</Text>
-          <Text style={[styles.textBase, styles.ml4]}>{nextPaymentDate}</Text>
-        </View>
-      </View>
-
-      {/* Third Section */}
-      <View style={[styles.flexContainer, styles.flexColumn]}>
-        {actions.map((action, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.btn, styles.btnResume, styles.mb2]}
-            onPress={() => handleAction(service.id, action.name)}
-          >
-            <Text>{action.name}</Text>
-          </TouchableOpacity>
-        ))}
-        <TouchableOpacity style={[styles.btn, styles.btnCancel, styles.mb2]} onPress={deleteSubscription}>
-          <Text>Delete</Text>
-        </TouchableOpacity>
-        <View>
-          <Text>{actionError}</Text>
-        </View>
-      </View>
-      {/* Fourth Section */}
-
-      {executing && (
-        <View
-          style={{
-            // @ts-expect-error
-            ...StyleSheet.absoluteFill,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
-          <ActivityIndicator size="large" />
-        </View>
-      )}
+      </ScrollView>
     </>
   );
 };
