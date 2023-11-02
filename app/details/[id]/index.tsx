@@ -4,9 +4,10 @@ import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { Cookie } from 'playwright-core';
 import React, { useCallback, useMemo, useState } from 'react';
-import { RefreshControl, ToastAndroid } from 'react-native';
+import { RefreshControl } from 'react-native';
 import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import Toast from 'react-native-root-toast';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import WebView from 'react-native-webview';
 import { cookiesToString, getCookies } from '~/automations/api/helpers/cookie';
@@ -103,10 +104,10 @@ const Details: React.FC = () => {
     })
       .then((res) => {
         if (res.ok) {
-          ToastAndroid.show('Updated', ToastAndroid.SHORT);
+          Toast.show('Updated', { duration: Toast.durations.SHORT });
         } else {
           console.error(res.val);
-          ToastAndroid.show('Error while updating', ToastAndroid.SHORT);
+          Toast.show('Error while updating', { duration: Toast.durations.SHORT });
         }
       })
       .finally(() => {
