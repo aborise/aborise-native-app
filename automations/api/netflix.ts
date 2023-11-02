@@ -11,7 +11,7 @@ import {
   getReactContext,
   getReactContextWithCookies,
 } from './utils/netflix.helpers';
-import { NetflixCancelResponse, NetflixResumeResponse, ReactContext } from './utils/netflix.types';
+import { NetflixCancelResponse, NetflixResumeResponse, ReactContext, UserContext } from './utils/netflix.types';
 import { FlowReturn } from '../playwright/setup/Runner';
 import { ERROR_CODES } from '~/shared/errors';
 
@@ -64,13 +64,16 @@ type GetFields<T extends object> = T extends {
   ? U
   : never;
 
-export const cancelOrResume = <
-  T extends {
-    jsonGraph: {
-      aui: { moneyball: { next: { value: { result: { fields: any } } } } };
-    };
-  },
->(
+type Moneyball<T> = {
+  jsonGraph: {
+    aui: { moneyball: { next: { value: { result: T; userContext: UserContext } } } };
+  };
+};
+const getMoneyballValue = <T extends object>(json: Moneyball<T>) => {
+  return json.jsonGraph.aui.moneyball.next.value;
+};
+
+export const cancelOrResume = <T extends Moneyball<{ fields: any }>>(
   endpoint: 'cancel' | 'resume',
   client: Session,
   item: { user: string },
@@ -83,15 +86,10 @@ export const cancelOrResume = <
   return getReactContext(client, item.user)
     .andThen(failOnNotLoggedIn)
     .map(getApiData)
-    .andThen((apiData) => {
-      console.log(apiData.authUrl);
-
-      // { paths: [ [ 'aui', 'moneyball', 'next' ] ], jsonGraph: { aui: { moneyball: [Object] } } }
-      return doCancelResumeRequest<T>(client, paramToUse, apiData.authUrl, item.user);
-    })
-    .map((json): GetFields<T> => {
-      return json.data.jsonGraph.aui.moneyball.next.value.result.fields;
-    });
+    .andThen((apiData) => doCancelResumeRequest<T>(client, paramToUse, apiData.authUrl, item.user))
+    .map((response) => response.data)
+    .andThen((data) => ensurCorrectMembershipStatus(data, endpoint))
+    .map((json): GetFields<T> => getMoneyballValue(json).result.fields);
 };
 
 // TODO: instead of blindly typing the response, pass in validator to cancelOrResume to validate the response
@@ -112,21 +110,27 @@ export const cancel = api(({ item, client }) => {
 //   '4001': 'Basic',
 // };
 
-const ensurCorrectMembershipStatus = (context: GetFields<NetflixResumeResponse>) => {
-  if (context.errorCode?.value === 'invalid_membership_status') {
+const ensurCorrectMembershipStatus = <T extends { fields: { errorCode?: { value: string } } }>(
+  context: Moneyball<T>,
+  endpoint: 'cancel' | 'resume',
+) => {
+  const moneyball = getMoneyballValue(context);
+
+  if (moneyball.userContext.membershipStatus === 'FORMER_MEMBER') {
+    const msg = `Your account cant be ${endpoint}ed because it is inactive`;
     return Err({
-      message: 'invalid-membership-status',
-      custom: 'Your account cant be resumbed because it is inactive',
-      errorMessage: 'Your account cant be resumbed because it is inactive',
+      message: msg,
+      custom: msg,
+      errorMessage: msg,
       statusCode: 400,
       code: ERROR_CODES.INVALID_MEMBERSHIP_STATUS,
       userFriendly: true,
     } satisfies ApiError);
   }
 
-  if (context.errorCode) {
+  if (moneyball.result.fields.errorCode) {
     return Err({
-      message: context.errorCode.value,
+      message: moneyball.result.fields.errorCode.value,
       custom: 'Unknown error',
       errorMessage: 'Unknown error',
       statusCode: 400,
@@ -137,18 +141,16 @@ const ensurCorrectMembershipStatus = (context: GetFields<NetflixResumeResponse>)
 };
 
 export const resume = api(({ item, client }) => {
-  return cancelOrResume<NetflixResumeResponse>('resume', client, item)
-    .andThen(ensurCorrectMembershipStatus)
-    .map((json) => ({
-      data: {
-        billingCycle: 'monthly',
-        membershipStatus: 'active',
-        membershipPlan: json.currentPlan.fields.localizedPlanName.value,
-        nextPaymentDate: extractDate(json.periodEndDate?.value ?? json.nextBillingDate?.value ?? ''),
-        nextPaymentPrice: extractAmount(json.currentPlan.fields.planPrice.value),
-        lastSyncedAt: new Date().toISOString(),
-      },
-    }));
+  return cancelOrResume<NetflixResumeResponse>('resume', client, item).map((json) => ({
+    data: {
+      billingCycle: 'monthly',
+      membershipStatus: 'active',
+      membershipPlan: json.currentPlan.fields.localizedPlanName.value,
+      nextPaymentDate: extractDate(json.periodEndDate?.value ?? json.nextBillingDate?.value ?? ''),
+      nextPaymentPrice: extractAmount(json.currentPlan.fields.planPrice.value),
+      lastSyncedAt: new Date().toISOString(),
+    },
+  }));
 });
 
 const PAGE_ITEM_ERROR_CODE = (json: any) => json?.models?.flow?.data?.fields?.errorCode?.value;

@@ -1,7 +1,7 @@
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Cookie } from 'playwright-core';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import WebView from 'react-native-webview';
 import { cookiesToString, getCookies } from '~/automations/api/helpers/cookie';
 import { AllServices, services } from '~/shared/allServices';
@@ -27,6 +27,8 @@ export const ServiceWebView: React.FC = () => {
   const [webviewUrl, setWebviewUrl] = useState<string>();
   const [webviewCookies, setWebviewCookies] = useState<Cookie[]>([]);
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     getCookies(local.id!).then((cookies) => {
       setWebviewCookies(cookies);
@@ -47,7 +49,18 @@ export const ServiceWebView: React.FC = () => {
           title: service.title,
         }}
       />
-      {!webviewUrl && <ActivityIndicator />}
+      {loading && (
+        <View
+          style={{
+            // @ts-expect-error
+            ...StyleSheet.absoluteFill,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <ActivityIndicator size="large" />
+        </View>
+      )}
       {webviewUrl && (
         <WebView
           source={{
@@ -63,6 +76,8 @@ export const ServiceWebView: React.FC = () => {
           onNavigationStateChange={(navState) => {
             console.log('onNavigationChange', navState);
           }}
+          onLoadEnd={() => setLoading(false)}
+          style={{ opacity: loading ? 0 : 1 }}
         />
       )}
     </>

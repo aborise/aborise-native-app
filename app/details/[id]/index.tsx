@@ -86,14 +86,6 @@ const Details: React.FC = () => {
   const [webviewCookies, setWebviewCookies] = useState<Cookie[]>([]);
 
   const handleReactivate = async (serviceId: keyof AllServices) => {
-    // we have to handle reactivation in webview
-
-    // getCookies(serviceId).then((cookies) => {
-    //   setWebviewCookies(cookies);
-    //   setWebviewUrl(
-    //     (services[serviceId].actions.find((action) => action.name === 'reactivate') as ActionsWithUrl)?.url!,
-    //   );
-    // });
     router.push(`/details/${serviceId}/webview`);
   };
 
@@ -133,7 +125,8 @@ const Details: React.FC = () => {
 
       const err = res.val;
 
-      if (err.code === ERROR_CODES.INVALID_MEMBERSHIP_STATUS) {
+      // Special handling for inactive accounts that want to resume -> let them reactivate
+      if (err.code === ERROR_CODES.INVALID_MEMBERSHIP_STATUS && actionName === 'resume') {
         return Alert.alert(
           'Invalid membership status',
           'It seems like your account is inactive. Do you want to reactivate it?',
@@ -256,20 +249,6 @@ const Details: React.FC = () => {
           <ActivityIndicator size="large" />
         </View>
       )}
-      {/* {webviewUrl && (
-        <WebView
-          source={{
-            uri: webviewUrl,
-            headers: {
-              Cookie: cookiesToString(webviewCookies),
-            },
-          }}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          injectedJavaScript={INJECTED_JAVASCRIPT}
-          onMessage={handleWebViewMessage}
-        />
-      )} */}
     </>
   );
 };
@@ -285,11 +264,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginBottom: 8,
     backgroundColor: '#fff',
-    // backgroundColor: '#f0f0f0',
-    // borderRadius: 4,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.2,
   },
   firstColumn: {
     flexDirection: 'row',

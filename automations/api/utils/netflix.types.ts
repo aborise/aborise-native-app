@@ -161,7 +161,7 @@ export type UserContext = {
   guid: string;
   isInFreeTrial: boolean;
   memberSince: string;
-  membershipStatus: string;
+  membershipStatus: 'FORMER_MEMBER' | 'ANONYMOUS' | 'NEVER_MEMBER' | 'CURRENT_MEMBER';
   name: string;
   userGuid: string;
 };
