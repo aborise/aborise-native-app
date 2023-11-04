@@ -1,3 +1,5 @@
+export type Awaitable<T> = T | Promise<T>;
+
 export const objectKeys = <T extends object>(obj: T) => Object.keys(obj) as (keyof T)[];
 export const objectValues = <T extends object>(obj: T) => Object.values(obj) as T[keyof T][];
 export const objectEntries = <T extends object>(obj: T) => Object.entries(obj) as [keyof T, T[keyof T]][];

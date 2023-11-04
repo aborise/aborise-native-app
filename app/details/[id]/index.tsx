@@ -19,14 +19,17 @@ import { getAction } from '~/shared/apis';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { ERROR_CODES } from '~/shared/errors';
 import { getLogo } from '~/shared/logos';
+import * as webviews from '~/automations/webview/index';
+import GenericWebView from './genericWebView';
+import { FlowReturn } from '~/automations/playwright/setup/Runner';
+import { Result } from '~/shared/Result';
+
+type WebViewConfigKeys = keyof typeof webviews;
+type WebViewConfigActionNames = keyof (typeof webviews)[WebViewConfigKeys];
 
 type ActionsWithUrl<
   T extends AllServices[keyof AllServices]['actions'][number] = AllServices[keyof AllServices]['actions'][number],
 > = T extends { url: string } ? T : never;
-
-const INJECTED_JAVASCRIPT = `(function() {
-  window.ReactNativeWebView.postMessage(JSON.stringify(window.location));
-})();`;
 
 const confirmDelete = (serviceTitle: string, cb: () => void) =>
   Alert.alert(
@@ -85,9 +88,6 @@ const Details: React.FC = () => {
     [service?.actions],
   );
 
-  const [webviewUrl, setWebviewUrl] = useState<string>();
-  const [webviewCookies, setWebviewCookies] = useState<Cookie[]>([]);
-
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(() => {
@@ -117,11 +117,7 @@ const Details: React.FC = () => {
   }, []);
 
   const handleReactivate = async (serviceId: keyof AllServices) => {
-    router.push(`/details/${serviceId}/webview`);
-  };
-
-  const handleWebViewMessage = (event: any) => {
-    console.log('event', event.nativeEvent.data);
+    router.push(`/details/${serviceId}/webview/reactivate`);
   };
 
   const handleAction = (serviceId: keyof AllServices, actionName: Service['actions'][number]['name']) => {

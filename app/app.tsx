@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { Link, Stack, router } from 'expo-router';
 import React from 'react';
-import { FlatList, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AboItem from '~/components/AboItem';
 import { AboItemUnconnected } from '~/components/AboItemUnconnected';
@@ -30,22 +30,13 @@ const LogoTitle: React.FC = () => {
         }}
       >
         <Image style={{ width: 32, height: 32 }} source={require('../assets/logo2.svg')} />
-        {/* <Text
-          style={{
-            fontSize: 24,
-            fontWeight: 'bold',
-            color: '#fff',
-          }}
-        >
-          aborise
-        </Text> */}
       </View>
     </>
   );
 };
 
 const App = () => {
-  const { data: connectedServices } = useServicesDataQuery();
+  const { data: connectedServices, isLoading } = useServicesDataQuery();
   return (
     <>
       <Stack.Screen
@@ -62,6 +53,7 @@ const App = () => {
       <View className="flex flex-col grow p-4">
         <View className="flex flex-col grow" style={{ gap: 16 }}>
           <MonthlyExpenses amount="100" />
+          {isLoading && <ActivityIndicator />}
           {connectedServices && Object.keys(connectedServices).length ? (
             <>
               <Text className="text-xl font-bold">Active Subscriptions</Text>
@@ -77,14 +69,15 @@ const App = () => {
                 }
               />
             </>
-          ) : (
+          ) : null}
+          {!isLoading && (!connectedServices || !Object.keys(connectedServices).length) ? (
             <View className="flex w-full items-center pt-10">
               <Text>You don't have any subscriptions yet</Text>
               <Link href="/add" asChild>
                 <Text className="text-classicBlue-500">Add one</Text>
               </Link>
             </View>
-          )}
+          ) : null}
 
           <Link href="/add" asChild>
             <Pressable

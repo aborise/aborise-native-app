@@ -47,6 +47,11 @@ const _netflix = {
       type: 'manual',
       url: 'https://www.netflix.com/signup/planform',
     },
+    {
+      name: 'register',
+      type: 'manual',
+      url: 'https://www.netflix.com/signup',
+    },
   ],
 } as const;
 
