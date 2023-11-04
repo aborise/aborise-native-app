@@ -8,40 +8,21 @@ import { getCookies } from '../api/helpers/cookie';
 import { Response } from '~/app/details/[id]/genericWebView';
 import { Cookie } from 'playwright-core';
 import { Awaitable } from '~/shared/typeHelpers';
-
-type WebViewConfig = {
-  url: string;
-  sanityCheck: () => string;
-  targetUrl?: string;
-  targetCondition?: () => string;
-  dataExtractor: () => string;
-  getCookies: () => Awaitable<Cookie[]>;
-  dataConverter: (data: any) => Result<FlowReturn, { data: any }>;
-};
+import { WebViewConfig, javascript } from './webview.helpers';
 
 const generateMembershipCheck = (membershipStatus: UserContext['membershipStatus'], type: Response['type']) => {
-  return /* javascript */ `
-    // try {
-      const data = window.netflix.reactContext.models.userInfo.data.membershipStatus === '${membershipStatus}';
-      window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data }));
-    // } catch (e) {
-    //   window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', data: e.message }));
-    // }
-    true;
+  return javascript`
+    const data = window.netflix.reactContext.models.userInfo.data.membershipStatus === '${membershipStatus}';
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data }));
   `;
 };
 
+// const str = console.log`const i = 5`
+
 const generateLocationCheck = (type: Response['type'], pathName: string, negative = false) => {
-  return /* javascript */ `
-    // try {
-      {
-      const data = document.location.pathname === '${pathName}';
-      window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data: ${negative ? '!data' : 'data'} }));
-      // } catch (e) {
-        //   window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', data: e.message }));
-        // }
-      }
-      true;
+  return javascript`
+    const data = document.location.pathname === '${pathName}';
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data: ${negative ? '!data' : 'data'} }));
   `;
 };
 
@@ -101,13 +82,11 @@ const dataConverter = (data: {
 };
 
 const dataExtractor = () => {
-  return /* javascript */ `(function() {
+  return javascript`
     const { signupContext, userInfo } = window.netflix.reactContext.models;
     const cookies = document.cookie;
     window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'condition', { signupContext: signupContext.data, userInfo: userInfo.data, cookies } }));
-    true;
-  })();
-  true;`;
+  `;
 };
 
 // const MEMBERSHIP_STATUS_MAP = {
@@ -119,8 +98,8 @@ const dataExtractor = () => {
 
 export const register: WebViewConfig = {
   url: 'https://www.netflix.com/signup',
-  sanityCheck: checkAnonymous('sanity'),
-  targetCondition: () => negativeCheckLocation('sanity', '/browse')() + checkCurrentMember('condition')(),
+  sanityCheck: () => negativeCheckLocation('sanity', '/browse')() + checkAnonymous('sanity')(),
+  targetCondition: checkCurrentMember('condition'),
   dataExtractor,
   dataConverter,
   getCookies: () => {
@@ -131,8 +110,8 @@ export const register: WebViewConfig = {
 
 export const reactivate: WebViewConfig = {
   url: 'https://www.netflix.com/signup/planform',
-  sanityCheck: checkFormerMember('sanity'),
-  targetCondition: () => negativeCheckLocation('sanity', '/browse')() + checkCurrentMember('condition')(),
+  sanityCheck: () => negativeCheckLocation('sanity', '/browse')() + checkFormerMember('sanity')(),
+  targetCondition: checkCurrentMember('condition'),
   dataExtractor,
   dataConverter,
   getCookies: () => {

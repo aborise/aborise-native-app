@@ -14,7 +14,7 @@ import { cookiesToString, getCookies } from '~/automations/api/helpers/cookie';
 import * as apis from '~/automations/api/index';
 import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
 import { useServicesQuery } from '~/queries/useServicesQuery';
-import { AllServices, Service, services } from '~/shared/allServices';
+import { AllServices, services } from '~/shared/allServices';
 import { getAction } from '~/shared/apis';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { ERROR_CODES } from '~/shared/errors';
@@ -23,6 +23,7 @@ import * as webviews from '~/automations/webview/index';
 import GenericWebView from './genericWebView';
 import { FlowReturn } from '~/automations/playwright/setup/Runner';
 import { Result } from '~/shared/Result';
+import { Service } from '~/shared/validators';
 
 type WebViewConfigKeys = keyof typeof webviews;
 type WebViewConfigActionNames = keyof (typeof webviews)[WebViewConfigKeys];
@@ -84,7 +85,7 @@ const Details: React.FC = () => {
   }, [serviceData?.membershipStatus === 'canceled' && serviceData.expiresAt]);
 
   const actions = useMemo(
-    () => service?.actions.filter((action) => !['register', 'connect'].includes(action.name)),
+    () => service?.actions.filter((action) => !['connect'].includes(action.name)),
     [service?.actions],
   );
 
@@ -116,28 +117,33 @@ const Details: React.FC = () => {
       });
   }, []);
 
-  const handleReactivate = async (serviceId: keyof AllServices) => {
-    router.push(`/details/${serviceId}/webview/reactivate`);
+  const handleWebViewActions = async (serviceId: keyof AllServices, actionName: Service['actions'][number]['name']) => {
+    router.push(`/details/${serviceId}/webview/${actionName}`);
   };
 
-  const handleAction = (serviceId: keyof AllServices, actionName: Service['actions'][number]['name']) => {
-    confirmAction(service.title, actionName, async () => {
-      if (actionName === 'reactivate') {
-        return handleReactivate(serviceId);
+  const handleAction = (serviceId: keyof AllServices, action: Service['actions'][number]) => {
+    confirmAction(service.title, action.name, async () => {
+      if (action.type === 'api') return;
+
+      if (action.webView) {
+        return handleWebViewActions(serviceId, action.name);
       }
 
       setExecuting(true);
 
       const api = apis[serviceId];
 
-      const action = getAction(api, actionName);
+      const actionHandler = getAction(
+        api,
+        action.name as import('~/shared/allServices').Service['actions'][number]['name'],
+      );
 
-      if (!action) return;
+      if (!actionHandler) return;
 
-      const res = await action({
+      const res = await actionHandler({
         queueId: 'foo',
         service: serviceId,
-        type: actionName,
+        type: action.name,
         user: getUserId(),
       });
 
@@ -153,7 +159,7 @@ const Details: React.FC = () => {
       const err = res.val;
 
       // Special handling for inactive accounts that want to resume -> let them reactivate
-      if (err.code === ERROR_CODES.INVALID_MEMBERSHIP_STATUS && actionName === 'resume') {
+      if (err.code === ERROR_CODES.INVALID_MEMBERSHIP_STATUS && action.name === 'resume') {
         return Alert.alert(
           'Invalid membership status',
           'It seems like your account is inactive. Do you want to reactivate it?',
@@ -162,7 +168,7 @@ const Details: React.FC = () => {
               text: 'Cancel',
               style: 'cancel',
             },
-            { text: 'Confirm', onPress: () => handleReactivate(serviceId) },
+            { text: 'Confirm', onPress: () => handleWebViewActions(serviceId, 'reactivate') },
           ],
         );
       }
@@ -251,7 +257,7 @@ const Details: React.FC = () => {
             <TouchableOpacity
               key={index}
               style={[styles.btn, styles.btnResume, styles.mb2]}
-              onPress={() => handleAction(service.id, action.name)}
+              onPress={() => handleAction(service.id, action)}
             >
               <Text>{action.name}</Text>
             </TouchableOpacity>

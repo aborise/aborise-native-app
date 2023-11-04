@@ -45,12 +45,12 @@ const _netflix = {
     {
       name: 'reactivate',
       type: 'manual',
-      url: 'https://www.netflix.com/signup/planform',
+      webView: true,
     },
     {
       name: 'register',
       type: 'manual',
-      url: 'https://www.netflix.com/signup',
+      webView: true,
     },
   ],
 } as const;

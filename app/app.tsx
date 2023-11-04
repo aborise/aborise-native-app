@@ -72,6 +72,7 @@ const App = () => {
           ) : null}
           {!isLoading && (!connectedServices || !Object.keys(connectedServices).length) ? (
             <View className="flex w-full items-center pt-10">
+              <Image source={require('../assets/no-subs.png')} className="w-full aspect-square" />
               <Text>You don't have any subscriptions yet</Text>
               <Link href="/add" asChild>
                 <Text className="text-classicBlue-500">Add one</Text>

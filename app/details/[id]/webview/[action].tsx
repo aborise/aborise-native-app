@@ -17,13 +17,9 @@ export const ServiceWebView: React.FC = () => {
     return services[local.id!];
   }, [local.id]);
 
-  console.log(local.id, local.action);
-
   const config = useMemo(() => {
     return webviews[service.id as WebViewConfigKeys][local.action!];
   }, [service, local.action]);
-
-  console.log(config);
 
   const { serviceDataMutation } = useServiceDataQuery(local.id!);
   const { mutateAsync: updateServiceData } = serviceDataMutation();
