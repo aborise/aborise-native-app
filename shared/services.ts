@@ -29,6 +29,7 @@ const _netflix = {
     {
       name: 'connect',
       type: 'manual',
+      states: [],
     },
     // {
     //   name: 'register',
@@ -37,20 +38,24 @@ const _netflix = {
     {
       name: 'cancel',
       type: 'manual',
+      states: ['active'],
     },
     {
       name: 'resume',
       type: 'manual',
+      states: ['canceled'],
     },
     {
       name: 'reactivate',
       type: 'manual',
       webView: true,
+      states: ['inactive'],
     },
     {
       name: 'register',
       type: 'manual',
       webView: true,
+      states: [],
     },
   ],
 } as const;
@@ -71,14 +76,17 @@ const _amazon = {
     {
       name: 'connect',
       type: 'manual',
+      states: [],
     },
     {
       name: 'cancel',
       type: 'manual',
+      states: ['active'],
     },
     {
       name: 'resume',
       type: 'manual',
+      states: ['canceled'],
     },
   ],
 } as const;
@@ -99,10 +107,12 @@ const _disney = {
     {
       name: 'connect',
       type: 'manual',
+      states: [],
     },
     {
       name: 'cancel',
       type: 'manual',
+      states: ['active'],
     },
     // {
     //   name: 'reactivate',
@@ -111,6 +121,7 @@ const _disney = {
     {
       name: 'resume',
       type: 'manual',
+      states: ['canceled'],
     },
     // {
     //   name: 'register',
@@ -135,10 +146,12 @@ const _spotify = {
     {
       name: 'connect',
       type: 'manual',
+      states: [],
     },
     {
       name: 'cancel',
       type: 'manual',
+      states: ['active'],
     },
     // {
     //   name: 'reactivate',
@@ -147,6 +160,7 @@ const _spotify = {
     {
       name: 'resume',
       type: 'manual',
+      states: ['canceled'],
     },
     // {
     //   name: 'register',
@@ -171,10 +185,12 @@ const _paramount = {
     {
       name: 'connect',
       type: 'manual',
+      states: [],
     },
     {
       name: 'cancel',
       type: 'manual',
+      states: ['active'],
     },
     // {
     //   name: 'reactivate',
@@ -183,6 +199,7 @@ const _paramount = {
     {
       name: 'resume',
       type: 'manual',
+      states: ['canceled'],
     },
     // {
     //   name: 'register',

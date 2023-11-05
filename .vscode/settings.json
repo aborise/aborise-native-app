@@ -1,3 +1,6 @@
 {
-  "references.preferredLocation": "peek"
+  "references.preferredLocation": "peek",
+  "i18n-ally.localesPaths": ["locales"],
+  "i18n-ally.enabledFrameworks": ["react"],
+  "i18n-ally.keystyle": "nested"
 }

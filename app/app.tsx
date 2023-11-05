@@ -5,14 +5,17 @@ import { ActivityIndicator, FlatList, Pressable, Text, TouchableOpacity, View } 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AboItem from '~/components/AboItem';
 import { AboItemUnconnected } from '~/components/AboItemUnconnected';
+import { useI18n } from '~/composables/useI18n';
 import { useServicesDataQuery } from '~/queries/useServicesDataQuery';
 import { services } from '~/shared/allServices';
 import { objectEntries } from '~/shared/typeHelpers';
 
+const { t } = useI18n();
+
 const MonthlyExpenses: React.FC<{ amount: string }> = ({ amount }) => {
   return (
     <View className="p-4 bg-coldYellow-500 border-2 border-solid border-black rounded-2xl shadow-md">
-      <Text className="text-slate-800 text-md font-medium mb-2">Monthly expenses</Text>
+      <Text className="text-slate-800 text-md font-medium mb-2">{t('monthly-expenses')}</Text>
       <Text className="text-slate-800 text-xl font-bold">€{amount}</Text>
     </View>
   );
@@ -56,7 +59,7 @@ const App = () => {
           {isLoading && <ActivityIndicator />}
           {connectedServices && Object.keys(connectedServices).length ? (
             <>
-              <Text className="text-xl font-bold">Active Subscriptions</Text>
+              <Text className="text-xl font-bold">{t('active-subscriptions')}</Text>
               <FlatList
                 data={objectEntries(connectedServices)}
                 keyExtractor={([id]) => id}
@@ -73,7 +76,7 @@ const App = () => {
           {!isLoading && (!connectedServices || !Object.keys(connectedServices).length) ? (
             <View className="flex w-full items-center pt-10">
               <Image source={require('../assets/no-subs.png')} className="w-full aspect-square" />
-              <Text>You don't have any subscriptions yet</Text>
+              <Text>{t('you-dont-have-any-subscriptions-yet')}</Text>
               <Link href="/add" asChild>
                 <Text className="text-classicBlue-500">Add one</Text>
               </Link>

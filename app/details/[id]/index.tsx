@@ -2,16 +2,14 @@ import { useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
-import { Cookie } from 'playwright-core';
 import React, { useCallback, useMemo, useState } from 'react';
-import { RefreshControl } from 'react-native';
-import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import Toast from 'react-native-root-toast';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import WebView from 'react-native-webview';
-import { cookiesToString, getCookies } from '~/automations/api/helpers/cookie';
 import * as apis from '~/automations/api/index';
+import * as webviews from '~/automations/webview/index';
+import { useI18n } from '~/composables/useI18n';
 import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
 import { useServicesQuery } from '~/queries/useServicesQuery';
 import { AllServices, services } from '~/shared/allServices';
@@ -19,11 +17,9 @@ import { getAction } from '~/shared/apis';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { ERROR_CODES } from '~/shared/errors';
 import { getLogo } from '~/shared/logos';
-import * as webviews from '~/automations/webview/index';
-import GenericWebView from './genericWebView';
-import { FlowReturn } from '~/automations/playwright/setup/Runner';
-import { Result } from '~/shared/Result';
-import { Service } from '~/shared/validators';
+import { Service, State } from '~/shared/validators';
+
+const { t } = useI18n();
 
 type WebViewConfigKeys = keyof typeof webviews;
 type WebViewConfigActionNames = keyof (typeof webviews)[WebViewConfigKeys];
@@ -34,24 +30,26 @@ type ActionsWithUrl<
 
 const confirmDelete = (serviceTitle: string, cb: () => void) =>
   Alert.alert(
-    'Deleting ' + serviceTitle,
-    `Are you sure you want to remove ${serviceTitle}? All data will be deleted and you will need to reconnect again.`,
+    t('deleting-X', [serviceTitle]),
+    t('are-you-sure-you-want-to-remove-X-all-data-will-be-deleted-and-you-will-need-to-reconnect-again', [
+      serviceTitle,
+    ]),
     [
       {
-        text: 'Cancel',
+        text: t('cancel2'),
         style: 'cancel',
       },
-      { text: 'Confirm', onPress: cb },
+      { text: t('confirm'), onPress: cb },
     ],
   );
 
 const confirmAction = (serviceTitle: string, action: string, cb: () => void) =>
-  Alert.alert('Confirm ' + action, `Are you sure you want to ${action} ${serviceTitle}?`, [
+  Alert.alert(t('confirm-X', [t(action)]), t('are-you-sure-you-want-to-X-Y', [t(action), serviceTitle]), [
     {
-      text: 'Cancel',
+      text: t('cancel2'),
       style: 'cancel',
     },
-    { text: 'Confirm', onPress: cb },
+    { text: t('confirm'), onPress: cb },
   ]);
 
 const Details: React.FC = () => {
@@ -62,6 +60,8 @@ const Details: React.FC = () => {
   const service = useMemo(() => {
     return services[local.id!];
   }, [local.id]);
+
+  const { t } = useI18n();
 
   const queryClient = useQueryClient();
   const { deleteServiceMutation } = useServicesQuery();
@@ -85,8 +85,13 @@ const Details: React.FC = () => {
   }, [serviceData?.membershipStatus === 'canceled' && serviceData.expiresAt]);
 
   const actions = useMemo(
-    () => service?.actions.filter((action) => !['connect'].includes(action.name)),
-    [service?.actions],
+    () =>
+      service?.actions.filter(
+        (action) =>
+          action.states.includes(serviceData?.membershipStatus as never) ||
+          process.env.EXPO_PUBLIC_SHOW_ALL_ACTIONS === 'true',
+      ),
+    [service?.actions, serviceData?.membershipStatus],
   );
 
   const [refreshing, setRefreshing] = useState(false);
@@ -105,10 +110,10 @@ const Details: React.FC = () => {
     })
       .then((res) => {
         if (res.ok) {
-          Toast.show('Updated', { duration: Toast.durations.SHORT });
+          Toast.show(t('updated'), { duration: Toast.durations.SHORT });
         } else {
           console.error(res.val);
-          Toast.show('Error while updating', { duration: Toast.durations.SHORT });
+          Toast.show(t('error-while-updating'), { duration: Toast.durations.SHORT });
         }
       })
       .finally(() => {
@@ -161,14 +166,14 @@ const Details: React.FC = () => {
       // Special handling for inactive accounts that want to resume -> let them reactivate
       if (err.code === ERROR_CODES.INVALID_MEMBERSHIP_STATUS && action.name === 'resume') {
         return Alert.alert(
-          'Invalid membership status',
-          'It seems like your account is inactive. Do you want to reactivate it?',
+          t('invalid-membership-status'),
+          t('it-seems-like-your-account-is-inactive-do-you-want-to-reactivate-it') + '?',
           [
             {
-              text: 'Cancel',
+              text: t('cancel2'),
               style: 'cancel',
             },
-            { text: 'Confirm', onPress: () => handleWebViewActions(serviceId, 'reactivate') },
+            { text: t('confirm'), onPress: () => handleWebViewActions(serviceId, 'reactivate') },
           ],
         );
       }
@@ -188,7 +193,7 @@ const Details: React.FC = () => {
   if (!service || !serviceData) {
     return (
       <View>
-        <Text>Service not found</Text>
+        <Text>{t('service-not-found')}</Text>
       </View>
     );
   }
@@ -209,9 +214,11 @@ const Details: React.FC = () => {
           {/* Second Column */}
           <View style={styles.secondColumn}>
             <View style={styles.syncBox}>
-              <Text style={styles.syncText}>Connected</Text>
+              <Text style={styles.syncText}>{t('connected')}</Text>
             </View>
-            <Text style={styles.lastSyncDateText}>Last updated: {lastSyncDate}</Text>
+            <Text style={styles.lastSyncDateText}>
+              {t('last-updated')}: {lastSyncDate}
+            </Text>
           </View>
           <View style={styles.thirdColumn}>
             <Icon name="edit" size={24} color="#667160" />
@@ -236,13 +243,15 @@ const Details: React.FC = () => {
           ) : serviceData.membershipStatus === 'canceled' ? (
             <>
               <View style={styles.statusBox}>
-                <Text style={styles.statusText}>Canceled</Text>
+                <Text style={styles.statusText}>{t('canceled')}</Text>
               </View>
-              <Text style={styles.priceText}>Expires {expiresRelativeDate}</Text>
+              <Text style={styles.priceText}>
+                {t('expires')} {expiresRelativeDate}
+              </Text>
             </>
           ) : (
             <View style={styles.statusBox}>
-              <Text style={styles.statusText}>Inactive</Text>
+              <Text style={styles.statusText}>{t('inactive')}</Text>
             </View>
           )}
           <View style={styles.flexItemsCenter}>
@@ -259,11 +268,11 @@ const Details: React.FC = () => {
               style={[styles.btn, styles.btnResume, styles.mb2]}
               onPress={() => handleAction(service.id, action)}
             >
-              <Text>{action.name}</Text>
+              <Text>{t(action.name)}</Text>
             </TouchableOpacity>
           ))}
           <TouchableOpacity style={[styles.btn, styles.btnCancel, styles.mb2]} onPress={deleteSubscription}>
-            <Text>Delete</Text>
+            <Text>{t('delete')}</Text>
           </TouchableOpacity>
           <View>
             <Text>{actionError}</Text>

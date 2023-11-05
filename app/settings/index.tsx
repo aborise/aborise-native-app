@@ -1,9 +1,10 @@
 import CookieManager from '@react-native-cookies/cookies';
 import React, { useState } from 'react';
-import { View, Text, Switch, Button, Alert } from 'react-native';
-import { clearConnectedServices } from '~/composables/useServiceData';
-import { useStorage } from '~/composables/useStorage';
+import { Alert, Button, Switch, Text, View } from 'react-native';
+import { useI18n } from '~/composables/useI18n';
 import { useServicesQuery } from '~/queries/useServicesQuery';
+
+const { t } = useI18n();
 
 const Settings = () => {
   const { clearServicesMutation } = useServicesQuery();
@@ -11,13 +12,13 @@ const Settings = () => {
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const handleClearStorage = () => {
-    Alert.alert('Clear Storage', 'Are you sure you want to clear all stored data?', [
+    Alert.alert(t('clear-storage'), t('are-you-sure-you-want-to-clear-all-stored-data') + '?', [
       {
-        text: 'Cancel',
+        text: t('cancel'),
         style: 'cancel',
       },
       {
-        text: 'OK',
+        text: t('ok'),
         onPress: () => clearServices(),
       },
     ]);

@@ -1,8 +1,10 @@
 import { Stack } from 'expo-router/stack';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useI18n } from '~/composables/useI18n';
 
 export default function Layout() {
   const queryClient = new QueryClient();
+  const { t } = useI18n();
   return (
     <QueryClientProvider client={queryClient}>
       <Stack
@@ -19,7 +21,7 @@ export default function Layout() {
         <Stack.Screen
           name="add/index"
           options={{
-            title: 'Add Subscription',
+            title: t('add-subscription'),
             presentation: 'modal',
           }}
         />

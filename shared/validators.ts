@@ -1,5 +1,11 @@
 import z from 'zod';
 
+export const actions = ['connect', 'cancel', 'resume', 'reactivate', 'register'] as const;
+export const states = ['active', 'canceled', 'inactive', 'preactive'] as const;
+
+export type Action = (typeof actions)[number];
+export type State = (typeof states)[number];
+
 export const registerRequestValidator = z.object({
   email: z.string().email(),
   password: z.string().min(8),
@@ -62,9 +68,10 @@ export const ServiceSchema = z.object({
         }),
       }),
       z.object({
-        name: z.string(),
+        name: z.enum(actions),
         type: z.literal('manual'),
         webView: z.boolean().optional(),
+        states: z.enum(states).array(),
       }),
     ]),
   ),
