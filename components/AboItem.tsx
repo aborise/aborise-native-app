@@ -1,15 +1,15 @@
 import React, { useMemo } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
 import { FlowReturn } from '~/automations/playwright/setup/Runner';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router/src/exports';
 import { AllServices } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { useDayJs, useI18n } from '~/composables/useI18n';
 
-dayjs.extend(relativeTime);
+const dayjs = useDayJs();
+const { t } = useI18n();
 
 interface AboItemProps {
   title: string;
@@ -30,7 +30,7 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
     [data],
   );
   const expiresDate = useMemo(
-    () => (data.membershipStatus === 'canceled' ? dayjs(data.expiresAt!).format('DD.MM.YYYY') : undefined),
+    () => (data.membershipStatus === 'canceled' ? dayjs(data.expiresAt).format('DD.MM.YYYY') : undefined),
     [data],
   );
 
@@ -62,9 +62,19 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
           <Image source={getLogo(id)} style={{ width: 48, height: 48 }} className="rounded-xl" />
           <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start' }}>
             <Text style={{ fontSize: 24 }}>{title}</Text>
-            {renewsDate && <Text style={{ fontSize: 12, color: 'gray' }}>Renews {renewsDate}</Text>}
-            {expiresDate && <Text style={{ fontSize: 12, color: 'gray' }}>Expires {expiresDate}</Text>}
-            {data.membershipStatus === 'inactive' && <Text style={{ fontSize: 12, color: 'gray' }}>Expired</Text>}
+            {renewsDate && (
+              <Text style={{ fontSize: 12, color: 'gray' }}>
+                {t('renews')}: {renewsDate}
+              </Text>
+            )}
+            {expiresDate && (
+              <Text style={{ fontSize: 12, color: 'gray' }}>
+                {t('expires')}: {expiresDate}
+              </Text>
+            )}
+            {data.membershipStatus === 'inactive' && (
+              <Text style={{ fontSize: 12, color: 'gray' }}>{t('inactive')}</Text>
+            )}
           </View>
           <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
             {integer && (
@@ -73,8 +83,8 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
                   <Text>{integer}</Text>
                   <Text style={{ fontSize: 8 }}>{decimal}</Text>
                 </Text>
-                <Text style={{ fontSize: 12, color: 'gray' }}>Next Payment</Text>
-                <Text style={{ fontSize: 10, color: 'lightgray' }}>{nextPaymentRelativeDate}</Text>
+                <Text style={{ fontSize: 12, color: 'gray' }}>{t('next-payment')}</Text>
+                <Text style={{ fontSize: 10, color: 'gray' }}>{nextPaymentRelativeDate}</Text>
               </>
             )}
           </View>

@@ -61,6 +61,9 @@ const dataConverter = (data: {
         membershipStatus: 'canceled',
         expiresAt: extractDate(data.signupContext.flow.fields.periodEndDate.value),
         lastSyncedAt: new Date().toISOString(),
+        nextPaymentPrice: extractAmount(data.signupContext.flow.fields.currentPlan.fields.planPrice.value),
+        billingCycle: 'monthly',
+        membershipPlan: data.signupContext.flow.fields.currentPlan.fields.localizedPlanName.value,
       };
     }
   } else if (data.userInfo.membershipStatus === 'NEVER_MEMBER') {

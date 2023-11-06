@@ -83,6 +83,14 @@ export const cancelOrResume = <T extends Moneyball<{ fields: any }>>(
       ? '{"flow":"websiteMember","mode":"cancelMembership","action":"cancelMembershipAction","fields":{}}'
       : '{"flow":"websiteMember","mode":"yourAccount","action":"continueMembershipAction","fields":{}}';
 
+  // Maybe to get data from the website
+  // const param = {
+  //   flow: 'websiteMember',
+  //   mode: 'yourAccount',
+  //   action: 'yourAccountAction',
+  // }
+  // callPath: '["moeyball","websiteMember","yourAccount"]',
+
   return getReactContext(client, item.user)
     .andThen(failOnNotLoggedIn)
     .map(getApiData)
@@ -97,13 +105,15 @@ export const cancelOrResume = <T extends Moneyball<{ fields: any }>>(
 
 // check if the response let us know that the account might have been inactive
 export const cancel = api(({ item, client }) => {
-  return cancelOrResume<NetflixCancelResponse>('cancel', client, item).map((json) => ({
-    data: {
-      membershipStatus: 'canceled',
-      expiresAt: extractDate(json.cancelEffectiveDate.value),
-      lastSyncedAt: new Date().toISOString(),
-    },
-  }));
+  return cancelOrResume<NetflixCancelResponse>('cancel', client, item).andThen(() => connect(item));
+  // .logData()
+  // .map((json) => ({
+  //   data: {
+  //     membershipStatus: 'canceled',
+  //     expiresAt: extractDate(json.cancelEffectiveDate.value),
+  //     lastSyncedAt: new Date().toISOString(),
+  //   },
+  // }));
 });
 
 // const membershipPlanMap = {
@@ -146,7 +156,7 @@ export const resume = api(({ item, client }) => {
       billingCycle: 'monthly',
       membershipStatus: 'active',
       membershipPlan: json.currentPlan.fields.localizedPlanName.value,
-      nextPaymentDate: extractDate(json.periodEndDate?.value ?? json.nextBillingDate?.value ?? ''),
+      nextPaymentDate: extractDate(json.periodEndDate?.value, 1),
       nextPaymentPrice: extractAmount(json.currentPlan.fields.planPrice.value),
       lastSyncedAt: new Date().toISOString(),
     },
@@ -381,6 +391,9 @@ export const connect = api(({ auth, client }) => {
             membershipStatus: 'canceled',
             expiresAt: extractDate(periodEndDate),
             lastSyncedAt: new Date().toISOString(),
+            membershipPlan: planName,
+            billingCycle: 'monthly',
+            nextPaymentPrice: extractAmount(planPrice),
           }
         : {
             membershipStatus: 'active',

@@ -1,12 +1,12 @@
 import React, { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, Button } from 'react-native';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
+
 import { router } from 'expo-router';
 import { Image } from 'expo-image';
 import { getLogo } from '~/shared/logos';
+import { useI18n } from '~/composables/useI18n';
 
-dayjs.extend(relativeTime);
+const { t } = useI18n();
 
 interface AboItemUnconnectedProps {
   title: string;
@@ -47,7 +47,7 @@ export const AboItemUnconnected: React.FC<AboItemUnconnectedProps> = ({ title, i
         <Image source={getLogo(id)} style={{ width: 48, height: 48 }} className="rounded-xl" />
         <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start' }}>
           <Text style={{ fontSize: 24 }}>{title}</Text>
-          <Text style={{ fontSize: 12, color: 'gray' }}>Not Synced</Text>
+          <Text style={{ fontSize: 12, color: 'gray' }}>{t('not-synced')}</Text>
         </View>
         <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
           <Button title="Connect Now" onPress={connect} disabled={buttonDisabled} />

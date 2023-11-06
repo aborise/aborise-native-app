@@ -29,5 +29,12 @@
   "error-while-updating": "Error while updating",
   "connected": "Connected",
   "last-updated": "Last updated",
-  "canceled": "Canceled"
+  "canceled": "Canceled",
+  "next-payment": "Next Payment",
+  "add-one": "Add one",
+  "renews": "Renews",
+  "not-synced": "Not Synced",
+  "monthly": "monthly",
+  "month": "month",
+  "year": "year"
 }

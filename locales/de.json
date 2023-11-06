@@ -29,5 +29,12 @@
   "it-seems-like-your-account-is-inactive-do-you-want-to-reactivate-it": "Anscheinend ist Ihr Konto inaktiv. \nMöchten Sie es reaktivieren?",
   "last-updated": "Letzte Aktualisierung",
   "service-not-found": "Service nicht gefunden",
-  "updated": "Aktualisiert"
+  "updated": "Aktualisiert",
+  "next-payment": "Nächste Zahlung",
+  "add-one": "Füge jetzt eins hinzu",
+  "renews": "Erneuert sich am",
+  "not-synced": "Nicht synchronisiert",
+  "monthly": "monatlich",
+  "month": "Monat",
+  "year": "Jahr"
 }

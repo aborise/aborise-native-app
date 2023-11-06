@@ -78,7 +78,7 @@ const App = () => {
               <Image source={require('../assets/no-subs.png')} className="w-full aspect-square" />
               <Text>{t('you-dont-have-any-subscriptions-yet')}</Text>
               <Link href="/add" asChild>
-                <Text className="text-classicBlue-500">Add one</Text>
+                <Text className="text-classicBlue-500">{t('add-one')}</Text>
               </Link>
             </View>
           ) : null}

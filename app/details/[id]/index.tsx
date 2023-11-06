@@ -1,5 +1,4 @@
 import { useQueryClient } from '@tanstack/react-query';
-import dayjs from 'dayjs';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
@@ -9,7 +8,7 @@ import Toast from 'react-native-root-toast';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as apis from '~/automations/api/index';
 import * as webviews from '~/automations/webview/index';
-import { useI18n } from '~/composables/useI18n';
+import { useI18n, useDayJs } from '~/composables/useI18n';
 import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
 import { useServicesQuery } from '~/queries/useServicesQuery';
 import { AllServices, services } from '~/shared/allServices';
@@ -17,9 +16,11 @@ import { getAction } from '~/shared/apis';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { ERROR_CODES } from '~/shared/errors';
 import { getLogo } from '~/shared/logos';
+import { billingCycle } from '~/shared/translationMapping';
 import { Service, State } from '~/shared/validators';
 
 const { t } = useI18n();
+const dayjs = useDayJs();
 
 type WebViewConfigKeys = keyof typeof webviews;
 type WebViewConfigActionNames = keyof (typeof webviews)[WebViewConfigKeys];
@@ -116,9 +117,10 @@ const Details: React.FC = () => {
           Toast.show(t('error-while-updating'), { duration: Toast.durations.SHORT });
         }
       })
-      .finally(() => {
+      .finally(async () => {
         setRefreshing(false);
-        queryClient.invalidateQueries({ queryKey: ['servicesData', local.id!] });
+        await queryClient.invalidateQueries({ queryKey: ['services'] });
+        await queryClient.invalidateQueries({ queryKey: ['servicesData'] });
       });
   }, []);
 
@@ -153,12 +155,12 @@ const Details: React.FC = () => {
       });
 
       await queryClient.invalidateQueries({ queryKey: ['services'] });
+      await queryClient.invalidateQueries({ queryKey: ['servicesData'] });
 
       setExecuting(false);
 
       if (res.ok) {
-        console.log(res.val.data);
-        return router.push(`/`);
+        return;
       }
 
       const err = res.val;
@@ -237,15 +239,22 @@ const Details: React.FC = () => {
               <Text style={styles.priceText}>
                 {serviceData.nextPaymentPrice?.integer}.
                 <Text style={styles.decimalText}>{serviceData.nextPaymentPrice?.decimal}</Text> /{' '}
-                {serviceData.billingCycle ?? 'monthly'}
+                {billingCycle[serviceData.billingCycle ?? 'monthly']}
               </Text>
             </>
           ) : serviceData.membershipStatus === 'canceled' ? (
             <>
               <View style={styles.statusBox}>
-                <Text style={styles.statusText}>{t('canceled')}</Text>
+                <Text style={styles.statusText}>
+                  {t('canceled')}: {serviceData.membershipPlan ?? 'Basic'}
+                </Text>
               </View>
               <Text style={styles.priceText}>
+                {serviceData.nextPaymentPrice?.integer}.
+                <Text style={styles.decimalText}>{serviceData.nextPaymentPrice?.decimal}</Text> /{' '}
+                {billingCycle[serviceData.billingCycle ?? 'monthly']}
+              </Text>
+              <Text style={styles.flexItemsCenter}>
                 {t('expires')} {expiresRelativeDate}
               </Text>
             </>
@@ -254,10 +263,12 @@ const Details: React.FC = () => {
               <Text style={styles.statusText}>{t('inactive')}</Text>
             </View>
           )}
-          <View style={styles.flexItemsCenter}>
-            <Text style={styles.textBase}>Next Payment</Text>
-            <Text style={[styles.textBase, styles.ml4]}>{nextPaymentDate}</Text>
-          </View>
+          {serviceData.membershipStatus === 'active' ? (
+            <View style={styles.flexItemsCenter}>
+              <Text style={styles.textBase}>{t('next-payment')}:</Text>
+              <Text style={[styles.textBase, styles.ml2]}>{nextPaymentDate}</Text>
+            </View>
+          ) : null}
         </View>
 
         {/* Third Section */}
@@ -274,9 +285,11 @@ const Details: React.FC = () => {
           <TouchableOpacity style={[styles.btn, styles.btnCancel, styles.mb2]} onPress={deleteSubscription}>
             <Text>{t('delete')}</Text>
           </TouchableOpacity>
-          <View>
-            <Text>{actionError}</Text>
-          </View>
+          {actionError ? (
+            <View>
+              <Text>{actionError}</Text>
+            </View>
+          ) : null}
         </View>
         {/* Fourth Section */}
 
@@ -353,7 +366,7 @@ const styles = StyleSheet.create({
   },
   priceText: {
     fontSize: 16,
-    marginTop: 16,
+    marginTop: 8,
     paddingTop: 4,
   },
   decimalText: {
@@ -388,8 +401,8 @@ const styles = StyleSheet.create({
   textBase: {
     fontSize: 16,
   },
-  ml4: {
-    marginLeft: 16,
+  ml2: {
+    marginLeft: 8,
   },
   mb2: {
     marginBottom: 8,

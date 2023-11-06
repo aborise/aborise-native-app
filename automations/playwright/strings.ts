@@ -1,6 +1,3 @@
-import { parse } from 'date-fns';
-import { DateTime } from 'luxon';
-
 const translations = {
   loginFailed: 'Wrong email or password. Please check your credentials and try again.',
   otpPrompt:
@@ -30,59 +27,35 @@ const dateFormats = [
   /\b([a-zA-Z]+)\s*(\d{1,2}),\s*(\d{4})\b/,
 ];
 
-// export const extractDate = (message: string | undefined) => {
-//   if (!message) return null;
-//   for (const format of dateFormats) {
-//     const match = message.match(format);
-//     if (match) {
-//       const [, ...groups] = match;
+const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sept', 'oct', 'nov', 'dec'];
 
-//       if (groups[groups.length - 1].length === 2) {
-//         groups[groups.length - 1] = "20" + groups[groups.length - 1];
-//       }
-//       console.log(groups.reverse().join(" "));
-//       return new Date(groups.reverse().join(" ")).toISOString();
-//     }
-//   }
-//   return null;
-// };
-// export const extractDate = (message: string | undefined) => {
-//   if (!message) return null;
-//   for (const format of dateFormats) {
-//     const match = message.match(format);
-//     if (match) {
-//       const [, ...groups] = match;
+// in german
+const monthsGerman = ['jan', 'feb', 'mär', 'apr', 'mai', 'jun', 'jul', 'aug', 'sept', 'okt', 'nov', 'dez'];
 
-//       if (groups[groups.length - 1].length === 2) {
-//         groups[groups.length - 1] = "20" + groups[groups.length - 1];
-//       }
-
-//       const reversed = groups.reverse();
-//       const dateStr = reversed.join(" ");
-//       console.log("Before", new Date());
-//       const ret = parse(dateStr, "yyyy MM dd", new Date()).toISOString();
-//       console.log("After");
-//       return ret;
-//     }
-//   }
-//   return null;
-// };
-
-export const extractDate = (message: string | undefined) => {
+export const extractDate = (message: string | undefined, extraDays = 0) => {
   if (!message) return null;
   for (const format of dateFormats) {
     const match = message.match(format);
-    if (match) {
-      const [, ...groups] = match;
+    if (!match) continue;
 
-      if (groups[groups.length - 1].length === 2) {
-        groups[groups.length - 1] = '20' + groups[groups.length - 1];
-      }
+    let days = match[1];
+    let month = match[2];
+    const years = match[3];
 
-      const dateStr = groups.reverse().join('-');
-      const dt = DateTime.fromISO(dateStr);
-      if (dt.isValid) return dt.toISO();
+    if (format === dateFormats[2]) {
+      days = match[2];
+      month = match[1];
     }
+
+    let monthsIndex = months.indexOf(month.toLowerCase().slice(0, 3));
+    if (!monthsIndex) {
+      monthsIndex = monthsGerman.indexOf(month.toLowerCase().slice(0, 3));
+    }
+
+    const date = new Date();
+    date.setFullYear(parseInt(years), monthsIndex, parseInt(days) + extraDays);
+
+    return date.toISOString();
   }
   return null;
 };

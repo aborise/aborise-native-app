@@ -37,6 +37,9 @@ const FlowResultDataCanceledSchema = z.object({
   membershipStatus: z.literal('canceled'),
   expiresAt: z.string().datetime().nullable(),
   lastSyncedAt: z.string().datetime().optional(),
+  nextPaymentPrice: z.object({ integer: z.number(), decimal: z.number() }).nullable(),
+  billingCycle: z.enum(['monthly', 'yearly']),
+  membershipPlan: z.string().nullable(),
 });
 
 const FlowResultDataInactiveSchema = z.object({
