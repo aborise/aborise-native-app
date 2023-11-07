@@ -80,8 +80,8 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
             {integer && (
               <>
                 <Text style={{ fontSize: 24 }}>
-                  <Text>{integer}</Text>
-                  <Text style={{ fontSize: 8 }}>{decimal}</Text>
+                  <Text>€{integer}.</Text>
+                  <Text>{decimal}</Text>
                 </Text>
                 <Text style={{ fontSize: 12, color: 'gray' }}>{t('next-payment')}</Text>
                 <Text style={{ fontSize: 10, color: 'gray' }}>{nextPaymentRelativeDate}</Text>
