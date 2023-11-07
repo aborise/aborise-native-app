@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { Link, Stack, router } from 'expo-router';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import AboItem from '~/components/AboItem';
@@ -12,7 +12,7 @@ import { objectEntries } from '~/shared/typeHelpers';
 
 const { t } = useI18n();
 
-const MonthlyExpenses: React.FC<{ amount: string }> = ({ amount }) => {
+const MonthlyExpenses: React.FC<{ amount: number }> = ({ amount }) => {
   return (
     <View className="p-4 bg-coldYellow-500 border-2 border-solid border-black rounded-2xl shadow-md">
       <Text className="text-slate-800 text-md font-medium mb-2">{t('monthly-expenses')}</Text>
@@ -40,6 +40,17 @@ const LogoTitle: React.FC = () => {
 
 const App = () => {
   const { data: connectedServices, isLoading } = useServicesDataQuery();
+  const { data } = useServicesDataQuery();
+
+  const price = useMemo(() => {
+    return Object.values(data ?? {}).reduce((acc, curr) => {
+      if (curr.membershipStatus === 'active') {
+        return acc + (curr.nextPaymentPrice!.integer + curr.nextPaymentPrice!.decimal / 100);
+      }
+      return acc;
+    }, 0);
+  }, [data]);
+
   return (
     <>
       <Stack.Screen
@@ -55,7 +66,7 @@ const App = () => {
       />
       <View className="flex flex-col grow p-4">
         <View className="flex flex-col grow" style={{ gap: 16 }}>
-          <MonthlyExpenses amount="100" />
+          <MonthlyExpenses amount={price} />
           {isLoading && <ActivityIndicator />}
           {connectedServices && Object.keys(connectedServices).length ? (
             <>

@@ -2,7 +2,7 @@
   "cancel": "Cancel",
   "cancel2": "Cancel",
   "resume": "Resume",
-  "reactivate": "Reactivate",
+  "reactivate": "Activate",
   "register": "Register",
   "delete": "Delete",
   "active": "Active",
@@ -36,5 +36,7 @@
   "not-synced": "Not Synced",
   "monthly": "monthly",
   "month": "month",
-  "year": "year"
+  "year": "year",
+  "status": "Status",
+  "plan": "Plan"
 }

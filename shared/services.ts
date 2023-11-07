@@ -49,7 +49,7 @@ const _netflix = {
       name: 'reactivate',
       type: 'manual',
       webView: true,
-      states: ['inactive'],
+      states: ['inactive', 'preactive'],
     },
     {
       name: 'register',

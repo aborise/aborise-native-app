@@ -33,6 +33,8 @@ const FlowResultDataActiveSchema = z.object({
   lastSyncedAt: z.string().datetime().optional(),
 });
 
+export type FlowResultActive = z.infer<typeof FlowResultDataActiveSchema>;
+
 const FlowResultDataCanceledSchema = z.object({
   membershipStatus: z.literal('canceled'),
   expiresAt: z.string().datetime().nullable(),
@@ -42,15 +44,21 @@ const FlowResultDataCanceledSchema = z.object({
   membershipPlan: z.string().nullable(),
 });
 
+export type FlowResultCanceled = z.infer<typeof FlowResultDataCanceledSchema>;
+
 const FlowResultDataInactiveSchema = z.object({
   membershipStatus: z.literal('inactive'),
   lastSyncedAt: z.string().datetime().optional(),
 });
 
+export type FlowResultInactive = z.infer<typeof FlowResultDataInactiveSchema>;
+
 const FlowResultDataPreactiveSchema = z.object({
   membershipStatus: z.literal('preactive'),
   lastSyncedAt: z.string().datetime().optional(),
 });
+
+export type FlowResultPreactive = z.infer<typeof FlowResultDataPreactiveSchema>;
 
 export const FlowResultSchema = z.discriminatedUnion('membershipStatus', [
   FlowResultDataActiveSchema,

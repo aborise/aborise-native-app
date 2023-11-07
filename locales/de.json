@@ -2,7 +2,7 @@
   "cancel": "Kündigen",
   "cancel2": "Abbrechen",
   "resume": "Fortsetzen",
-  "reactivate": "Reaktivieren",
+  "reactivate": "Aktivieren",
   "register": "Registrieren",
   "delete": "Löschen",
   "active": "Aktiv",
@@ -36,5 +36,7 @@
   "not-synced": "Nicht synchronisiert",
   "monthly": "monatlich",
   "month": "Monat",
-  "year": "Jahr"
+  "year": "Jahr",
+  "status": "Status",
+  "plan": "Plan"
 }

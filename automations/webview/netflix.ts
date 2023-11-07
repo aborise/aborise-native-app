@@ -1,23 +1,20 @@
-import WebView from 'react-native-webview';
+import { Response } from '~/app/details/[id]/genericWebView';
 import { Err, Ok, Result } from '~/shared/Result';
 import { strToCookie } from '~/shared/helpers';
+import { getCookies } from '../api/helpers/cookie';
 import { ReactContext, UserContext } from '../api/utils/netflix.types';
 import { FlowReturn } from '../playwright/setup/Runner';
 import { extractAmount, extractDate } from '../playwright/strings';
-import { getCookies } from '../api/helpers/cookie';
-import { Response } from '~/app/details/[id]/genericWebView';
-import { Cookie } from 'playwright-core';
-import { Awaitable } from '~/shared/typeHelpers';
 import { WebViewConfig, javascript } from './webview.helpers';
 
-const generateMembershipCheck = (membershipStatus: UserContext['membershipStatus'], type: Response['type']) => {
+const generateMembershipCheck = (membershipStatus: UserContext['membershipStatus'][], type: Response['type']) => {
   return javascript`
-    const data = window.netflix.reactContext.models.userInfo.data.membershipStatus === '${membershipStatus}';
+    const data = [${membershipStatus
+      .map((s) => `'${s}'`)
+      .join(',')}].includes(window.netflix.reactContext.models.userInfo.data.membershipStatus)
     window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data }));
   `;
 };
-
-// const str = console.log`const i = 5`
 
 const generateLocationCheck = (type: Response['type'], pathName: string, negative = false) => {
   return javascript`
@@ -26,9 +23,11 @@ const generateLocationCheck = (type: Response['type'], pathName: string, negativ
   `;
 };
 
-const checkAnonymous = (type: Response['type']) => generateMembershipCheck.bind(null, 'ANONYMOUS', type);
-const checkCurrentMember = (type: Response['type']) => generateMembershipCheck.bind(null, 'CURRENT_MEMBER', type);
-const checkFormerMember = (type: Response['type']) => generateMembershipCheck.bind(null, 'FORMER_MEMBER', type);
+const checkAnonymous = (type: Response['type']) => generateMembershipCheck.bind(null, ['ANONYMOUS'], type);
+const checkCurrentMember = (type: Response['type']) => generateMembershipCheck.bind(null, ['CURRENT_MEMBER'], type);
+const checkFormerMember = (type: Response['type']) => generateMembershipCheck.bind(null, ['FORMER_MEMBER'], type);
+const checkNeverOrFormerMember = (type: Response['type']) =>
+  generateMembershipCheck.bind(null, ['NEVER_MEMBER', 'FORMER_MEMBER'], type);
 /** pathName e.g. /browse */
 const checkLocation = (type: Response['type'], pathName: string) => generateLocationCheck.bind(null, type, pathName);
 const negativeCheckLocation = (type: Response['type'], pathName: string) =>
@@ -113,11 +112,13 @@ export const register: WebViewConfig = {
 
 export const reactivate: WebViewConfig = {
   url: 'https://www.netflix.com/signup/planform',
-  sanityCheck: () => negativeCheckLocation('sanity', '/browse')() + checkFormerMember('sanity')(),
+  sanityCheck: () => negativeCheckLocation('sanity', '/browse')() + checkNeverOrFormerMember('sanity')(),
   targetCondition: checkCurrentMember('condition'),
   dataExtractor,
   dataConverter,
   getCookies: () => {
-    return getCookies('netflix', ['NetflixId', 'SecureNetflixId', 'flwssn', 'nfvdid']);
+    return getCookies('netflix', ['NetflixId', 'SecureNetflixId', 'flwssn', 'nfvdid']).then((c) =>
+      c.concat(strToCookie('hasSeenCookieDisclosure=true')),
+    );
   },
 };

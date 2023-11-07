@@ -1,14 +1,17 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
-import { Stack, router, useLocalSearchParams } from 'expo-router';
+import { Stack as ExpoStack, router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, RefreshControl, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { ScrollView } from 'react-native-gesture-handler';
+import { ActivityIndicator, Alert, Modal, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+// import { ScrollView } from 'react-native-gesture-handler';
+import { useHeaderHeight } from '@react-navigation/elements';
 import Toast from 'react-native-root-toast';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { Button, ScrollView, SizableText, Stack, XStack, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import * as webviews from '~/automations/webview/index';
-import { useI18n, useDayJs } from '~/composables/useI18n';
+import AboDetails from '~/components/details/AboDetails';
+import { useDayJs, useI18n } from '~/composables/useI18n';
 import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
 import { useServicesQuery } from '~/queries/useServicesQuery';
 import { AllServices, services } from '~/shared/allServices';
@@ -16,8 +19,7 @@ import { getAction } from '~/shared/apis';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { ERROR_CODES } from '~/shared/errors';
 import { getLogo } from '~/shared/logos';
-import { billingCycle } from '~/shared/translationMapping';
-import { Service, State } from '~/shared/validators';
+import { Service } from '~/shared/validators';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
@@ -69,21 +71,13 @@ const Details: React.FC = () => {
   const { mutateAsync: deleteConnectedService } = deleteServiceMutation();
   const { serviceDataQuery } = useServiceDataQuery(service.id);
   const { data: serviceData, isLoading, error } = serviceDataQuery();
+  const [menuVisible, setMenuVisible] = useState(false);
+  const height = useHeaderHeight();
 
   const lastSyncDate = useMemo(
     () => dayjs(serviceData?.lastSyncedAt ?? new Date()).format('DD.MM.YYYY'),
     [serviceData?.lastSyncedAt],
   );
-
-  const nextPaymentDate = useMemo(() => {
-    if (serviceData?.membershipStatus !== 'active') return;
-    return dayjs(serviceData.nextPaymentDate ?? 0).format('DD.MM.YYYY');
-  }, [serviceData?.membershipStatus === 'active' && serviceData.nextPaymentDate]);
-
-  const expiresRelativeDate = useMemo(() => {
-    if (serviceData?.membershipStatus !== 'canceled') return;
-    return dayjs(serviceData.expiresAt ?? 0).fromNow();
-  }, [serviceData?.membershipStatus === 'canceled' && serviceData.expiresAt]);
 
   const actions = useMemo(
     () =>
@@ -180,7 +174,7 @@ const Details: React.FC = () => {
         );
       }
 
-      setActionError(res.val.message);
+      Toast.show(res.val.message, { duration: Toast.durations.LONG });
     });
   };
 
@@ -194,104 +188,72 @@ const Details: React.FC = () => {
 
   if (!service || !serviceData) {
     return (
-      <View>
-        <Text>{t('service-not-found')}</Text>
-      </View>
+      <Stack>
+        <SizableText>{t('service-not-found')}</SizableText>
+      </Stack>
     );
   }
 
   return (
     <>
-      <Stack.Screen
+      <ExpoStack.Screen
         options={{
           title: service.title,
+          headerRight: () => (
+            <TouchableOpacity onPress={() => setMenuVisible(!menuVisible)}>
+              <View style={{ aspectRatio: '1/1', justifyContent: 'center', alignItems: 'center' }}>
+                <Icon name="ellipsis-h" size={24} color="#000000" />
+              </View>
+            </TouchableOpacity>
+          ),
         }}
       />
-      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        <View style={styles.flexContainer}>
-          {/* First Column */}
-          <View style={styles.firstColumn}>
-            <Image source={getLogo(service.id)} style={styles.logo} className="rounded-3xl" />
-          </View>
-          {/* Second Column */}
-          <View style={styles.secondColumn}>
-            <View style={styles.syncBox}>
-              <Text style={styles.syncText}>{t('connected')}</Text>
-            </View>
-            <Text style={styles.lastSyncDateText}>
+      <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />} px="$4" space>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={menuVisible}
+          onRequestClose={() => setMenuVisible(false)}
+        >
+          <Stack onPress={() => setMenuVisible(false)} flex={1}>
+            <YStack pos="absolute" t={height / 2} r="$1" bc="white" br="$1" elevation={4}>
+              <TouchableOpacity onPress={() => (onRefresh(), setMenuVisible(false))}>
+                <SizableText style={styles.menuItem}>Refresh</SizableText>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => (deleteSubscription(), setMenuVisible(false))}>
+                <SizableText style={styles.menuItem}>Delete</SizableText>
+              </TouchableOpacity>
+            </YStack>
+          </Stack>
+        </Modal>
+
+        <XStack flex={1} space borderRadius="$4">
+          <YStack>
+            <Image source={getLogo(service.id)} style={styles.logo} className="rounded-3xl"></Image>
+          </YStack>
+          <YStack ai="flex-start" gap="$1" jc="center">
+            <Stack bg="$green8" px="$2" br="$1">
+              <SizableText size="$6">{t('connected')}</SizableText>
+            </Stack>
+
+            <SizableText size={'$2'} color="$gray10">
               {t('last-updated')}: {lastSyncDate}
-            </Text>
-          </View>
-          <View style={styles.thirdColumn}>
-            <Icon name="edit" size={24} color="#667160" />
-            <Icon name="refresh" size={24} color="#667160" />
-            <Icon name="unlink" size={24} color="#667160" />
-          </View>
-        </View>
-        {/* Second Section */}
-        <View style={[styles.flexContainer, styles.flexColumn]}>
-          {/* Render based on membershipStatus */}
-          {serviceData.membershipStatus === 'active' ? (
-            <>
-              <View style={styles.statusBox}>
-                <Text style={styles.statusText}>Plan: {serviceData.membershipPlan ?? 'Basic'}</Text>
-              </View>
-              <Text style={styles.priceText}>
-                {serviceData.nextPaymentPrice?.integer}.
-                <Text style={styles.decimalText}>{serviceData.nextPaymentPrice?.decimal}</Text> /{' '}
-                {billingCycle[serviceData.billingCycle ?? 'monthly']}
-              </Text>
-            </>
-          ) : serviceData.membershipStatus === 'canceled' ? (
-            <>
-              <View style={styles.statusBox}>
-                <Text style={styles.statusText}>
-                  {t('canceled')}: {serviceData.membershipPlan ?? 'Basic'}
-                </Text>
-              </View>
-              <Text style={styles.priceText}>
-                {serviceData.nextPaymentPrice?.integer}.
-                <Text style={styles.decimalText}>{serviceData.nextPaymentPrice?.decimal}</Text> /{' '}
-                {billingCycle[serviceData.billingCycle ?? 'monthly']}
-              </Text>
-              <Text style={styles.flexItemsCenter}>
-                {t('expires')} {expiresRelativeDate}
-              </Text>
-            </>
-          ) : (
-            <View style={styles.statusBox}>
-              <Text style={styles.statusText}>{t('inactive')}</Text>
-            </View>
-          )}
-          {serviceData.membershipStatus === 'active' ? (
-            <View style={styles.flexItemsCenter}>
-              <Text style={styles.textBase}>{t('next-payment')}:</Text>
-              <Text style={[styles.textBase, styles.ml2]}>{nextPaymentDate}</Text>
-            </View>
-          ) : null}
-        </View>
+            </SizableText>
+          </YStack>
+        </XStack>
+
+        <Stack p="$4" bg="white" borderRadius="$4">
+          <AboDetails serviceData={serviceData} />
+        </Stack>
 
         {/* Third Section */}
-        <View style={[styles.flexContainer, styles.flexColumn]}>
+        <>
           {actions.map((action, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.btn, styles.btnResume, styles.mb2]}
-              onPress={() => handleAction(service.id, action)}
-            >
-              <Text>{t(action.name)}</Text>
-            </TouchableOpacity>
+            <Button key={index} size="$6" onPress={() => handleAction(service.id, action)} bg="$green7">
+              <SizableText>{t(action.name)}</SizableText>
+            </Button>
           ))}
-          <TouchableOpacity style={[styles.btn, styles.btnCancel, styles.mb2]} onPress={deleteSubscription}>
-            <Text>{t('delete')}</Text>
-          </TouchableOpacity>
-          {actionError ? (
-            <View>
-              <Text>{actionError}</Text>
-            </View>
-          ) : null}
-        </View>
-        {/* Fourth Section */}
+        </>
 
         {executing && (
           <View
@@ -406,6 +368,32 @@ const styles = StyleSheet.create({
   },
   mb2: {
     marginBottom: 8,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+  },
+  title: {
+    fontSize: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-end',
+  },
+  menu: {
+    width: 150,
+    backgroundColor: 'white',
+    borderRadius: 5,
+    overflow: 'hidden',
+    elevation: 5, // for android shadow
+  },
+  menuItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 16,
   },
 });
 

@@ -1,8 +1,10 @@
+import CookieManager from '@react-native-cookies/cookies';
 import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import { SizableText } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import { useServiceLogin } from '~/composables/useServiceLogin';
 import { AllServices, services } from '~/shared/allServices';
@@ -89,6 +91,11 @@ const Connect: React.FC = () => {
           />
         </View>
         <Button title="Connect" onPress={doConnect} />
+        <SizableText mt="$4">Don't have an account?</SizableText>
+        <Button
+          title="register"
+          onPress={() => CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`))}
+        />
 
         <View>
           <Text>{error}</Text>
