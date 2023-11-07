@@ -38,5 +38,6 @@
   "month": "month",
   "year": "year",
   "status": "Status",
-  "plan": "Plan"
+  "plan": "Plan",
+  "account": "Account"
 }

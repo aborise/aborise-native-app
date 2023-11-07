@@ -656,6 +656,9 @@ export const connect = api(({ item, auth, client }) => {
         expiresAt: details.latestTransactedInvoice.actualExecutionDate
           ? dayjs(details.latestTransactedInvoice.actualExecutionDate).add(1, 'month').toISOString()
           : null,
+        billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
+        membershipPlan: null,
+        nextPaymentPrice: numberToDecimal(details.latestTransactedInvoice.totalAmount),
         lastSyncedAt: new Date().toISOString(),
       };
     })
@@ -677,6 +680,9 @@ export const cancel = api(({ item, auth, client }) => {
           ? dayjs(details.latestTransactedInvoice.actualExecutionDate).add(1, 'month').toISOString()
           : null,
         lastSyncedAt: new Date().toISOString(),
+        billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
+        membershipPlan: null,
+        nextPaymentPrice: numberToDecimal(details.latestTransactedInvoice.totalAmount),
       };
     })
     .map((res) => ({ data: res }));

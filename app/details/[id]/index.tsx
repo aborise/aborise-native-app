@@ -3,7 +3,6 @@ import { Image } from 'expo-image';
 import { Stack as ExpoStack, router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
-// import { ScrollView } from 'react-native-gesture-handler';
 import { useHeaderHeight } from '@react-navigation/elements';
 import Toast from 'react-native-root-toast';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -20,6 +19,7 @@ import { getUserId } from '~/shared/ensureDataLoaded';
 import { ERROR_CODES } from '~/shared/errors';
 import { getLogo } from '~/shared/logos';
 import { Service } from '~/shared/validators';
+import { useServiceLogin } from '~/composables/useServiceLogin';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
@@ -71,6 +71,7 @@ const Details: React.FC = () => {
   const { mutateAsync: deleteConnectedService } = deleteServiceMutation();
   const { serviceDataQuery } = useServiceDataQuery(service.id);
   const { data: serviceData, isLoading, error } = serviceDataQuery();
+  const { data: login } = useServiceLogin(service.id);
   const [menuVisible, setMenuVisible] = useState(false);
   const height = useHeaderHeight();
 
@@ -235,6 +236,12 @@ const Details: React.FC = () => {
             <Stack bg="$green8" px="$2" br="$1">
               <SizableText size="$6">{t('connected')}</SizableText>
             </Stack>
+
+            {login?.email ? (
+              <SizableText>
+                {t('account')}: {login.email}
+              </SizableText>
+            ) : null}
 
             <SizableText size={'$2'} color="$gray10">
               {t('last-updated')}: {lastSyncDate}
