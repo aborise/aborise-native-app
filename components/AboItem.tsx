@@ -44,13 +44,6 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
     return data.membershipStatus === 'active' ? data.nextPaymentPrice ?? {} : {};
   }, [data]);
 
-  const LeosCard = styled(XStack, {
-    borderRadius: '$6',
-    padding: '$4',
-    alignItems: 'center',
-    space: '$4',
-  });
-
   return (
     // <Link asChild href={`/details/${id}`}>
     <AboCard onPress={() => router.push(`/details/${id}`)} backgroundColor="$blue6">
