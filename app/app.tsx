@@ -1,8 +1,9 @@
 import { Image } from 'expo-image';
-import { Link, Stack, router } from 'expo-router';
+import { Stack as ExpoStack, Link, router } from 'expo-router';
 import React, { useMemo } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { SizableText, Stack, XStack, YStack, styled } from 'tamagui';
 import AboItem from '~/components/AboItem';
 import { AboItemUnconnected } from '~/components/AboItemUnconnected';
 import { useI18n } from '~/composables/useI18n';
@@ -12,29 +13,29 @@ import { objectEntries } from '~/shared/typeHelpers';
 
 const { t } = useI18n();
 
-const MonthlyExpenses: React.FC<{ amount: number }> = ({ amount }) => {
-  return (
-    <View className="p-4 bg-coldYellow-500 border-2 border-solid border-black rounded-2xl shadow-md">
-      <Text className="text-slate-800 text-md font-medium mb-2">{t('monthly-expenses')}</Text>
-      <Text className="text-slate-800 text-xl font-bold">€{amount}</Text>
-    </View>
-  );
-};
-
 const LogoTitle: React.FC = () => {
   return (
     <>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignContent: 'flex-start',
-          alignItems: 'center',
-          gap: 8,
-        }}
-      >
+      <Stack>
         <Image style={{ width: 32, height: 32 }} source={require('../assets/logo2.svg')} />
-      </View>
+      </Stack>
     </>
+  );
+};
+const LeosCard = styled(XStack, {
+  borderRadius: '$6',
+  padding: '$4',
+  elevation: '$1',
+});
+
+const MonthlyExpenses: React.FC<{ amount: number }> = ({ amount }) => {
+  return (
+    <LeosCard backgroundColor="$yellow4">
+      <YStack>
+        <SizableText size="$2">{t('monthly-expenses')}</SizableText>
+        <SizableText size="$8">€{amount}</SizableText>
+      </YStack>
+    </LeosCard>
   );
 };
 
@@ -53,7 +54,7 @@ const App = () => {
 
   return (
     <>
-      <Stack.Screen
+      <ExpoStack.Screen
         options={{
           title: 'Home',
           headerTitle: () => <LogoTitle />,
@@ -64,36 +65,38 @@ const App = () => {
           ),
         }}
       />
-      <View className="flex flex-col grow p-4">
-        <View className="flex flex-col grow" style={{ gap: 16 }}>
-          <MonthlyExpenses amount={price} />
-          {isLoading && <ActivityIndicator />}
-          {connectedServices && Object.keys(connectedServices).length ? (
-            <>
-              <Text className="text-xl font-bold">{t('active-subscriptions')}</Text>
-              <FlatList
-                data={objectEntries(connectedServices)}
-                keyExtractor={([id]) => id}
-                renderItem={({ item }) =>
-                  item[1] ? (
-                    <AboItem data={item[1]!} title={services[item[0]].title} id={item[0]} />
-                  ) : (
-                    <AboItemUnconnected id={item[0]} title={services[item[0]].title} />
-                  )
-                }
-              />
-            </>
-          ) : null}
-          {!isLoading && (!connectedServices || !Object.keys(connectedServices).length) ? (
-            <View className="flex w-full items-center pt-10">
-              <Image source={require('../assets/no-subs.png')} className="w-full aspect-square" />
-              <Text>{t('you-dont-have-any-subscriptions-yet')}</Text>
-              <Link href="/add" asChild>
-                <Text className="text-classicBlue-500">{t('add-one')}</Text>
-              </Link>
-            </View>
-          ) : null}
+      <YStack flex={1} padding="$3" space>
+        <MonthlyExpenses amount={price} />
 
+        {isLoading && <ActivityIndicator />}
+
+        {connectedServices && Object.keys(connectedServices).length ? (
+          <YStack space="$2">
+            <SizableText size="$6">{t('active-subscriptions')}</SizableText>
+            <FlatList
+              data={objectEntries(connectedServices)}
+              keyExtractor={([id]) => id}
+              renderItem={({ item }) =>
+                item[1] ? (
+                  <AboItem data={item[1]!} title={services[item[0]].title} id={item[0]} />
+                ) : (
+                  <AboItemUnconnected id={item[0]} title={services[item[0]].title} />
+                )
+              }
+            />
+          </YStack>
+        ) : null}
+
+        {!isLoading && (!connectedServices || !Object.keys(connectedServices).length) ? (
+          <YStack alignItems="center">
+            <Image source={require('../assets/no-subs.png')} className="w-full aspect-square" />
+            <SizableText>{t('you-dont-have-any-subscriptions-yet')}</SizableText>
+            <Link href="/add" asChild>
+              <SizableText color="$blue10">{t('add-one')}</SizableText>
+            </Link>
+          </YStack>
+        ) : null}
+        <YStack fullscreen>
           <Link href="/add" asChild>
             <Pressable
               style={{ elevation: 3 }}
@@ -102,8 +105,8 @@ const App = () => {
               <Icon name="plus" size={32} color="#fff" />
             </Pressable>
           </Link>
-        </View>
-      </View>
+        </YStack>
+      </YStack>
     </>
   );
 };

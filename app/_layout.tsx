@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router/stack';
+import { Stack as ExpoStack } from 'expo-router/stack';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useI18n } from '~/composables/useI18n';
 import { RootSiblingParent } from 'react-native-root-siblings';
@@ -33,25 +33,29 @@ export default function Layout() {
       <QueryClientProvider client={queryClient}>
         <RootSiblingParent>
           <TamaguiProvider config={config}>
-            <Stack
+            <ExpoStack
               screenOptions={{
-                // headerStyle: {
-                //   backgroundColor: '#0000ff',
-                // },
+                headerStyle: {
+                  backgroundColor: 'fff',
+                },
                 headerTintColor: '#000',
+                headerShadowVisible: false,
                 headerTitleStyle: {
                   fontWeight: 'bold',
                 },
+                contentStyle: {
+                  backgroundColor: '#fff',
+                },
               }}
             >
-              <Stack.Screen
+              <ExpoStack.Screen
                 name="add/index"
                 options={{
                   title: t('add-subscription'),
                   // presentation: 'modal',
                 }}
               />
-              <Stack.Screen
+              <ExpoStack.Screen
                 name="add/[id]"
                 options={
                   {
@@ -59,7 +63,7 @@ export default function Layout() {
                   }
                 }
               />
-            </Stack>
+            </ExpoStack>
           </TamaguiProvider>
         </RootSiblingParent>
       </QueryClientProvider>
