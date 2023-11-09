@@ -3,6 +3,7 @@ import { useServicesQuery } from './useServicesQuery';
 import { useStorage } from '~/composables/useStorage';
 import { FlowReturn } from '~/automations/playwright/setup/Runner';
 import { AllServices } from '~/shared/allServices';
+import { useEffect } from 'react';
 
 export const useServicesDataQuery = () => {
   const storage = useStorage('local');
@@ -12,7 +13,7 @@ export const useServicesDataQuery = () => {
 
   return useQuery({
     enabled: !!serviceIds,
-    queryFn: async () => {
+    queryFn: async (query) => {
       if (!serviceIds) return {};
       const entries = await Promise.all(
         serviceIds.map(async (serviceId) => [

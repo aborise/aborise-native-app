@@ -12,6 +12,7 @@ import { WebViewConfig } from '~/automations/webview/webview.helpers';
 import { useServiceLogin } from '~/composables/useServiceLogin';
 import { addConnectedService } from '~/composables/useServiceData';
 import { useQueryClient } from '@tanstack/react-query';
+import { useServicesQuery } from '~/queries/useServicesQuery';
 
 type WebViewConfigKeys = keyof typeof webviews;
 type WebViewConfigActionNames = { [P in WebViewConfigKeys]: keyof (typeof webviews)[P] }[WebViewConfigKeys];
@@ -46,7 +47,8 @@ export const ServiceWebView: React.FC = () => {
   const { serviceDataMutation } = useServiceDataQuery(local.id!);
   const { mutateAsync: updateServiceData } = serviceDataMutation();
 
-  const queryClient = useQueryClient();
+  const { addServiceMutation } = useServicesQuery();
+  const { mutateAsync: addService } = addServiceMutation();
 
   const saveData = async (result: Result<FlowReturn, any>) => {
     if (result.err) {
@@ -58,9 +60,7 @@ export const ServiceWebView: React.FC = () => {
     await updateServiceData(result.val.data);
 
     if (local.action === 'connect') {
-      await addConnectedService(local.id!);
-      await queryClient.invalidateQueries({ queryKey: ['services'] });
-      await queryClient.invalidateQueries({ queryKey: ['servicesData', local.id!] });
+      await addService(local.id!);
     }
   };
 

@@ -13,8 +13,9 @@ import { useFonts } from 'expo-font';
 
 SplashScreen.preventAutoHideAsync();
 
+const queryClient = new QueryClient();
+
 export default function Layout() {
-  const queryClient = new QueryClient();
   const { t } = useI18n();
   const { loading } = useAsyncStateReadonly(ensureDataLoaded);
   const [loaded] = useFonts({
@@ -36,7 +37,7 @@ export default function Layout() {
             <ExpoStack
               screenOptions={{
                 headerStyle: {
-                  backgroundColor: 'fff',
+                  backgroundColor: '#fff',
                 },
                 headerTintColor: '#000',
                 headerShadowVisible: false,

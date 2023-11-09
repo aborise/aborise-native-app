@@ -19,14 +19,15 @@ const LocalStorage: Storage = {
     if (value == null) return this.delete(key);
     return setItemAsync(key.replace(regex, '_'), JSON.stringify(value));
   },
-  get(key: string, defaultValue?: any) {
+  get(key: string, defaultValue: any = null) {
     return getItemAsync(key.replace(regex, '_')).then((value) => {
       console.log('get', key, value);
-      if (value === null) return defaultValue;
+      if (value == null) return defaultValue;
       return JSON.parse(value);
     });
   },
   delete(key: string) {
+    console.log('delete', key);
     return deleteItemAsync(key.replace(regex, '_'));
   },
 };
@@ -36,7 +37,7 @@ const RemoteStorage = (userId: string): Storage => ({
     if (value == null) return this.delete(key);
     return set(ref(useFirebaseDb(), `users/${userId}/${key}`), value);
   },
-  get(key: string, defaultValue?: any) {
+  get(key: string, defaultValue: any = null) {
     return get(ref(useFirebaseDb(), `users/${userId}/${key}`)).then((value) => {
       if (!value.exists()) return defaultValue;
       return value.val();
@@ -53,9 +54,10 @@ const SyncedStorage = (userId: string): Storage => {
 
   return {
     set(key: string, value: any) {
+      if (value == null) return this.delete(key);
       return Promise.all([local.set(key, value), remote.set(key, value)]).then(() => {});
     },
-    get(key: string, defaultValue?: any) {
+    get(key: string, defaultValue: any = null) {
       return local.get(key, defaultValue);
     },
     delete(key: string) {

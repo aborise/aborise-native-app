@@ -1,3 +1,4 @@
+import CookieManager from '@react-native-cookies/cookies';
 import { Stack, router } from 'expo-router';
 import { Cookie } from 'playwright-core';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -87,7 +88,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getCookies(), getAuth?.()]).then(([cookies, auth]) => {
+    Promise.all([getCookies(), getAuth?.(), CookieManager.clearAll()]).then(([cookies, auth]) => {
       setWebviewCookies(cookies);
       auth && setAuth(auth);
       setWebviewUrl(url);

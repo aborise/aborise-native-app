@@ -1,5 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { clearConnectedServices, deleteConnectedService, getConnectedServiceIds } from '~/composables/useServiceData';
+import {
+  addConnectedService,
+  clearConnectedServices,
+  deleteConnectedService,
+  getConnectedServiceIds,
+} from '~/composables/useServiceData';
 
 export const useServicesQuery = () => {
   const queryClient = useQueryClient();
@@ -18,7 +23,7 @@ export const useServicesQuery = () => {
 
   const addServiceMutation = () =>
     useMutation({
-      mutationFn: deleteConnectedService,
+      mutationFn: addConnectedService,
       onSuccess: () =>
         Promise.all([
           queryClient.invalidateQueries({ queryKey: ['services'] }),

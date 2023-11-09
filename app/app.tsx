@@ -37,16 +37,15 @@ const MonthlyExpenses: React.FC<{ amount: number }> = ({ amount }) => {
 
 const App = () => {
   const { data: connectedServices, isLoading } = useServicesDataQuery();
-  const { data } = useServicesDataQuery();
 
   const price = useMemo(() => {
-    return Object.values(data ?? {}).reduce((acc, curr) => {
+    return Object.values(connectedServices ?? {}).reduce((acc, curr) => {
       if (curr.membershipStatus === 'active') {
         return acc + (curr.nextPaymentPrice!.integer + curr.nextPaymentPrice!.decimal / 100);
       }
       return acc;
     }, 0);
-  }, [data]);
+  }, [connectedServices]);
 
   return (
     <>
