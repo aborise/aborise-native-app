@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SizableText, Stack, XStack, YStack, styled } from 'tamagui';
+import AboCard from '~/components/AboCard';
 import AboItem from '~/components/AboItem';
 import { AboItemUnconnected } from '~/components/AboItemUnconnected';
 import { useI18n } from '~/composables/useI18n';
@@ -22,20 +23,15 @@ const LogoTitle: React.FC = () => {
     </>
   );
 };
-const LeosCard = styled(XStack, {
-  borderRadius: '$6',
-  padding: '$4',
-  elevation: '$1',
-});
 
 const MonthlyExpenses: React.FC<{ amount: number }> = ({ amount }) => {
   return (
-    <LeosCard backgroundColor="$yellow4">
+    <AboCard backgroundColor="$yellow4" elevation="$1">
       <YStack>
         <SizableText size="$2">{t('monthly-expenses')}</SizableText>
         <SizableText size="$8">€{amount}</SizableText>
       </YStack>
-    </LeosCard>
+    </AboCard>
   );
 };
 
@@ -74,6 +70,7 @@ const App = () => {
           <YStack space="$2">
             <SizableText size="$6">{t('active-subscriptions')}</SizableText>
             <FlatList
+              contentContainerStyle={{ gap: 8 }}
               data={objectEntries(connectedServices)}
               keyExtractor={([id]) => id}
               renderItem={({ item }) =>

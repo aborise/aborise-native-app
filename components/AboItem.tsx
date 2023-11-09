@@ -1,13 +1,15 @@
 import { Image } from 'expo-image';
+import { router } from 'expo-router';
 import { Link } from 'expo-router/src/exports';
 import React, { useMemo } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Pressable, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { SizableText, XStack, YStack, styled } from 'tamagui';
+import { SizableText, Text, XStack, YStack, styled } from 'tamagui';
 import { FlowReturn } from '~/automations/playwright/setup/Runner';
 import { useDayJs, useI18n } from '~/composables/useI18n';
 import { AllServices } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
+import AboCard from './AboCard';
 
 const dayjs = useDayJs();
 const { t } = useI18n();
@@ -46,46 +48,45 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
     borderRadius: '$6',
     padding: '$4',
     alignItems: 'center',
+    space: '$4',
   });
 
   return (
-    <Link asChild href={`/details/${id}`}>
-      <TouchableOpacity onLongPress={onContextMenu}>
-        <LeosCard backgroundColor="$blue6" marginBottom="$3" space>
-          <Image source={getLogo(id)} style={{ width: 60, height: 60 }} className="rounded-xl" />
-          <YStack flex={1}>
-            <SizableText size="$6">{title}</SizableText>
-            {renewsDate && (
-              <SizableText theme="alt2" size="$2">
-                {t('renews')} {renewsDate}
-              </SizableText>
-            )}
-            {expiresDate && (
-              <SizableText theme="alt2" size="$1">
-                {t('expires')} {expiresDate}
-              </SizableText>
-            )}
-            {data.membershipStatus === 'inactive' && <SizableText>{t('inactive')}</SizableText>}
-          </YStack>
+    // <Link asChild href={`/details/${id}`}>
+    <AboCard onPress={() => router.push(`/details/${id}`)} backgroundColor="$blue6">
+      <Image source={getLogo(id)} style={{ width: 60, height: 60 }} className="rounded-xl" />
+      <YStack flex={1}>
+        <SizableText size="$6">{title}</SizableText>
+        {renewsDate && (
+          <SizableText theme="alt2" size="$2">
+            {t('renews')} {renewsDate}
+          </SizableText>
+        )}
+        {expiresDate && (
+          <SizableText theme="alt2" size="$1">
+            {t('expires')} {expiresDate}
+          </SizableText>
+        )}
+        {data.membershipStatus === 'inactive' && <SizableText>{t('inactive')}</SizableText>}
+      </YStack>
 
-          {integer && (
-            <>
-              <SizableText>
-                <SizableText size="$7">€{integer}.</SizableText>
-                <SizableText size="$7">{decimal}</SizableText>
-              </SizableText>
-              <SizableText theme="alt2" size="$1">
-                /month
-              </SizableText>
-              {/* <SizableText theme="alt2" size="$1">{t('next-payment')}</SizableText> */}
-              {/* <SizableText theme="alt2" size="$1">{nextPaymentRelativeDate}</SizableText> */}
-            </>
-          )}
+      {integer && (
+        <>
+          <SizableText>
+            <SizableText size="$7">€{integer}.</SizableText>
+            <SizableText size="$7">{decimal}</SizableText>
+          </SizableText>
+          <SizableText theme="alt2" size="$1">
+            /month
+          </SizableText>
+          {/* <SizableText theme="alt2" size="$1">{t('next-payment')}</SizableText> */}
+          {/* <SizableText theme="alt2" size="$1">{nextPaymentRelativeDate}</SizableText> */}
+        </>
+      )}
 
-          <Icon name="angle-right" size={24} color="#000000" />
-        </LeosCard>
-      </TouchableOpacity>
-    </Link>
+      <Icon name="angle-right" size={24} color="#000000" />
+    </AboCard>
+    // </Link>
 
     // <Link asChild href={`/details/${id}`}>
     //   <TouchableOpacity onLongPress={onContextMenu}>
