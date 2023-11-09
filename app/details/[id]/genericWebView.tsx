@@ -1,17 +1,13 @@
-import { config } from 'dotenv';
 import { Stack, router } from 'expo-router';
 import { Cookie } from 'playwright-core';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import Toast from 'react-native-root-toast';
 import WebView from 'react-native-webview';
-import {
-  AndroidWebViewProps,
-  IOSWebViewProps,
-  WebViewNavigation,
-  WindowsWebViewProps,
-} from 'react-native-webview/lib/WebViewTypes';
+import { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
 import { cookiesToString } from '~/automations/api/helpers/cookie';
 import { FlowReturn } from '~/automations/playwright/setup/Runner';
+import { useI18n } from '~/composables/useI18n';
 import { Result } from '~/shared/Result';
 import { Awaitable } from '~/shared/typeHelpers';
 
@@ -59,10 +55,16 @@ type GenericWebViewProps = {
   /** The function that converts the extracted data into the correct format */
   dataConverter: (data: any) => Result<FlowReturn, any>;
   /** The function that gets called when the data is extracted */
-  onSuccess: (data: Result<FlowReturn, any>) => void;
+  onSuccess: (data: Result<FlowReturn, any>) => Awaitable<void>;
   /** Pass a function that returns the cookies that should be set in the webview */
   getCookies: () => Awaitable<Cookie[]>;
+  /** Pass a function that returns the username and password that should be set in the webview */
+  getAuth?: () => Awaitable<{ email: string; password: string } | null>;
+  /** Other Code that is injected on every page and serves some functionality (e.g. form autofill) */
+  otherCode?: Array<(data: Record<string, unknown>) => string | undefined>;
 };
+
+const { t } = useI18n();
 
 export const GenericWebView: React.FC<GenericWebViewProps> = ({
   title,
@@ -74,19 +76,30 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
   dataConverter,
   onSuccess,
   getCookies,
+  getAuth,
+  otherCode,
 }) => {
   const [webviewUrl, setWebviewUrl] = useState<string>();
   const [webviewCookies, setWebviewCookies] = useState<Cookie[]>([]);
   const [webviewRef, setWebviewRef] = useState<WebView | null>(null);
+  const [auth, setAuth] = useState<{ email: string; password: string }>();
 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.resolve(getCookies()).then((cookies) => {
+    Promise.all([getCookies(), getAuth?.()]).then(([cookies, auth]) => {
       setWebviewCookies(cookies);
+      auth && setAuth(auth);
       setWebviewUrl(url);
     });
   }, []);
+
+  const otherCodeString = useMemo(() => {
+    return otherCode
+      ?.map((code) => code(auth!))
+      .filter(Boolean)
+      .join('\n');
+  }, [auth]);
 
   const handleWebViewMessage = (event: { nativeEvent: { data: string } }) => {
     const response = JSON.parse(event.nativeEvent.data) as Response;
@@ -96,7 +109,11 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     if (response.type === 'sanity') {
       if (!response.data) {
         console.log('Sanity check failed. Closing webview');
-        return router.back();
+
+        // For debugging purposes we can disable the sanity check to see what happens
+        if (process.env.EXPO_PUBLIC_WEBVIEW_NO_SANITY_CHECK !== 'true') {
+          return router.back();
+        }
       }
     }
 
@@ -111,7 +128,10 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     }
 
     if (response.type === 'extract') {
-      onSuccess(dataConverter(response.data));
+      Promise.resolve(onSuccess(dataConverter(response.data))).then(() => {
+        Toast.show(t('successfully-connected'), { duration: Toast.durations.LONG });
+        router.push('/');
+      });
     }
   };
 
@@ -131,7 +151,8 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
 
   const handleWebViewLoaded = () => {
     setLoading(false);
-    // return webviewRef!.injectJavaScript(sanityCheck());
+    // FIXME: This method is called on every navigation change event (why...?)
+    webviewRef!.injectJavaScript(sanityCheck());
   };
 
   return (
@@ -161,7 +182,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
               Cookie: cookiesToString(webviewCookies),
             },
           }}
-          injectedJavaScript={sanityCheck()}
+          injectedJavaScript={otherCodeString}
           javaScriptEnabled={true}
           domStorageEnabled={true}
           onMessage={handleWebViewMessage}

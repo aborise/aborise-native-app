@@ -186,6 +186,7 @@ const _paramount = {
       name: 'connect',
       type: 'manual',
       states: [],
+      webView: true,
     },
     {
       name: 'cancel',

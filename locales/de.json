@@ -39,5 +39,6 @@
   "year": "Jahr",
   "status": "Status",
   "plan": "Plan",
-  "account": "Account"
+  "account": "Account",
+  "successfully-connected": "Erfolgreich verbunden!"
 }

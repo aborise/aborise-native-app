@@ -10,6 +10,7 @@ import { useServiceLogin } from '~/composables/useServiceLogin';
 import { AllServices, services } from '~/shared/allServices';
 import { getAction } from '~/shared/apis';
 import { getUserId } from '~/shared/ensureDataLoaded';
+import { getActionDefinition } from '~/shared/helpers';
 import { getLogo } from '~/shared/logos';
 
 type ConnectProps = {
@@ -38,6 +39,14 @@ const Connect: React.FC = () => {
   }, [loadingLoginData]);
 
   const doConnect = async () => {
+    const actionDev = getActionDefinition(service, 'connect');
+
+    if (actionDev.type === 'api') throw new Error('not implemented');
+
+    if (actionDev.webView) {
+      return router.push(`/details/${service.id}/webview/connect`);
+    }
+
     const connect = getAction(apis[local.id!], 'connect');
 
     if (!connect) {

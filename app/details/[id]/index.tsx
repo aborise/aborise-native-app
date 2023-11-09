@@ -254,13 +254,13 @@ const Details: React.FC = () => {
         </Stack>
 
         {/* Third Section */}
-        <>
+        <YStack space="$1">
           {actions.map((action, index) => (
             <Button key={index} size="$6" onPress={() => handleAction(service.id, action)} bg="$green7">
               <SizableText>{t(action.name)}</SizableText>
             </Button>
           ))}
-        </>
+        </YStack>
 
         {executing && (
           <View

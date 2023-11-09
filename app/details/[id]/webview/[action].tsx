@@ -8,15 +8,28 @@ import { Result } from '~/shared/Result';
 import { AllServices, services } from '~/shared/allServices';
 import GenericWebView from '../genericWebView';
 import Toast from 'react-native-root-toast';
+import { WebViewConfig } from '~/automations/webview/webview.helpers';
+import { useServiceLogin } from '~/composables/useServiceLogin';
+import { addConnectedService } from '~/composables/useServiceData';
+import { useQueryClient } from '@tanstack/react-query';
 
 type WebViewConfigKeys = keyof typeof webviews;
-type WebViewConfigActionNames = keyof (typeof webviews)[WebViewConfigKeys];
+type WebViewConfigActionNames = { [P in WebViewConfigKeys]: keyof (typeof webviews)[P] }[WebViewConfigKeys];
 
 export const ServiceWebView: React.FC = () => {
   const local = useLocalSearchParams<{ id: keyof AllServices; action: WebViewConfigActionNames }>();
 
   if (!webviews[local.id as WebViewConfigKeys]) {
+    console.log('no webview found for this service');
     Toast.show('No webview found for this service', { duration: Toast.durations.LONG });
+    router.push('/');
+    return null;
+  }
+
+  // @ts-expect-error action can be different for each service
+  if (!webviews[local.id as WebViewConfigKeys][local.action]) {
+    console.log('no webview action found for this service');
+    Toast.show('No webview action found for this service', { duration: Toast.durations.LONG });
     router.push('/');
     return null;
   }
@@ -25,23 +38,30 @@ export const ServiceWebView: React.FC = () => {
     return services[local.id!];
   }, [local.id]);
 
-  const config = useMemo(() => {
-    return webviews[service.id as WebViewConfigKeys][local.action!];
+  const config = useMemo<WebViewConfig>(() => {
+    // @ts-expect-error action can be different for each service
+    return webviews[service.id as WebViewConfigKeys][local.action];
   }, [service, local.action]);
 
   const { serviceDataMutation } = useServiceDataQuery(local.id!);
   const { mutateAsync: updateServiceData } = serviceDataMutation();
 
-  const saveData = (result: Result<FlowReturn, any>) => {
-    console.log('something came back from webview!');
+  const queryClient = useQueryClient();
 
+  const saveData = async (result: Result<FlowReturn, any>) => {
     if (result.err) {
       console.error(result.err);
       return;
     }
 
-    setCookies(local.id!, result.val.cookies);
-    updateServiceData(result.val.data);
+    await setCookies(local.id!, result.val.cookies);
+    await updateServiceData(result.val.data);
+
+    if (local.action === 'connect') {
+      await addConnectedService(local.id!);
+      await queryClient.invalidateQueries({ queryKey: ['services'] });
+      await queryClient.invalidateQueries({ queryKey: ['servicesData', local.id!] });
+    }
   };
 
   return (
@@ -62,6 +82,8 @@ export const ServiceWebView: React.FC = () => {
         dataConverter={config.dataConverter}
         onSuccess={saveData}
         getCookies={config.getCookies}
+        getAuth={config.getAuth}
+        otherCode={config.otherCode}
       />
     </>
   );

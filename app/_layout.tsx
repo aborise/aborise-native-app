@@ -48,14 +48,16 @@ export default function Layout() {
                 name="add/index"
                 options={{
                   title: t('add-subscription'),
-                  presentation: 'modal',
+                  // presentation: 'modal',
                 }}
               />
               <Stack.Screen
                 name="add/[id]"
-                options={{
-                  presentation: 'modal',
-                }}
+                options={
+                  {
+                    // presentation: 'modal',
+                  }
+                }
               />
             </Stack>
           </TamaguiProvider>

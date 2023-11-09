@@ -16,6 +16,7 @@ const regex = /\//g;
 const LocalStorage: Storage = {
   set(key: string, value: any) {
     console.log('set', key, value);
+    if (value == null) return this.delete(key);
     return setItemAsync(key.replace(regex, '_'), JSON.stringify(value));
   },
   get(key: string, defaultValue?: any) {
@@ -32,6 +33,7 @@ const LocalStorage: Storage = {
 
 const RemoteStorage = (userId: string): Storage => ({
   set(key: string, value: any) {
+    if (value == null) return this.delete(key);
     return set(ref(useFirebaseDb(), `users/${userId}/${key}`), value);
   },
   get(key: string, defaultValue?: any) {

@@ -42,7 +42,7 @@ const dataConverter = (data: {
     return Err({ data });
   }
 
-  const cookies = data.cookies.split(';').map(strToCookie);
+  const cookies = data.cookies.split(';').map((c) => strToCookie(c, { domain: 'netflix.com', path: '/' }));
   let flowReturn: FlowReturn['data'];
 
   if (data.userInfo.membershipStatus === 'CURRENT_MEMBER') {
@@ -87,7 +87,7 @@ const dataExtractor = () => {
   return javascript`
     const { signupContext, userInfo } = window.netflix.reactContext.models;
     const cookies = document.cookie;
-    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'condition', { signupContext: signupContext.data, userInfo: userInfo.data, cookies } }));
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { signupContext: signupContext.data, userInfo: userInfo.data, cookies } }));
   `;
 };
 

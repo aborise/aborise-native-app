@@ -1,7 +1,7 @@
 // import console from 'console';
 import { Err, Ok } from '~/shared/Result';
 import { solveCaptcha } from './helpers/captcha';
-import { ApiResponse, AsyncAboFetchResult, Session } from './helpers/client';
+import { ApiError, ApiResponse, AsyncAboFetchResult, Session } from './helpers/client';
 import { api } from './helpers/setup';
 import { getJsonFromHtmlResponse } from './helpers/strings';
 import { toFormData } from 'axios';
@@ -146,70 +146,95 @@ export const resume = api(({ item, client }) => {
     .map((result) => ({ debug: result }));
 });
 
-export const connect = api(({ client, auth }) => {
-  return getAuthTokenAndCaptchaKeyForLogin(client)
-    .andThen(({ data, cookies }) => {
-      return solveCaptcha({
-        siteKey: data.captchaKey,
-        url: 'https://www.paramountplus.com/de/account/signin/',
-        action: 'FORM_SIGN_IN',
-      })
-        .map((recaptchaToken) => ({
-          recaptchaToken,
-          cookies,
-          authToken: data.authToken,
-        }))
-        .mapErr((e) => {
-          return {
-            errorMessage: e.message,
-            message: 'Failed to solve captcha',
-            statusCode: 400,
-            custom: 'Failed to solve captcha',
-          };
+export const connect = api(({ client, auth, item }) => {
+  return (
+    getAuthToken(client, item.user)
+      // .andThen(({ data, cookies }) => {
+      //   return solveCaptcha({
+      //     siteKey: data.captchaKey,
+      //     url: 'https://www.paramountplus.com/de/account/signin/',
+      //     action: 'FORM_SIGN_IN',
+      //   })
+      //     .map((recaptchaToken) => ({
+      //       recaptchaToken,
+      //       cookies,
+      //       authToken: data.authToken,
+      //     }))
+      //     .mapErr((e) => {
+      //       return {
+      //         errorMessage: e.message,
+      //         message: 'Failed to solve captcha',
+      //         statusCode: 400,
+      //         custom: 'Failed to solve captcha',
+      //       };
+      //     });
+      // })
+      // .andThen(({ recaptchaToken, authToken, cookies }) => {
+      //   console.info('logging in');
+      //   return client.fetch<{ isExSubscriber: boolean; isSubscriber: boolean }>({
+      //     method: 'POST',
+      //     cookies,
+      //     headers: {
+      //       'Content-Type': 'multipart/form-data',
+      //       'X-Requested-With': 'XMLHttpRequest',
+      //     },
+      //     url: 'https://www.paramountplus.com/de/account/xhr/login/',
+      //     body: toFormData({
+      //       tk_trp: authToken,
+      //       email: auth.email,
+      //       password: auth.password,
+      //       recaptchaToken: recaptchaToken,
+      //     }),
+      //   });
+      // })
+      .andThen(({ data, cookies }) => {
+        return client.fetch({
+          url: 'https://www.intl.paramountplus.com/apps-api/v2.0/appletvtvos/auth/login.json',
+          params: {
+            at: data,
+          },
+          method: 'POST',
+          body: {
+            j_password: auth.password,
+            j_username: auth.email,
+          },
         });
-    })
-    .andThen(({ recaptchaToken, authToken, cookies }) => {
-      console.info('logging in');
-      return client.fetch<{ isExSubscriber: boolean; isSubscriber: boolean }>({
-        method: 'POST',
-        cookies,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'X-Requested-With': 'XMLHttpRequest',
-        },
-        url: 'https://www.paramountplus.com/de/account/xhr/login/',
-        body: toFormData({
-          tk_trp: authToken,
-          email: auth.email,
-          password: auth.password,
-          recaptchaToken: recaptchaToken,
-        }),
-      });
-    })
-    .map((response) => {
-      console.log(response.data);
-      if (response.data.isExSubscriber) {
-        return {
-          data: {
-            membershipStatus: 'inactive',
-            lastSyncedAt: new Date().toISOString(),
-          },
-          cookies: response.cookies,
-        };
-      } else {
-        return {
-          data: {
-            membershipStatus: 'active',
-            lastSyncedAt: new Date().toISOString(),
-            billingCycle: 'monthly',
-            membershipPlan: null,
-            nextPaymentDate: null,
-            nextPaymentPrice: null,
-          },
-          cookies: response.cookies,
-        };
-      }
-    });
+      })
+      .logData()
+      .andThen((response) => {
+        return Err({
+          custom: 'Not implemented',
+          errorMessage: 'Not implemented',
+          message: 'Not implemented',
+          statusCode: 400,
+          code: 'not_implemented',
+        } satisfies ApiError);
+      })
+    // .map((response) => {
+    //   console.log(response.data);
+    //   if (response.data.isExSubscriber) {
+    //     return {
+    //       data: {
+    //         membershipStatus: 'inactive',
+    //         lastSyncedAt: new Date().toISOString(),
+    //       },
+    //       cookies: response.cookies,
+    //     };
+    //   } else {
+    //     return {
+    //       data: {
+    //         membershipStatus: 'active',
+    //         lastSyncedAt: new Date().toISOString(),
+    //         billingCycle: 'monthly',
+    //         membershipPlan: null,
+    //         nextPaymentDate: null,
+    //         nextPaymentPrice: null,
+    //       },
+    //       cookies: response.cookies,
+    //     };
+    //   }
+    // })
+  );
 });
 
 // response when no subscription is active

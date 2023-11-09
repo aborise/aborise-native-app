@@ -11,6 +11,8 @@ export type WebViewConfig = {
   dataExtractor: () => string;
   getCookies: () => Awaitable<Cookie[]>;
   dataConverter: (data: any) => Result<FlowReturn, { data: any }>;
+  getAuth?: () => Awaitable<{ email: string; password: string } | null>;
+  otherCode?: Array<(data: Record<string, unknown>) => string | undefined>;
 };
 
 export const javascript = (strings: TemplateStringsArray, ...values: any[]) => {

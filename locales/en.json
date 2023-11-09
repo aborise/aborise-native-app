@@ -9,6 +9,7 @@
   "inactive": "Inactive",
   "preactive": "Pre-active",
   "cancelled": "Cancelled",
+  "connect": "Connect",
   "ok": "OK",
   "clear-storage": "Clear Storage",
   "are-you-sure-you-want-to-clear-all-stored-data": "Are you sure you want to clear all stored data?",
@@ -39,5 +40,6 @@
   "year": "year",
   "status": "Status",
   "plan": "Plan",
-  "account": "Account"
+  "account": "Account",
+  "successfully-connected": "Successfully connected!"
 }

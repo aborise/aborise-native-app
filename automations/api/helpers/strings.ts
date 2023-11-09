@@ -22,6 +22,9 @@ export const getJsonFromHtmlResponse = <T>(html: string, selector: string) => {
         });
       }
 
+      console.log(script);
+      console.log(script.innerHTML);
+
       return Ok(JSON.parse(script.innerHTML) as T);
     });
 };
