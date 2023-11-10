@@ -63,19 +63,22 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
         {data.membershipStatus === 'inactive' && <SizableText>{t('inactive')}</SizableText>}
       </YStack>
 
-      {integer && (
-        <>
-          <SizableText>
-            <SizableText size="$7">€{integer}.</SizableText>
-            <SizableText size="$7">{decimal}</SizableText>
-          </SizableText>
-          <SizableText theme="alt2" size="$1">
-            /month
-          </SizableText>
-          {/* <SizableText theme="alt2" size="$1">{t('next-payment')}</SizableText> */}
-          {/* <SizableText theme="alt2" size="$1">{nextPaymentRelativeDate}</SizableText> */}
-        </>
-      )}
+      {integer !== undefined &&
+        decimal !== undefined &&
+        (data.membershipStatus === 'active' || data.membershipStatus === 'canceled') && (
+          <>
+            <SizableText>
+              <SizableText size="$7">€{integer}.</SizableText>
+              <SizableText size="$7">{decimal}</SizableText>
+            </SizableText>
+            <SizableText theme="alt2" size="$1">
+              {' '}
+              / {data.billingCycle === 'monthly' ? t('month') : t('year')}
+            </SizableText>
+            {/* <SizableText theme="alt2" size="$1">{t('next-payment')}</SizableText> */}
+            {/* <SizableText theme="alt2" size="$1">{nextPaymentRelativeDate}</SizableText> */}
+          </>
+        )}
 
       <Icon name="angle-right" size={24} color="#000000" />
     </AboCard>

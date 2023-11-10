@@ -1,5 +1,5 @@
 const LOGIN_URL =
-  'https://www.amazon.com/ap/signin?openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.assoc_handle=usflex&openid.mode=checkid_setup&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0';
+  'https://www.amazon.de/-/en/ap/signin?openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.de%2F%3Fref_%3Dnav_signin&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.assoc_handle=deflex&openid.mode=checkid_setup&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0';
 // const REGISTER_URL = 'https://www.paramountplus.com/de/account/signup/account';
 const PRIME_URL = 'https://www.amazon.de/gp/primecentral?language=en_GB';
 const primePlanSelector =
@@ -105,11 +105,11 @@ const dataConverter = (data: {
 const dataExtractor = () => {
   return javascript`
     const cookies = document.cookie;
-    const hasPrime = Array.from(document.querySelectorAll('[data-csa-c-content-id]')).map(c => c.getAttribute('data-csa-c-content-id')).includes('nav_cs_prime_video');
+    const hasPrime = !!(document.querySelector('a[href*="nav_AccountFlyout_prime"') ?? document.querySelector('a[href*="navm_accountmenu_prime"')) // Array.from(document.querySelectorAll('[data-csa-c-content-id]')).map(c => c.getAttribute('data-csa-c-content-id')).includes('nav_cs_prime_video');
     
     if (hasPrime) {
       try {
-        const doc = await fetch('https://www.amazon.de/gp/primecentral?language=en_GB', {
+        const doc = await fetch('${PRIME_URL}', {
           credentials: 'include',
           method: 'GET',
         })

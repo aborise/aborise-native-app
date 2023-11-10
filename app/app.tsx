@@ -29,7 +29,7 @@ const MonthlyExpenses: React.FC<{ amount: number }> = ({ amount }) => {
     <AboCard backgroundColor="$yellow4" elevation="$1">
       <YStack>
         <SizableText size="$2">{t('monthly-expenses')}</SizableText>
-        <SizableText size="$8">€{amount}</SizableText>
+        <SizableText size="$8">€{amount.toFixed(2)}</SizableText>
       </YStack>
     </AboCard>
   );
