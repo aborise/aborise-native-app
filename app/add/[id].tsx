@@ -44,6 +44,12 @@ const Connect: React.FC = () => {
     if (actionDev.type === 'api') throw new Error('not implemented');
 
     if (actionDev.webView) {
+      setLoading(true);
+      await setData({
+        email,
+        password,
+      });
+      setLoading(false);
       return router.push(`/details/${service.id}/webview/connect`);
     }
 

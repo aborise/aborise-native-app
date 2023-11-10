@@ -21,8 +21,8 @@ export const javascript = (strings: TemplateStringsArray, ...values: any[]) => {
   }, '');
 
   // wrap with iife and try/catch and return true to prevent errors
-  return `
-;(function() {
+  return /* javascript */ `
+;(async function() {
   try {
 ${str}
   } catch (e) {

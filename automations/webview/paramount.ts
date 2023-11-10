@@ -12,6 +12,7 @@ import { FlowReturn } from '../playwright/setup/Runner';
 import { extractAmount, extractDate } from '../playwright/strings';
 import { WebViewConfig, javascript } from './webview.helpers';
 import { Cookie } from 'playwright-core';
+import { UserData, userDataSchema } from './validators/paramount_userData';
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`
@@ -46,25 +47,45 @@ const fillInEmailAndPw = () => {
   };
 };
 
-const dataConverter = (data: { cookies: string }): Result<FlowReturn, { data: any }> => {
+// available keys: ["entitlement","isLoggedIn","displayName","regID","profile","svod","statusCode","isSubscriber","isThirdParty","isExSubscriber","isSuspended","isGhost","isMVPDAuthZ","isMVPDAuthZExSub","isActive","isPartnerSubscription","isReseller","isRecurly","isLC","isCF","isCompUser","isRegistered","isOptimum","isUnsupportedVendor","isMonthlyPlan","isAnnualPlan","canEdit","provideNativeDeviceSubSettingsLink","needsUpdate","edu","isMVPD","userRegistrationCountry","isUserRegionOnSunset","tags","mvpdDispute"]
+const dataConverter = (data: { cookies: string; userData: UserData }): Result<FlowReturn, { data: any }> => {
   const cookies = data.cookies
     .split(';')
     .map((c) => strToCookie(c, { domain: 'paramountplus.com', path: '/' }))
     .filter((c) => c.name === 'CBS_COM');
 
-  return Ok({
-    cookies,
-    data: {
-      membershipStatus: 'inactive',
-      lastSyncedAt: new Date().toISOString(),
-    },
-  });
+  if (data.userData.isExSubscriber) {
+    return Ok({
+      cookies,
+      data: {
+        membershipStatus: 'inactive' as const,
+        lastSyncedAt: new Date().toISOString(),
+      },
+    });
+  }
+
+  if (data.userData.isSubscriber) {
+    return Ok({
+      cookies,
+      data: {
+        membershipStatus: 'active' as const,
+        membershipPlan: 'basic',
+        lastSyncedAt: new Date().toISOString(),
+        nextPaymentPrice: { integer: 1, decimal: 99 },
+        nextPaymentDate: new Date().toISOString(),
+        billingCycle: 'monthly' as const,
+      },
+    });
+  }
+
+  return Err({ data: data.userData });
 };
 
 const dataExtractor = () => {
   return javascript`
     const cookies = document.cookie;
-    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { cookies } }));
+    const userData = document.getElementById('app').__vue__.$store.state.user;
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { cookies, userData } }));
   `;
 };
 

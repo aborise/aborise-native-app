@@ -84,6 +84,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
   const [webviewCookies, setWebviewCookies] = useState<Cookie[]>([]);
   const [webviewRef, setWebviewRef] = useState<WebView | null>(null);
   const [auth, setAuth] = useState<{ email: string; password: string }>();
+  const [sanityCheckDone, setSanityCheckDone] = useState(false);
 
   const [loading, setLoading] = useState(true);
 
@@ -151,9 +152,16 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
   };
 
   const handleWebViewLoaded = () => {
-    setLoading(false);
-    // FIXME: This method is called on every navigation change event (why...?)
-    webviewRef!.injectJavaScript(sanityCheck());
+    if (!sanityCheckDone) {
+      setSanityCheckDone(true);
+      setLoading(false);
+      // FIXME: This method is called on every navigation change event (why...?)
+      webviewRef!.injectJavaScript(sanityCheck());
+    }
+
+    if (otherCodeString) {
+      webviewRef!.injectJavaScript(otherCodeString);
+    }
   };
 
   return (
@@ -183,7 +191,6 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
               Cookie: cookiesToString(webviewCookies),
             },
           }}
-          injectedJavaScript={otherCodeString}
           javaScriptEnabled={true}
           domStorageEnabled={true}
           onMessage={handleWebViewMessage}
