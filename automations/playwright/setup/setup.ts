@@ -1,22 +1,11 @@
-import { setCookies } from "~/automations/api/helpers/cookie";
-import { setFlowData } from "~/automations/api/helpers/data";
-import { getAuth } from "~/automations/helpers/auth";
+import { setCookies } from '~/automations/api/helpers/cookie';
+import { setFlowData } from '~/automations/api/helpers/data';
+import { getAuth } from '~/automations/helpers/auth';
 // import { useFirebaseAdmin } from "~/server/useFirebaseAdmin";
-import { Err, Result } from "~/shared/Result";
-import {
-  QueueItem,
-  QueueItemAnswer,
-  QueueItemCancel,
-  QueueItemSchema,
-} from "~/shared/validators/queueItem";
-import {
-  FlowReturn,
-  RequestType,
-  RequestTypeAsk,
-  Runner,
-  RunnerFn,
-} from "./Runner";
-import { BaseError } from "~/automations/api/helpers/BaseError";
+import { Err, Result } from '~/shared/Result';
+import { QueueItem, QueueItemAnswer, QueueItemCancel, QueueItemSchema } from '~/shared/validators/queueItem';
+import { FlowReturn, RequestType, RequestTypeAsk, Runner, RunnerFn } from './Runner';
+import { BaseError } from '~/automations/api/helpers/BaseError';
 
 export const run = (runner: RunnerFn<FlowReturn, string>) => {
   return async (queueItem: QueueItem) => {
@@ -24,10 +13,10 @@ export const run = (runner: RunnerFn<FlowReturn, string>) => {
 
     if (result.success === false) {
       const error = new BaseError({
-        message: "Invalid Queue Item",
+        message: 'Invalid Queue Item',
         cause: result.error,
         meta: { queueItem, issues: result.error.issues },
-        name: "ServerError",
+        name: 'ServerError',
       });
       return Err(error);
     }
@@ -53,12 +42,12 @@ export const run = (runner: RunnerFn<FlowReturn, string>) => {
 
     return toResponse(
       process.run(runner, item, auth, (flowReturn) => {
-        setCookies(item.user, item.service, flowReturn.cookies);
+        setCookies(item.service, flowReturn.cookies ?? []);
 
         if (flowReturn.data) {
-          setFlowData(item.user, item.service, flowReturn.data);
+          setFlowData(item.service, flowReturn.data);
         }
-      })
+      }),
     );
   };
 };
@@ -67,21 +56,18 @@ export const run = (runner: RunnerFn<FlowReturn, string>) => {
 export const resume = async (queueItem: QueueItemAnswer | QueueItemCancel) => {
   const info = QueueItemSchema.parse(queueItem);
 
-  if (info.status !== "answer" && info.status !== "canceled") {
+  if (info.status !== 'answer' && info.status !== 'canceled') {
     const error = new BaseError({
-      message: "Resume was called with wrong Status",
-      name: "ServerError",
+      message: 'Resume was called with wrong Status',
+      name: 'ServerError',
     });
 
     return toResponse(Err(error));
   }
 
-  const process = Runner.get(
-    info.relatedItemId,
-    null as unknown as RunnerFn<FlowReturn, unknown>
-  );
+  const process = Runner.get(info.relatedItemId, null as unknown as RunnerFn<FlowReturn, unknown>);
 
-  if (info.status === "canceled") {
+  if (info.status === 'canceled') {
     return toResponse(process.cancel());
   }
 
@@ -89,16 +75,14 @@ export const resume = async (queueItem: QueueItemAnswer | QueueItemCancel) => {
 };
 
 type Awaitable<T> = T | Promise<T>;
-const toResponse = async <T extends RequestTypeAsk | RequestType>(
-  promise: Awaitable<Result<T, BaseError>>
-) => {
+const toResponse = async <T extends RequestTypeAsk | RequestType>(promise: Awaitable<Result<T, BaseError>>) => {
   let result = await promise;
 
   // this happens when there wasnt a process really running
   if (!result) {
     const error = new BaseError({
-      message: "No Process Found",
-      name: "ServerError",
+      message: 'No Process Found',
+      name: 'ServerError',
     });
     result = Err(error);
   }

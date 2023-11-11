@@ -1,6 +1,7 @@
 import { setItemAsync, getItemAsync, deleteItemAsync } from 'expo-secure-store';
 import { useFirebaseDb } from './useFirebase';
 import { get, ref, set } from 'firebase/database';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface Storage {
   set(key: string, value: any): Promise<void>;
@@ -74,4 +75,22 @@ export function useStorage(storeType: 'local' | 'remote' | 'synced', userId?: st
   } else {
     return SyncedStorage(userId!);
   }
+}
+
+export function useLargeUnsafeStorage(): Storage {
+  return {
+    set(key: string, value: any) {
+      if (value == null) return this.delete(key);
+      return AsyncStorage.setItem(key, JSON.stringify(value));
+    },
+    get(key: string, defaultValue: any = null) {
+      return AsyncStorage.getItem(key).then((value) => {
+        if (value == null) return defaultValue;
+        return JSON.parse(value);
+      });
+    },
+    delete(key: string) {
+      return AsyncStorage.removeItem(key);
+    },
+  };
 }

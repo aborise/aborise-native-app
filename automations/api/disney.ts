@@ -10,6 +10,7 @@ import { type FlowResult } from '../playwright/helpers';
 import { Session, type ApiError } from './helpers/client';
 import { api } from './helpers/setup';
 import { numberToDecimal } from './helpers/strings';
+import { useLargeUnsafeStorage } from '~/composables/useStorage';
 
 // type SubscriberStatus = 'Churned'
 
@@ -34,6 +35,8 @@ type ApiArgs = {
   forceLogin?: boolean;
   uid: string;
   useFile?: boolean;
+  getApiAuth: () => Promise<TokenData | null>;
+  setApiAuth: (data: TokenData) => Promise<void>;
 };
 
 type TokenData = {
@@ -116,6 +119,8 @@ export class DisneyAPI {
   password: string;
   forceLogin: boolean;
   useFile: boolean;
+  getApiAuth: () => Promise<TokenData | null>;
+  setApiAuth: (data: TokenData) => Promise<void>;
 
   constructor(options: ApiArgs, client: Session) {
     this.email = options.email;
@@ -124,6 +129,8 @@ export class DisneyAPI {
     this.uid = options.uid;
     this.session = client;
     this.useFile = options.useFile ?? false;
+    this.getApiAuth = options.getApiAuth;
+    this.setApiAuth = options.setApiAuth;
 
     // if (options.proxies) {
     //   this.session.defaults.proxy = options.proxies;
@@ -316,12 +323,11 @@ export class DisneyAPI {
       }
 
       try {
-        let data: TokenData;
-        if (this.useFile) {
-          // fs.readFileSync(dirname + "/token.json").toString()
-          data = JSON.parse('null') as TokenData;
-        } else {
-          data = (await get(this.ref)).val() as TokenData;
+        const data = await this.getApiAuth();
+
+        if (!data) {
+          console.info('No token found. Executing initial Login...');
+          return this._getAuthTokenTruApi();
         }
 
         const token = data.token;
@@ -390,7 +396,7 @@ export class DisneyAPI {
           return Ok(resJson.extensions.sdk.token.accessToken as string);
         }
       } catch (err) {
-        console.log('No token found. Executing initial Login...');
+        console.log('Error using saved token. Executing initial Login...');
         return this._getAuthTokenTruApi();
       }
     });
@@ -501,11 +507,7 @@ export class DisneyAPI {
           expirationTime: new Date(new Date().getTime() + expire * 1000).toISOString(),
         };
 
-        if (this.useFile) {
-          // fs.writeFileSync(dirname + "/token.json", JSON.stringify(data));
-        } else {
-          await set(this.ref, data);
-        }
+        await this.setApiAuth(data);
 
         return token;
       });
@@ -645,12 +647,20 @@ const wait = (seconds: number) => {
 };
 
 export const connect = api(({ item, auth, client }) => {
-  const api = new DisneyAPI({ email: auth.email, password: auth.password, uid: item.user }, client);
+  const storage = useLargeUnsafeStorage();
+  const getApiAuth = () => storage.get<TokenData>('services/disney/api/');
+  const setApiAuth = (data: TokenData) => storage.set('services/disney/api/', data);
+
+  const api = new DisneyAPI(
+    { email: auth.email, password: auth.password, uid: item.user, getApiAuth, setApiAuth },
+    client,
+  );
 
   return api
     .getSubscriptionDetails()
     .andThen((subscription) => api.getSubscriptionDetailsById(subscription.id))
     .map((details): FlowResult => {
+      console.log(details.latestTransactedInvoice);
       return {
         membershipStatus: 'canceled',
         expiresAt: details.latestTransactedInvoice.actualExecutionDate
@@ -658,7 +668,7 @@ export const connect = api(({ item, auth, client }) => {
           : null,
         billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
         membershipPlan: null,
-        nextPaymentPrice: numberToDecimal(details.latestTransactedInvoice.totalAmount),
+        nextPaymentPrice: details.latestTransactedInvoice.totalAmount * 100,
         lastSyncedAt: new Date().toISOString(),
       };
     })
@@ -666,7 +676,14 @@ export const connect = api(({ item, auth, client }) => {
 });
 
 export const cancel = api(({ item, auth, client }) => {
-  const api = new DisneyAPI({ email: auth.email, password: auth.password, uid: item.user }, client);
+  const storage = useLargeUnsafeStorage();
+  const getApiAuth = () => storage.get<TokenData>('services/disney/api/');
+  const setApiAuth = (data: TokenData) => storage.set('services/disney/api/', data);
+
+  const api = new DisneyAPI(
+    { email: auth.email, password: auth.password, uid: item.user, getApiAuth, setApiAuth },
+    client,
+  );
 
   return api
     .cancelSub2()
@@ -682,14 +699,21 @@ export const cancel = api(({ item, auth, client }) => {
         lastSyncedAt: new Date().toISOString(),
         billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
         membershipPlan: null,
-        nextPaymentPrice: numberToDecimal(details.latestTransactedInvoice.totalAmount),
+        nextPaymentPrice: details.latestTransactedInvoice.totalAmount * 100,
       };
     })
     .map((res) => ({ data: res }));
 });
 
 export const resume = api(({ item, auth, client }) => {
-  const api = new DisneyAPI({ email: auth.email, password: auth.password, uid: item.user }, client);
+  const storage = useLargeUnsafeStorage();
+  const getApiAuth = () => storage.get<TokenData>('services/disney/api/');
+  const setApiAuth = (data: TokenData) => storage.set('services/disney/api/', data);
+
+  const api = new DisneyAPI(
+    { email: auth.email, password: auth.password, uid: item.user, getApiAuth, setApiAuth },
+    client,
+  );
 
   return api
     .restartSub()
@@ -704,7 +728,7 @@ export const resume = api(({ item, auth, client }) => {
         nextPaymentDate: res.scheduledInvoice.expectedExecutionDate
           ? new Date(res.scheduledInvoice.expectedExecutionDate).toISOString()
           : null,
-        nextPaymentPrice: numberToDecimal(res.scheduledInvoice.totalAmount),
+        nextPaymentPrice: res.scheduledInvoice.totalAmount * 100,
         lastSyncedAt: new Date().toISOString(),
       };
     })
