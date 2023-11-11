@@ -196,10 +196,12 @@ const _paramount = {
       type: 'manual',
       states: ['active'],
     },
-    // {
-    //   name: 'reactivate',
-    //   type: 'manual',
-    // },
+    {
+      name: 'reactivate',
+      type: 'manual',
+      states: ['inactive', 'preactive'],
+      webView: true,
+    },
     {
       name: 'resume',
       type: 'manual',

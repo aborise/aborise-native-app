@@ -283,13 +283,13 @@ export const connect = api(({ client, auth, item }) => {
         return Ok({
           data: {
             membershipStatus: 'canceled' as const,
-            membershipPlan: data.plan?.planTier ?? 'standard',
+            membershipPlan: data.user.svod.user_package.plan_tier ?? 'standard',
             lastSyncedAt: new Date().toISOString(),
             expiresAt,
             nextPaymentPrice,
-            billingCycle: ((data.plan?.planType ?? 'monthly') === 'monthly' ? 'monthly' : 'yearly') as
-              | 'monthly'
-              | 'yearly',
+            billingCycle: ((data.user.svod.user_package.plan_type ?? 'monthly') === 'monthly'
+              ? 'monthly'
+              : 'yearly') as 'monthly' | 'yearly',
           },
         } satisfies FlowReturn);
       }

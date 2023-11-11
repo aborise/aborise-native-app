@@ -114,7 +114,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
 
         // For debugging purposes we can disable the sanity check to see what happens
         if (process.env.EXPO_PUBLIC_WEBVIEW_NO_SANITY_CHECK !== 'true') {
-          return router.back();
+          // return router.back();
         }
       }
     }

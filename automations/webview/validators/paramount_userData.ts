@@ -157,7 +157,7 @@ export const accountDataSchema = z.object({
       profile_type: z.string(),
     }),
     svod: z.object({
-      status: z.string(),
+      status: z.enum(['EX_SUBSCRIBER', 'REGISTERED', 'SUBSCRIBER']),
       user_package: z.object({
         product_code: z.string(),
         product_name: z.string(),
@@ -186,7 +186,7 @@ export const accountDataSchema = z.object({
       multi_package_tracking: z.string(),
     }),
     isLoggedIn: z.boolean(),
-    statusCode: z.string(),
+    statusCode: z.enum(['exsub', 'reg', 'sub']),
     isCompUser: z.boolean(),
     isRegistered: z.boolean(),
     isSubscriber: z.boolean(),

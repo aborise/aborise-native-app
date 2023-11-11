@@ -1,6 +1,7 @@
 const LOGIN_URL = 'https://www.paramountplus.com/account/signin/?redirectUrl=%2Faccount%2F';
 const REGISTER_URL = 'https://www.paramountplus.com/de/account/signup/account';
-const CONNECT_URL = 'https://www.paramountplus.com/account/';
+// const CONNECT_URL = 'https://www.paramountplus.com/account/';
+const REACTIVATE_URL = 'https://www.paramountplus.com/de/account/signup/plan/';
 
 import { Response } from '~/app/details/[id]/genericWebView';
 import { useStorage } from '~/composables/useStorage';
@@ -19,6 +20,25 @@ const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`
     const data = document.cookie.includes('CBS_COM=');
     window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data: ${negative ? '!data' : 'data'} }));
+  `;
+};
+
+const checkStatus = (type: Response['type'], status: AccountData['user']['statusCode'][]) => {
+  return javascript`
+    const app = document.getElementById('app')
+    const account = document.getElementById('account-app');
+    let data;
+    if (app) {
+      data = { user: app.__vue__.$store.state.user };
+    }
+
+    if (account) {
+      data = account.__vue__.$store.state.serverData;
+    }
+
+    data = [${status.map((s) => `'${s}'`).join(',')}].includes(data.user.statusCode);
+
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data }));
   `;
 };
 
@@ -157,27 +177,28 @@ export const connect: WebViewConfig = {
     const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
     return storage.get<{ email: string; password: string }>(`services/paramount/login`);
   },
-  getCookies: async () => {
-    const cookies = await getCookies('paramount', ['CBS_COM']);
+  getCookies: () => getCookies('paramount', ['CBS_COM']),
+  // getCookies: async () => {
+  //   const cookies = await getCookies('paramount', ['CBS_COM']);
 
-    const cookieBanner: Cookie = {
-      name: 'OptanonConsent',
-      value:
-        'isIABGlobal=false&datestamp=Thu+Nov+09+2023+15%3A32%3A27+GMT%2B0000+(Greenwich+Mean+Time)&version=6.30.0&hosts=&consentId=590d5518-38f4-4796-b128-42c164de9a30&interactionCount=1&landingPath=NotLandingPage&groups=1%3A1%2C2%3A0%2C3%3A0%2C4%3A0%2C5%3A0&geolocation=DE%3BMV&AwaitingReconsent=false',
-      domain: 'paramountplus.com',
-      path: '/',
-      expires: new Date().getTime() / 1000 + 60 * 60 * 24 * 7,
-      httpOnly: false,
-      sameSite: 'None',
-      secure: false,
-    };
+  //   const cookieBanner: Cookie = {
+  //     name: 'OptanonConsent',
+  //     value:
+  //       'isIABGlobal=false&datestamp=Thu+Nov+09+2023+15%3A32%3A27+GMT%2B0000+(Greenwich+Mean+Time)&version=6.30.0&hosts=&consentId=590d5518-38f4-4796-b128-42c164de9a30&interactionCount=1&landingPath=NotLandingPage&groups=1%3A1%2C2%3A0%2C3%3A0%2C4%3A0%2C5%3A0&geolocation=DE%3BMV&AwaitingReconsent=false',
+  //     domain: 'paramountplus.com',
+  //     path: '/',
+  //     expires: new Date().getTime() / 1000 + 60 * 60 * 24 * 7,
+  //     httpOnly: false,
+  //     sameSite: 'None',
+  //     secure: false,
+  //   };
 
-    return [
-      ...cookies,
-      cookieBanner,
-      // strToCookie(`OptanonAlertBoxClosed=${new Date().toISOString()}`, { domain: 'paramountplus.com', path: '/' }),
-    ];
-  },
+  //   return [
+  //     ...cookies,
+  //     cookieBanner,
+  //     // strToCookie(`OptanonAlertBoxClosed=${new Date().toISOString()}`, { domain: 'paramountplus.com', path: '/' }),
+  //   ];
+  // },
 };
 
 export const register: WebViewConfig = {
@@ -192,4 +213,18 @@ export const register: WebViewConfig = {
     return storage.get<{ email: string; password: string }>(`services/paramount/login`);
   },
   getCookies: () => [],
+};
+
+export const reactivate: WebViewConfig = {
+  url: REACTIVATE_URL,
+  sanityCheck: () => checkStatus('sanity', ['exsub', 'reg']),
+  targetCondition: () => checkStatus('condition', ['sub']),
+  dataExtractor,
+  dataConverter,
+  otherCode: [fillInEmailAndPw()],
+  getAuth: () => {
+    const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
+    return storage.get<{ email: string; password: string }>(`services/paramount/login`);
+  },
+  getCookies: () => getCookies('paramount', ['CBS_COM']),
 };
