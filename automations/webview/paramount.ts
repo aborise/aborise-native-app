@@ -1,5 +1,6 @@
-const LOGIN_URL = 'https://www.paramountplus.com/account/signin/';
+const LOGIN_URL = 'https://www.paramountplus.com/account/signin/?redirectUrl=%2Faccount%2F';
 const REGISTER_URL = 'https://www.paramountplus.com/de/account/signup/account';
+const CONNECT_URL = 'https://www.paramountplus.com/account/';
 
 import { Response } from '~/app/details/[id]/genericWebView';
 import { useStorage } from '~/composables/useStorage';
@@ -12,7 +13,7 @@ import { FlowReturn } from '../playwright/setup/Runner';
 import { extractAmount, extractDate } from '../playwright/strings';
 import { WebViewConfig, javascript } from './webview.helpers';
 import { Cookie } from 'playwright-core';
-import { UserData, userDataSchema } from './validators/paramount_userData';
+import { AccountData, Plan, UserData, userDataSchema } from './validators/paramount_userData';
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`
@@ -47,14 +48,45 @@ const fillInEmailAndPw = () => {
   };
 };
 
-// available keys: ["entitlement","isLoggedIn","displayName","regID","profile","svod","statusCode","isSubscriber","isThirdParty","isExSubscriber","isSuspended","isGhost","isMVPDAuthZ","isMVPDAuthZExSub","isActive","isPartnerSubscription","isReseller","isRecurly","isLC","isCF","isCompUser","isRegistered","isOptimum","isUnsupportedVendor","isMonthlyPlan","isAnnualPlan","canEdit","provideNativeDeviceSubSettingsLink","needsUpdate","edu","isMVPD","userRegistrationCountry","isUserRegionOnSunset","tags","mvpdDispute"]
-const dataConverter = (data: { cookies: string; userData: UserData }): Result<FlowReturn, { data: any }> => {
+const timeZoneToUtc = (dateString: string, timeZone: string) => {
+  const timeZoneTime = new Date(dateString + 'Z').toLocaleTimeString('de-DE', {
+    timeZone,
+  });
+  const utcTime = new Date(dateString + 'Z').toLocaleTimeString('de-DE', {
+    timeZone: 'UTC',
+  });
+
+  const hoursDiff = (parseInt(utcTime.split(':')[0]) - parseInt(timeZoneTime.split(':')[0]) + 24) % 24;
+  const padded = hoursDiff.toString().padStart(2, '0');
+
+  const isoDate = new Date(dateString).toISOString().replace('Z', `-${padded}:00`);
+
+  return new Date(isoDate);
+};
+
+const dataConverter = (data: {
+  cookies: string;
+  accountData: AccountData;
+  plan: Plan | undefined;
+}): Result<FlowReturn, { data: any }> => {
   const cookies = data.cookies
     .split(';')
     .map((c) => strToCookie(c, { domain: 'paramountplus.com', path: '/' }))
     .filter((c) => c.name === 'CBS_COM');
 
-  if (data.userData.isExSubscriber) {
+  const { user, currentSubscription } = data.accountData;
+
+  if (user.statusCode === 'reg') {
+    return Ok({
+      cookies,
+      data: {
+        membershipStatus: 'preactive' as const,
+        lastSyncedAt: new Date().toISOString(),
+      },
+    });
+  }
+
+  if (user.isExSubscriber) {
     return Ok({
       cookies,
       data: {
@@ -64,28 +96,69 @@ const dataConverter = (data: { cookies: string; userData: UserData }): Result<Fl
     });
   }
 
-  if (data.userData.isSubscriber) {
+  if (user.isSubscriber) {
+    const nextPaymentPrice = currentSubscription.plan_bill_amount * currentSubscription.currency_subunits;
+
+    if (currentSubscription.cancel_date) {
+      const expiresAt = timeZoneToUtc(
+        currentSubscription.sub_end_date.date,
+        currentSubscription.sub_end_date.timezone,
+      ).toISOString();
+
+      return Ok({
+        cookies,
+        data: {
+          membershipStatus: 'canceled' as const,
+          membershipPlan: data.plan?.planTier ?? 'standard',
+          lastSyncedAt: new Date().toISOString(),
+          expiresAt,
+          nextPaymentPrice,
+          billingCycle: ((data.plan?.planType ?? 'monthly') === 'monthly' ? 'monthly' : 'yearly') as
+            | 'monthly'
+            | 'yearly',
+        },
+      });
+    }
+
+    const nextPaymentDate = timeZoneToUtc(
+      currentSubscription.next_bill_date.date,
+      currentSubscription.next_bill_date.timezone,
+    ).toISOString();
+
     return Ok({
       cookies,
       data: {
         membershipStatus: 'active' as const,
         membershipPlan: 'basic',
         lastSyncedAt: new Date().toISOString(),
-        nextPaymentPrice: { integer: 1, decimal: 99 },
-        nextPaymentDate: new Date().toISOString(),
+        nextPaymentPrice,
+        nextPaymentDate: nextPaymentDate,
         billingCycle: 'monthly' as const,
       },
     });
   }
 
-  return Err({ data: data.userData });
+  return Err({ data: user });
 };
 
 const dataExtractor = () => {
   return javascript`
     const cookies = document.cookie;
-    const userData = document.getElementById('app').__vue__.$store.state.user;
-    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { cookies, userData } }));
+
+    const app = document.getElementById('app')
+    const account = document.getElementById('account-app');
+    let data;
+    let plan;
+    if (app) {
+      data = { user: app.__vue__.$store.state.user };
+    }
+
+    if (account) {
+      data = account.__vue__.$store.state.serverData;
+      plan = account.__vue__.$store.state.plan;
+    }
+
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { cookies, accountData: data, plan } }));
   `;
 };
 
@@ -98,10 +171,7 @@ export const connect: WebViewConfig = {
   otherCode: [fillInEmailAndPw()],
   getAuth: () => {
     const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
-    return storage.get<{ email: string; password: string }>(`services/paramount/login`).then((data) => {
-      console.log('getAuth:', data);
-      return data;
-    });
+    return storage.get<{ email: string; password: string }>(`services/paramount/login`);
   },
   getCookies: async () => {
     const cookies = await getCookies('paramount', ['CBS_COM']);
@@ -124,4 +194,18 @@ export const connect: WebViewConfig = {
       // strToCookie(`OptanonAlertBoxClosed=${new Date().toISOString()}`, { domain: 'paramountplus.com', path: '/' }),
     ];
   },
+};
+
+export const register: WebViewConfig = {
+  url: REGISTER_URL,
+  sanityCheck: () => checkLoggedIn('sanity', true),
+  targetCondition: () => checkLoggedIn('condition'),
+  dataExtractor,
+  dataConverter,
+  otherCode: [fillInEmailAndPw()],
+  getAuth: () => {
+    const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
+    return storage.get<{ email: string; password: string }>(`services/paramount/login`);
+  },
+  getCookies: () => [],
 };

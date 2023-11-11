@@ -83,11 +83,13 @@ const _amazon = {
       name: 'cancel',
       type: 'manual',
       states: ['active'],
+      webView: true,
     },
     {
       name: 'resume',
       type: 'manual',
-      states: ['canceled'],
+      states: ['canceled', 'inactive'],
+      webView: true,
     },
   ],
 } as const;
@@ -203,10 +205,12 @@ const _paramount = {
       type: 'manual',
       states: ['canceled'],
     },
-    // {
-    //   name: 'register',
-    //   type: 'manual',
-    // },
+    {
+      name: 'register',
+      type: 'manual',
+      states: [],
+      webView: true,
+    },
   ],
 } as const;
 

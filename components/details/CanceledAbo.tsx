@@ -20,8 +20,7 @@ const CanceledAbo: React.FC<Props> = ({ serviceData }) => {
         </SizableText>
       </View>
       <SizableText>
-        {serviceData.nextPaymentPrice?.integer}.<SizableText>{serviceData.nextPaymentPrice?.decimal}</SizableText> /{' '}
-        {billingCycle[serviceData.billingCycle ?? 'monthly']}
+        {((serviceData.nextPaymentPrice ?? 0) / 100).toFixed(2)} / {billingCycle[serviceData.billingCycle ?? 'monthly']}
       </SizableText>
       <SizableText>
         {t('canceled')} - {t('expires')} {dayjs(serviceData.expiresAt ?? 0).fromNow()}

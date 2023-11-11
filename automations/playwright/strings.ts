@@ -71,11 +71,10 @@ export const extractAmount = (message: string | undefined) => {
       amount = amount.replace(',', '.');
       // split integer and decimal parts
       const [integer, decimal] = amount.split('.');
-      return {
-        integer: parseInt(integer),
-        decimal: parseInt(decimal),
-        unit: unit ?? null,
-      };
+
+      const cents = parseInt(integer) * 100 + (decimal ? parseInt(decimal) : 0);
+
+      return cents;
     }
   }
 

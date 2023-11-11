@@ -29,7 +29,7 @@ const MonthlyExpenses: React.FC<{ amount: number }> = ({ amount }) => {
     <AboCard backgroundColor="$yellow4" elevation="$1">
       <YStack>
         <SizableText size="$2">{t('monthly-expenses')}</SizableText>
-        <SizableText size="$8">€{amount.toFixed(2)}</SizableText>
+        <SizableText size="$8">€{(amount / 100).toFixed(2)}</SizableText>
       </YStack>
     </AboCard>
   );
@@ -41,7 +41,7 @@ const App = () => {
   const price = useMemo(() => {
     return Object.values(connectedServices ?? {}).reduce((acc, curr) => {
       if (curr.membershipStatus === 'active') {
-        return acc + (curr.nextPaymentPrice!.integer + curr.nextPaymentPrice!.decimal / 100);
+        return acc + (curr.nextPaymentPrice ?? 0);
       }
       return acc;
     }, 0);

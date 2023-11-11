@@ -30,6 +30,8 @@ const Connect: React.FC = () => {
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
 
+  const hasRegisterApi = useMemo(() => !!getActionDefinition(service, 'register'), [service]);
+
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -106,11 +108,18 @@ const Connect: React.FC = () => {
           />
         </View>
         <Button title="Connect" onPress={doConnect} />
-        <SizableText mt="$4">Don't have an account?</SizableText>
-        <Button
-          title="register"
-          onPress={() => CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`))}
-        />
+
+        {hasRegisterApi && (
+          <>
+            <SizableText mt="$4">Don't have an account?</SizableText>
+            <Button
+              title="register"
+              onPress={() =>
+                CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`))
+              }
+            />
+          </>
+        )}
 
         <View>
           <Text>{error}</Text>

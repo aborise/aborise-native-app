@@ -137,13 +137,27 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     }
   };
 
-  const checkNavigationState = (navState: WebViewNavigation) => {
-    console.log(navState);
+  let timeout: ReturnType<typeof setTimeout>;
 
-    if (navState.loading) return;
+  const checkNavigationState = (navState: WebViewNavigation) => {
+    console.log('Clearing timeout');
+    console.log(navState);
+    clearTimeout(timeout);
 
     if (navState.url === targetUrl) {
       return webviewRef!.injectJavaScript(dataExtractor());
+    }
+
+    if (navState.loading) {
+      // sometimes the webview doesnt finish loading
+      // in that case we have to fallback and try if our condition is already met
+      console.log('Setting timeout');
+      timeout = setTimeout(() => {
+        if (targetCondition) {
+          return webviewRef!.injectJavaScript(targetCondition());
+        }
+      }, 3000);
+      return;
     }
 
     if (targetCondition) {

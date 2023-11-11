@@ -32,6 +32,13 @@ const generateLocationCheck = (type: Response['type'], pathName: string, negativ
   `;
 };
 
+const hasPrimeCheck = (type: Response['type'], negative = false) => {
+  return javascript`
+    const data = !!(document.querySelector('a[href*="nav_AccountFlyout_prime"') ?? document.querySelector('a[href*="navm_accountmenu_prime"'))
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data: ${negative ? '!data' : 'data'} }));
+  `;
+};
+
 const fillInEmailAndPw = () => {
   return (data: Record<string, unknown> = {}) => {
     if (!data.email || !data.password) return undefined;
@@ -139,10 +146,35 @@ export const connect: WebViewConfig = {
   otherCode: [fillInEmailAndPw()],
   getAuth: () => {
     const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
-    return storage.get<{ email: string; password: string }>(`services/amazon/login`).then((data) => {
-      console.log('getAuth:', data);
-      return data;
-    });
+    return storage.get<{ email: string; password: string }>(`services/amazon/login`);
+  },
+  getCookies: () => getCookies('amazon'),
+};
+
+export const cancel: WebViewConfig = {
+  url: PRIME_URL,
+  sanityCheck: () => checkLoggedIn('sanity') + hasPrimeCheck('sanity'),
+  targetCondition: () => hasPrimeCheck('condition', true),
+  dataExtractor,
+  dataConverter,
+  otherCode: [fillInEmailAndPw()],
+  getAuth: () => {
+    const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
+    return storage.get<{ email: string; password: string }>(`services/amazon/login`);
+  },
+  getCookies: () => getCookies('amazon'),
+};
+
+export const resume: WebViewConfig = {
+  url: PRIME_URL,
+  sanityCheck: () => checkLoggedIn('sanity') + hasPrimeCheck('sanity', true),
+  targetCondition: () => hasPrimeCheck('condition'),
+  dataExtractor,
+  dataConverter,
+  otherCode: [fillInEmailAndPw()],
+  getAuth: () => {
+    const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
+    return storage.get<{ email: string; password: string }>(`services/amazon/login`);
   },
   getCookies: () => getCookies('amazon'),
 };

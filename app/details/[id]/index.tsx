@@ -31,6 +31,8 @@ type ActionsWithUrl<
   T extends AllServices[keyof AllServices]['actions'][number] = AllServices[keyof AllServices]['actions'][number],
 > = T extends { url: string } ? T : never;
 
+type Action = Service['actions'][number];
+
 const confirmDelete = (serviceTitle: string, cb: () => void) =>
   Alert.alert(
     t('deleting-X', [serviceTitle]),
@@ -82,10 +84,9 @@ const Details: React.FC = () => {
 
   const actions = useMemo(
     () =>
-      service?.actions.filter(
+      (service?.actions as Action[]).filter(
         (action) =>
-          action.states.includes(serviceData?.membershipStatus as never) ||
-          process.env.EXPO_PUBLIC_SHOW_ALL_ACTIONS === 'true',
+          action.states.includes(serviceData!.membershipStatus) || process.env.EXPO_PUBLIC_SHOW_ALL_ACTIONS === 'true',
       ),
     [service?.actions, serviceData?.membershipStatus],
   );

@@ -66,6 +66,7 @@ export const ServiceSchema = z.object({
           dataKeys: z.array(z.string()),
           url: z.string(),
         }),
+        states: z.enum(states).array(),
       }),
       z.object({
         name: z.enum(actions),

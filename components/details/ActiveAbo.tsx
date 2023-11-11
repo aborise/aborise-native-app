@@ -17,8 +17,7 @@ const ActiveAbo: React.FC<Props> = ({ serviceData }) => {
         {t('plan')}: {serviceData.membershipPlan ?? 'Basic'}
       </SizableText>
       <SizableText>
-        {serviceData.nextPaymentPrice?.integer}.<SizableText>{serviceData.nextPaymentPrice?.decimal}</SizableText> /{' '}
-        {billingCycle[serviceData.billingCycle ?? 'monthly']}
+        {((serviceData.nextPaymentPrice ?? 0) / 100).toFixed(2)} / {billingCycle[serviceData.billingCycle ?? 'monthly']}
       </SizableText>
       <XStack>
         <SizableText>{t('next-payment')}: </SizableText>

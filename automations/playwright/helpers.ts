@@ -27,7 +27,7 @@ export type BillingCycle = (typeof billingCycle)[number];
 const FlowResultDataActiveSchema = z.object({
   membershipStatus: z.literal('active'),
   membershipPlan: z.string().nullable(),
-  nextPaymentPrice: z.object({ integer: z.number(), decimal: z.number() }).nullable(),
+  nextPaymentPrice: z.number().nullable(),
   nextPaymentDate: z.string().datetime().nullable(),
   billingCycle: z.enum(['monthly', 'yearly']),
   lastSyncedAt: z.string().datetime().optional(),
@@ -39,7 +39,7 @@ const FlowResultDataCanceledSchema = z.object({
   membershipStatus: z.literal('canceled'),
   expiresAt: z.string().datetime().nullable(),
   lastSyncedAt: z.string().datetime().optional(),
-  nextPaymentPrice: z.object({ integer: z.number(), decimal: z.number() }).nullable(),
+  nextPaymentPrice: z.number().nullable(),
   billingCycle: z.enum(['monthly', 'yearly']),
   membershipPlan: z.string().nullable(),
 });
