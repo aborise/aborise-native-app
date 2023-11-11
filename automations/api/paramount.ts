@@ -1,14 +1,16 @@
 // import console from 'console';
-import { Err, Ok } from '~/shared/Result';
+import { AsyncResult, Err, Ok } from '~/shared/Result';
 import { solveCaptcha } from './helpers/captcha';
 import { ApiError, ApiResponse, AsyncAboFetchResult, Session } from './helpers/client';
 import { api } from './helpers/setup';
 import { getJsonFromHtmlResponse } from './helpers/strings';
 import { toFormData } from 'axios';
+import { AccountData } from '../webview/validators/paramount_userData';
+import { timeZoneToUtc } from '../playwright/strings';
+import { FlowReturn } from '../playwright/setup/Runner';
+import { FlowResult } from '../playwright/helpers';
 
-// TODO: test me later
-
-const getAuthToken = (client: Session, userId: string): AsyncAboFetchResult<string> => {
+const getJsonData = <T>(client: Session, userId: string): AsyncAboFetchResult<T> => {
   console.info('Getting auth token');
   return client
     .fetch<string>({
@@ -18,15 +20,24 @@ const getAuthToken = (client: Session, userId: string): AsyncAboFetchResult<stri
       service: 'paramount',
       user: userId,
     })
-    .andThen(({ data, cookies }) =>
-      getJsonFromHtmlResponse<{ authToken: string }>(data, '#php-to-js-var').map((json) => {
-        console.info('Authtoken:', json.authToken);
+    .andThen(({ data }) =>
+      getJsonFromHtmlResponse<T>(data, '#php-to-js-var').map((json) => {
         return {
-          data: json.authToken,
-          cookies,
+          data: json,
         };
       }),
     );
+};
+
+const getAuthToken = (client: Session, userId: string): AsyncAboFetchResult<string> => {
+  console.info('Getting auth token');
+  return getJsonData<{ authToken: string }>(client, userId).map(({ cookies, data }) => {
+    console.info('Authtoken:', data.authToken);
+    return {
+      data: data.authToken,
+      cookies,
+    };
+  });
 };
 
 const getAuthTokenAndCaptchaKeyForLogin = (client: Session) => {
@@ -146,7 +157,7 @@ export const resume = api(({ item, client }) => {
     .map((result) => ({ debug: result }));
 });
 
-export const connect = api(({ client, auth, item }) => {
+export const connectNotWorking = api(({ client, auth, item }) => {
   return (
     getAuthToken(client, item.user)
       // .andThen(({ data, cookies }) => {
@@ -235,6 +246,78 @@ export const connect = api(({ client, auth, item }) => {
     //   }
     // })
   );
+});
+
+export const connect = api(({ client, auth, item }) => {
+  // @ts-expect-error
+  return getJsonData<AccountData>(client, item.user).andThen(({ data }) => {
+    const { user, currentSubscription } = data;
+
+    if (user.statusCode === 'reg') {
+      return Ok({
+        data: {
+          membershipStatus: 'preactive' as const,
+          lastSyncedAt: new Date().toISOString(),
+        },
+      } satisfies FlowReturn);
+    }
+
+    if (user.isExSubscriber) {
+      return Ok({
+        data: {
+          membershipStatus: 'inactive' as const,
+          lastSyncedAt: new Date().toISOString(),
+        },
+      } satisfies FlowReturn);
+    }
+
+    if (user.isSubscriber) {
+      const nextPaymentPrice = currentSubscription.plan_bill_amount * currentSubscription.currency_subunits;
+
+      if (currentSubscription.cancel_date) {
+        const expiresAt = timeZoneToUtc(
+          currentSubscription.sub_end_date.date,
+          currentSubscription.sub_end_date.timezone,
+        ).toISOString();
+
+        return Ok({
+          data: {
+            membershipStatus: 'canceled' as const,
+            membershipPlan: data.plan?.planTier ?? 'standard',
+            lastSyncedAt: new Date().toISOString(),
+            expiresAt,
+            nextPaymentPrice,
+            billingCycle: ((data.plan?.planType ?? 'monthly') === 'monthly' ? 'monthly' : 'yearly') as
+              | 'monthly'
+              | 'yearly',
+          },
+        } satisfies FlowReturn);
+      }
+
+      const nextPaymentDate = timeZoneToUtc(
+        currentSubscription.next_bill_date.date,
+        currentSubscription.next_bill_date.timezone,
+      ).toISOString();
+
+      return Ok({
+        data: {
+          membershipStatus: 'active' as const,
+          membershipPlan: 'basic',
+          lastSyncedAt: new Date().toISOString(),
+          nextPaymentPrice,
+          nextPaymentDate: nextPaymentDate,
+          billingCycle: 'monthly' as const,
+        },
+      } satisfies FlowReturn);
+    }
+
+    return Err({
+      message: 'Not implemented',
+      statusCode: 400,
+      custom: 'Not implemented',
+      errorMessage: 'Not implemented',
+    } satisfies ApiError);
+  });
 });
 
 // response when no subscription is active

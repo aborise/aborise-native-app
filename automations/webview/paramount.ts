@@ -10,7 +10,7 @@ import { strToCookie } from '~/shared/helpers';
 import { getCookies } from '../api/helpers/cookie';
 import { ReactContext, UserContext } from '../api/utils/netflix.types';
 import { FlowReturn } from '../playwright/setup/Runner';
-import { extractAmount, extractDate } from '../playwright/strings';
+import { extractAmount, extractDate, timeZoneToUtc } from '../playwright/strings';
 import { WebViewConfig, javascript } from './webview.helpers';
 import { Cookie } from 'playwright-core';
 import { AccountData, Plan, UserData, userDataSchema } from './validators/paramount_userData';
@@ -46,22 +46,6 @@ const fillInEmailAndPw = () => {
       password.dispatchEvent(new Event('input', { bubbles: true }));
     `;
   };
-};
-
-const timeZoneToUtc = (dateString: string, timeZone: string) => {
-  const timeZoneTime = new Date(dateString + 'Z').toLocaleTimeString('de-DE', {
-    timeZone,
-  });
-  const utcTime = new Date(dateString + 'Z').toLocaleTimeString('de-DE', {
-    timeZone: 'UTC',
-  });
-
-  const hoursDiff = (parseInt(utcTime.split(':')[0]) - parseInt(timeZoneTime.split(':')[0]) + 24) % 24;
-  const padded = hoursDiff.toString().padStart(2, '0');
-
-  const isoDate = new Date(dateString).toISOString().replace('Z', `-${padded}:00`);
-
-  return new Date(isoDate);
 };
 
 const dataConverter = (data: {

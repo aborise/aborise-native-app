@@ -56,7 +56,9 @@ export const ServiceWebView: React.FC = () => {
       return;
     }
 
-    await setCookies(local.id!, result.val.cookies);
+    if (result.val.cookies) {
+      await setCookies(local.id!, result.val.cookies);
+    }
     await updateServiceData(result.val.data);
 
     if (local.action === 'connect') {

@@ -19,7 +19,7 @@ export type RunnerFn<T, U> = (options: {
 }) => Promise<Result<T, U>>;
 
 export type FlowReturn = {
-  cookies: Cookie[];
+  cookies?: Cookie[];
   data?: FlowResult;
   debug?: Record<string, any>;
   token?: string;

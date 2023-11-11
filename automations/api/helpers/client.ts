@@ -59,7 +59,7 @@ export type ApiError = {
 
 export type ApiResponse<T> = {
   data: T;
-  cookies: Cookie[];
+  cookies?: Cookie[];
   headers?: Record<string, string>;
   request?: RequestSummary;
 };
@@ -173,7 +173,7 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
     const error = result.val as AxiosError;
 
     if (error.response) {
-      const cookies = error.response.headers['set-cookie']?.map(strToCookie) ?? [];
+      const cookies = error.response.headers['set-cookie']?.map((a) => strToCookie(a)) ?? [];
       const headers = filterHeaders(error.response.headers as any, ['set-cookie']);
 
       // console.log('The following cookies were set:', cookies.map((cookie) => cookie.name).join(', ') || 'none');

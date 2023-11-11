@@ -80,3 +80,19 @@ export const extractAmount = (message: string | undefined) => {
 
   return null;
 };
+
+export const timeZoneToUtc = (dateString: string, timeZone: string) => {
+  const timeZoneTime = new Date(dateString + 'Z').toLocaleTimeString('de-DE', {
+    timeZone,
+  });
+  const utcTime = new Date(dateString + 'Z').toLocaleTimeString('de-DE', {
+    timeZone: 'UTC',
+  });
+
+  const hoursDiff = (parseInt(utcTime.split(':')[0]) - parseInt(timeZoneTime.split(':')[0]) + 24) % 24;
+  const padded = hoursDiff.toString().padStart(2, '0');
+
+  const isoDate = new Date(dateString).toISOString().replace('Z', `-${padded}:00`);
+
+  return new Date(isoDate);
+};

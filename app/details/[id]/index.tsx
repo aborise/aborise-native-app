@@ -86,7 +86,8 @@ const Details: React.FC = () => {
     () =>
       (service?.actions as Action[]).filter(
         (action) =>
-          action.states.includes(serviceData!.membershipStatus) || process.env.EXPO_PUBLIC_SHOW_ALL_ACTIONS === 'true',
+          action.states.includes(serviceData?.membershipStatus as string) ||
+          process.env.EXPO_PUBLIC_SHOW_ALL_ACTIONS === 'true',
       ),
     [service?.actions, serviceData?.membershipStatus],
   );
