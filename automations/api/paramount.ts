@@ -143,18 +143,18 @@ const doCancelConfirm = (client: Session, authToken: string, userId: string) => 
   });
 };
 
-export const cancel = api(({ item, client }) => {
+export const cancel = api(({ client, auth, item }) => {
   return getCancelInfo(client, item.user)
     .andThen(({ data }) => doCancelConfirm(client, data.authToken, item.user))
     .andThen((response) => failOnError(response, 'Failed to cancel subscription'))
-    .map((result) => ({ debug: result }));
+    .andThen(() => connect(item));
 });
 
-export const resume = api(({ item, client }) => {
+export const resume = api(({ client, auth, item }) => {
   return getAuthToken(client, item.user)
     .andThen(({ data }) => doResumeSubscription(client, data, item.user))
     .andThen((response) => failOnError(response, 'Failed to resume subscription'))
-    .map((result) => ({ debug: result }));
+    .andThen(() => connect(item));
 });
 
 export const connectNotWorking = api(({ client, auth, item }) => {
