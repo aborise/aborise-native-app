@@ -1,16 +1,16 @@
+import { useHeaderHeight } from '@react-navigation/elements';
 import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Stack as ExpoStack, router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Modal, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { useHeaderHeight } from '@react-navigation/elements';
 import Toast from 'react-native-root-toast';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Button, ScrollView, SizableText, Stack, XStack, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
-import * as webviews from '~/automations/webview/index';
 import AboDetails from '~/components/details/AboDetails';
 import { useDayJs, useI18n } from '~/composables/useI18n';
+import { useServiceLogin } from '~/composables/useServiceLogin';
 import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
 import { useServicesQuery } from '~/queries/useServicesQuery';
 import { AllServices, services } from '~/shared/allServices';
@@ -19,17 +19,9 @@ import { getUserId } from '~/shared/ensureDataLoaded';
 import { ERROR_CODES } from '~/shared/errors';
 import { getLogo } from '~/shared/logos';
 import { Service } from '~/shared/validators';
-import { useServiceLogin } from '~/composables/useServiceLogin';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
-
-type WebViewConfigKeys = keyof typeof webviews;
-type WebViewConfigActionNames = keyof (typeof webviews)[WebViewConfigKeys];
-
-type ActionsWithUrl<
-  T extends AllServices[keyof AllServices]['actions'][number] = AllServices[keyof AllServices]['actions'][number],
-> = T extends { url: string } ? T : never;
 
 type Action = Service['actions'][number];
 

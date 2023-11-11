@@ -1,10 +1,9 @@
 import { Image } from 'expo-image';
 import { Stack as ExpoStack, Link, router } from 'expo-router';
 import React, { useMemo } from 'react';
-import { ActivityIndicator, FlatList, Pressable, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, FlatList, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { ZStack } from 'tamagui';
-import { SizableText, Stack, XStack, YStack, styled } from 'tamagui';
+import { SizableText, Stack, XStack, YStack } from 'tamagui';
 import AboCard from '~/components/AboCard';
 import AboItem from '~/components/AboItem';
 import { AboItemUnconnected } from '~/components/AboItemUnconnected';
@@ -116,19 +115,3 @@ const App = () => {
 };
 
 export default App;
-
-/* {!user || user?.isAnonymous ? (
-          <View className="h-72 bg-blue-200 text-white flex flex-col items-center justify-center mt-4">
-            <Text className="text-2xl font-bold">Join Aborise!</Text>
-            <Text className="text-md mt-2">
-              Get access to exclusive content.
-            </Text>
-            <TouchableOpacity onPress={() => router.push("/register")}>
-              <Text className="text-indigo-600">Create an account</Text>
-            </TouchableOpacity>
-            <Text className="mt-4">Already got an account?</Text>
-            <TouchableOpacity onPress={() => router.push("/login")}>
-              <Text className="text-indigo-600">Login</Text>
-            </TouchableOpacity>
-          </View>
-        ) :*/

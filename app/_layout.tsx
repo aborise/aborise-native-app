@@ -1,9 +1,9 @@
-import { QueryClient, QueryClientProvider, notifyManager } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import WebView from 'react-native-webview';
 import { TamaguiProvider } from 'tamagui';
@@ -11,18 +11,13 @@ import { javascript } from '~/automations/webview/webview.helpers';
 import { useAsyncStateReadonly } from '~/composables/useAsyncState';
 import { useI18n } from '~/composables/useI18n';
 import { ensureDataLoaded } from '~/shared/ensureDataLoaded';
-import { parse, setParse, ParseResult } from '~/shared/parser';
+import { ParseResult, setParse } from '~/shared/parser';
 import config from '~/tamagui.config';
 
 SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-// const DomParser = createContext({
-//   parse: (html: string): Document => {
-//     throw new Error('not implemented');
-//   },
-// });
 let resolve: (value: ParseResult) => void;
 
 export default function Layout() {
@@ -63,8 +58,6 @@ export default function Layout() {
     setShowWebView(false);
     resolve?.(data);
   }, []);
-
-  // const [domParser] = useState({ parse });
 
   const onLayoutRootView = useCallback(async () => {
     if (!loading && loaded) {

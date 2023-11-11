@@ -114,7 +114,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
 
         // For debugging purposes we can disable the sanity check to see what happens
         if (process.env.EXPO_PUBLIC_WEBVIEW_NO_SANITY_CHECK !== 'true') {
-          // return router.back();
+          return router.back();
         }
       }
     }
@@ -169,7 +169,6 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     if (!sanityCheckDone) {
       setSanityCheckDone(true);
       setLoading(false);
-      // FIXME: This method is called on every navigation change event (why...?)
       webviewRef!.injectJavaScript(sanityCheck());
     }
 
@@ -218,109 +217,5 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  flexContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    padding: 16,
-    margin: 16,
-    borderWidth: 2,
-    borderColor: '#000',
-    borderRadius: 16,
-    marginBottom: 8,
-    backgroundColor: '#fff',
-    // backgroundColor: '#f0f0f0',
-    // borderRadius: 4,
-    // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.2,
-  },
-  firstColumn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  logo: {
-    width: 80,
-    height: 80,
-  },
-  syncBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#eaf4e4',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  syncText: {
-    fontSize: 12,
-  },
-  lastSyncDateText: {
-    fontSize: 12,
-    marginTop: 8,
-  },
-  secondColumn: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-  },
-  thirdColumn: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-    justifyContent: 'space-evenly',
-  },
-  statusBox: {
-    backgroundColor: '#000',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 4,
-  },
-  statusText: {
-    color: '#FFF',
-  },
-  priceText: {
-    fontSize: 16,
-    marginTop: 16,
-    paddingTop: 4,
-  },
-  decimalText: {
-    fontSize: 12,
-    lineHeight: 12,
-  },
-  btn: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    fontSize: 16,
-    textAlign: 'center',
-    width: '100%',
-  },
-  btnCancel: {
-    backgroundColor: '#f44336',
-    color: '#FFF',
-  },
-  btnResume: {
-    backgroundColor: '#4caf50',
-    color: '#FFF',
-  },
-  flexColumn: {
-    flexDirection: 'column',
-  },
-  flexItemsCenter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  textLg: {
-    fontSize: 18,
-  },
-  textBase: {
-    fontSize: 16,
-  },
-  ml4: {
-    marginLeft: 16,
-  },
-  mb2: {
-    marginBottom: 8,
-  },
-});
 
 export default GenericWebView;

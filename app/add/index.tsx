@@ -1,12 +1,8 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput, Button, Pressable } from 'react-native';
-
-// import { useServices } from "@/composables/useService";
-// import { useEncryptedAuth, useSecret } from "@/composables/useServiceAuth";
-import { Link, Stack } from 'expo-router';
-import { Service, services } from '~/shared/allServices';
 import { Image } from 'expo-image';
-import { FlatList } from 'react-native';
+import { Link } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { Service, services } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
 
 const Item: React.FC<{ item: Service }> = ({ item }) => {
