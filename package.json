@@ -9,6 +9,7 @@
     "build": "EAS_LOCAL_BUILD_SKIP_CLEANUP=1 EAS_LOCAL_BUILD_WORKINGDIR=/home/ulima/build/ eas build --profile development --platform android --local",
     "build:server": "eas build --profile development --platform android",
     "build:simulator": "eas build --profile development-simulator --platform ios",
+    "build:simulator:prod": "eas build --profile prod-simulator --platform ios",
     "run": "eas build:run --latest --platform android",
     "emulator": "emulator @Pixel_7_API_33",
     "tsc": "tsc --noEmit"

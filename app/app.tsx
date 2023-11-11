@@ -3,6 +3,7 @@ import { Stack as ExpoStack, Link, router } from 'expo-router';
 import React, { useMemo } from 'react';
 import { ActivityIndicator, FlatList, Pressable, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { ZStack } from 'tamagui';
 import { SizableText, Stack, XStack, YStack, styled } from 'tamagui';
 import AboCard from '~/components/AboCard';
 import AboItem from '~/components/AboItem';
@@ -60,7 +61,7 @@ const App = () => {
           ),
         }}
       />
-      <YStack flex={1} padding="$3" space>
+      <YStack padding="$3" space fullscreen>
         <MonthlyExpenses amount={price} />
 
         {isLoading && <ActivityIndicator />}
@@ -92,16 +93,23 @@ const App = () => {
             </Link>
           </YStack>
         ) : null}
-        <YStack fullscreen>
-          <Link href="/add" asChild>
-            <Pressable
-              style={{ elevation: 3 }}
-              className="rounded-full absolute right-5 bottom-8 bg-slate-500 text-black shadow-lg text-xl h-14 w-14 flex justify-center items-center active:bg-slate-600"
-            >
-              <Icon name="plus" size={32} color="#fff" />
-            </Pressable>
-          </Link>
-        </YStack>
+        <Link href="/add" asChild>
+          <XStack
+            position="absolute"
+            bottom="$8"
+            right="$5"
+            elevation="$1"
+            borderRadius="$12"
+            height="$7"
+            width="$7"
+            backgroundColor="$blue9"
+            alignItems="center"
+            justifyContent="center"
+            pressStyle={{ backgroundColor: '$blue8' }}
+          >
+            <Icon name="plus" size={32} color="#fff" />
+          </XStack>
+        </Link>
       </YStack>
     </>
   );
