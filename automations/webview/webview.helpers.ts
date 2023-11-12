@@ -12,6 +12,7 @@ export type WebViewConfig = {
   getCookies: () => Awaitable<Cookie[]>;
   dataConverter: (data: any) => Result<FlowReturn, { data: any }>;
   getAuth?: () => Awaitable<{ email: string; password: string } | null>;
+  getHeaders?: () => Awaitable<Record<string, string>>;
   otherCode?: Array<(data: Record<string, unknown>) => string | undefined>;
 };
 

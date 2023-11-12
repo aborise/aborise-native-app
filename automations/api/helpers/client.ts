@@ -78,7 +78,7 @@ type RequestSummary = {
   cookies: any;
 } | null;
 
-const getRequesSummary = (request?: InternalAxiosRequestConfig): RequestSummary => {
+const getRequestSummary = (request?: InternalAxiosRequestConfig): RequestSummary => {
   if (!request) return null;
   return {
     url: request.url,
@@ -97,7 +97,7 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
   return wrapAsync(async () => {
     const { url, body, headers, method, params, user, service, cookieKeys, storage } = options;
 
-    if (user && service && cookieKeys) {
+    if (user && service) {
       const cookies = await getCookies(service, cookieKeys, storage);
       options.cookies = cookies;
     }
@@ -162,7 +162,7 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
 
       const ret = Ok({
         data: data as T,
-        request: getRequesSummary(response.config),
+        request: getRequestSummary(response.config),
         headers,
         cookies,
       });
@@ -181,7 +181,7 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
       const err: AboFetchResult<T> = Err({
         statusCode: error.response.status,
         message: error.response.statusText,
-        request: getRequesSummary(error.config),
+        request: getRequestSummary(error.config),
         response: {
           data: error.response.data,
           headers: headers,
@@ -197,7 +197,7 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
       const err: AboFetchResult<T> = Err({
         statusCode: 500,
         message: 'No response',
-        request: getRequesSummary(error.config),
+        request: getRequestSummary(error.config),
         stack: error.stack,
         errorMessage: error.message,
         custom: 'The request to the external API failed and no response was received.',
@@ -208,7 +208,7 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
       const err: AboFetchResult<T> = Err({
         statusCode: 500,
         message: 'Axios Error',
-        request: getRequesSummary(error.config),
+        request: getRequestSummary(error.config),
         stack: error.stack,
         errorMessage: error.message,
         custom: 'Setting up the request failed',

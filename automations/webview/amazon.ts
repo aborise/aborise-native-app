@@ -1,10 +1,9 @@
 const LOGIN_URL =
   'https://www.amazon.de/-/en/ap/signin?openid.pape.max_auth_age=0&openid.return_to=https%3A%2F%2Fwww.amazon.de%2F%3Fref_%3Dnav_signin&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.assoc_handle=deflex&openid.mode=checkid_setup&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0';
-// const REGISTER_URL = 'https://www.paramountplus.com/de/account/signup/account';
-const PRIME_URL = 'https://www.amazon.de/gp/primecentral?language=en_GB';
-const primePlanSelector =
+export const PRIME_URL = 'https://www.amazon.de/gp/primecentral?language=en_GB';
+export const primePlanSelector =
   '.widgetMCXAccountManagementWidgetSlot nav .mcx-nav__menu li:nth-child(1) .mcx-menu-item__heading';
-const primeRenewalDateSelector =
+export const primeRenewalDateSelector =
   '.widgetMCXAccountManagementWidgetSlot nav .mcx-nav__menu li:nth-child(2) .mcx-menu-item__heading';
 
 import { Response } from '~/app/details/[id]/genericWebView';
@@ -34,7 +33,26 @@ const generateLocationCheck = (type: Response['type'], pathName: string, negativ
 
 const hasPrimeCheck = (type: Response['type'], negative = false) => {
   return javascript`
-    const data = !!(document.querySelector('a[href*="nav_AccountFlyout_prime"') ?? document.querySelector('a[href*="navm_accountmenu_prime"'))
+    const plan = document.querySelector('${primePlanSelector}')?.textContent;
+    const renewalDate = document.querySelector('${primeRenewalDateSelector}')?.textContent;
+    const data = !!(plan && renewalDate)
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data: ${negative ? '!data' : 'data'} }));
+  `;
+};
+
+const hasPrimeCheckExtra = (type: Response['type'], negative = false) => {
+  return javascript`
+    const doc = await fetch('${PRIME_URL}', {
+      credentials: 'include',
+      method: 'GET',
+    })
+    .then((res) => res.text())
+    .then((text) => new DOMParser().parseFromString(text, 'text/html'))
+
+    const plan = doc.querySelector('${primePlanSelector}')?.textContent;
+    const renewalDate = doc.querySelector('${primeRenewalDateSelector}')?.textContent;
+    const data = !!(plan && renewalDate)
+
     window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data: ${negative ? '!data' : 'data'} }));
   `;
 };
@@ -64,16 +82,15 @@ const fillInEmailAndPw = () => {
 const planRegex = /(\w+) (\w+) (\d+\.\d+)/;
 const renewalDateRegex = /(\d+) (\w+) (\d{4})/;
 
-const dataConverter = (data: {
-  cookies: string;
+export const dataConverter = (data: {
+  cookies?: string;
   hasPrime: boolean;
-  plan: string; // Annual EUR 89.90
-  renewalDate: string; // 01 May 2024
+  plan?: string; // Annual EUR 89.90
+  renewalDate?: string; // 01 May 2024
 }): Result<FlowReturn, { data: any }> => {
   const cookies = data.cookies
-    .split(';')
-    .map((c) => strToCookie(c, { domain: 'paramountplus.com', path: '/' }))
-    .filter((c) => c.name === 'CBS_COM');
+    ?.split(';')
+    .map((c) => strToCookie(c, { domain: '.amazon.de', path: '/', secure: true }));
 
   if (!data.hasPrime) {
     return Ok({
@@ -85,8 +102,8 @@ const dataConverter = (data: {
     });
   }
 
-  const planMatch = data.plan.match(planRegex);
-  const renewalDateMatch = data.renewalDate.match(renewalDateRegex);
+  const planMatch = data.plan!.match(planRegex);
+  const renewalDateMatch = data.renewalDate!.match(renewalDateRegex);
 
   if (!planMatch || !renewalDateMatch) {
     return Err({ data: { message: 'Could not parse plan or renewal date' } });
@@ -111,34 +128,24 @@ const dataConverter = (data: {
 
 const dataExtractor = () => {
   return javascript`
-    const cookies = document.cookie;
-    const hasPrime = !!(document.querySelector('a[href*="nav_AccountFlyout_prime"') ?? document.querySelector('a[href*="navm_accountmenu_prime"')) // Array.from(document.querySelectorAll('[data-csa-c-content-id]')).map(c => c.getAttribute('data-csa-c-content-id')).includes('nav_cs_prime_video');
-    
-    if (hasPrime) {
-      try {
-        const doc = await fetch('${PRIME_URL}', {
-          credentials: 'include',
-          method: 'GET',
-        })
-        .then((res) => res.text())
-        .then((text) => new DOMParser().parseFromString(text, 'text/html'))
-  
-        const plan = doc.querySelector('${primePlanSelector}').textContent;
-        const renewalDate = doc.querySelector('${primeRenewalDateSelector}').textContent;
+    // const cookies = document.cookie;
 
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { cookies, hasPrime, plan, renewalDate } }));
-        return
-      } catch(e) {
-        window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', data: e.message }));
-      }
-    }
-    
-    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { cookies, hasPrime } }));
+    const [doc, cookies] = await fetch('${PRIME_URL}', {
+      credentials: 'include',
+      method: 'GET',
+    })
+    .then((res) => [res.text(), res.headers.get('Set-Cookie')])
+    .then(([text, cookies]) => [new DOMParser().parseFromString(text, 'text/html'), cookies])
+
+    const plan = doc.querySelector('${primePlanSelector}')?.textContent;
+    const renewalDate = doc.querySelector('${primeRenewalDateSelector}')?.textContent;
+
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { cookies, hasPrime: !!plan && !!renewalDate, plan, renewalDate } }));
   `;
 };
 
 export const connect: WebViewConfig = {
-  url: LOGIN_URL,
+  url: PRIME_URL,
   sanityCheck: () => checkLoggedIn('sanity', true),
   targetCondition: () => checkLoggedIn('condition'),
   dataExtractor,
@@ -149,12 +156,25 @@ export const connect: WebViewConfig = {
     return storage.get<{ email: string; password: string }>(`services/amazon/login`);
   },
   getCookies: () => getCookies('amazon'),
+  getHeaders: () => ({
+    'User-Agent':
+      'Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19',
+    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Alt-Used': 'www.amazon.de',
+    Connection: 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'cross-site',
+  }),
 };
 
 export const cancel: WebViewConfig = {
   url: PRIME_URL,
   sanityCheck: () => checkLoggedIn('sanity') + hasPrimeCheck('sanity'),
-  targetCondition: () => hasPrimeCheck('condition', true),
+  targetCondition: () => hasPrimeCheckExtra('condition', true),
   dataExtractor,
   dataConverter,
   otherCode: [fillInEmailAndPw()],
@@ -163,12 +183,25 @@ export const cancel: WebViewConfig = {
     return storage.get<{ email: string; password: string }>(`services/amazon/login`);
   },
   getCookies: () => getCookies('amazon'),
+  getHeaders: () => ({
+    'User-Agent':
+      'Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19',
+    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Alt-Used': 'www.amazon.de',
+    Connection: 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'cross-site',
+  }),
 };
 
 export const resume: WebViewConfig = {
   url: PRIME_URL,
   sanityCheck: () => checkLoggedIn('sanity') + hasPrimeCheck('sanity', true),
-  targetCondition: () => hasPrimeCheck('condition'),
+  targetCondition: () => hasPrimeCheckExtra('condition'),
   dataExtractor,
   dataConverter,
   otherCode: [fillInEmailAndPw()],
@@ -177,4 +210,17 @@ export const resume: WebViewConfig = {
     return storage.get<{ email: string; password: string }>(`services/amazon/login`);
   },
   getCookies: () => getCookies('amazon'),
+  getHeaders: () => ({
+    'User-Agent':
+      'Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19',
+    Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+    'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'Alt-Used': 'www.amazon.de',
+    Connection: 'keep-alive',
+    'Upgrade-Insecure-Requests': '1',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'cross-site',
+  }),
 };

@@ -1,5 +1,5 @@
 // import console from 'console';
-import { AsyncResult, Err, Ok } from '~/shared/Result';
+import { AsyncResult, Err, Ok, fromPromise, wrapAsync } from '~/shared/Result';
 import { solveCaptcha } from './helpers/captcha';
 import { ApiError, ApiResponse, AsyncAboFetchResult, Session } from './helpers/client';
 import { api } from './helpers/setup';
@@ -9,24 +9,27 @@ import { AccountData } from '../webview/validators/paramount_userData';
 import { timeZoneToUtc } from '../playwright/strings';
 import { FlowReturn } from '../playwright/setup/Runner';
 import { FlowResult } from '../playwright/helpers';
+import { getCookies } from './helpers/cookie';
 
 const getJsonData = <T>(client: Session, userId: string): AsyncAboFetchResult<T> => {
   console.info('Getting auth token');
-  return client
-    .fetch<string>({
-      method: 'GET',
-      url: 'https://www.paramountplus.com/account/',
-      cookieKeys: ['CBS_COM'],
-      service: 'paramount',
-      user: userId,
-    })
-    .andThen(({ data }) =>
-      getJsonFromHtmlResponse<T>(data, '#php-to-js-var').map((json) => {
-        return {
-          data: json,
-        };
-      }),
-    );
+  return wrapAsync(async () => {
+    const cookies = await getCookies('paramount', ['CBS_COM']);
+    return client
+      .fetch<string>({
+        method: 'GET',
+        url: 'https://www.paramountplus.com/account/',
+        cookies,
+      })
+      .andThen(({ data }) =>
+        getJsonFromHtmlResponse<T>(data, '#php-to-js-var').map((json) => {
+          return {
+            data: json,
+            cookies,
+          };
+        }),
+      );
+  });
 };
 
 const getAuthToken = (client: Session, userId: string): AsyncAboFetchResult<string> => {

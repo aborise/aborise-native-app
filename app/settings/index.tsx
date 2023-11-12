@@ -25,7 +25,7 @@ const Settings = () => {
   };
 
   const getCookies = async () => {
-    CookieManager.get('https://asd1.netflix.com/nq/aasds/~2.8.0/pathEvaluator').then((res) => {
+    CookieManager.get('https://www.amazon.de').then((res) => {
       console.log('CookieManager.get =>', res);
     });
   };

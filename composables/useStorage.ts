@@ -24,7 +24,7 @@ const LocalStorage: Storage = {
     return getItemAsync(key.replace(regex, '_')).then((value) => {
       console.log('get', key, value);
       if (value == null) return defaultValue;
-      return JSON.parse(value);
+      return JSON.parse(value) ?? defaultValue;
     });
   },
   delete(key: string) {
@@ -81,15 +81,18 @@ export function useLargeUnsafeStorage(): Storage {
   return {
     set(key: string, value: any) {
       if (value == null) return this.delete(key);
+      console.log('set', key, value);
       return AsyncStorage.setItem(key, JSON.stringify(value));
     },
     get(key: string, defaultValue: any = null) {
+      console.log('get', key);
       return AsyncStorage.getItem(key).then((value) => {
         if (value == null) return defaultValue;
-        return JSON.parse(value);
+        return JSON.parse(value) ?? defaultValue;
       });
     },
     delete(key: string) {
+      console.log('delete', key);
       return AsyncStorage.removeItem(key);
     },
   };

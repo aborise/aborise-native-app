@@ -21,10 +21,10 @@ export const strToCookie = (cookieStr: string, fallback: Partial<Cookie> = {}) =
     expires: parsed.Expires
       ? new Date(parsed.Expires).getTime() / 1000
       : parsed.MaxAge
-      ? Date.now() / 1000 + Number(parsed.MaxAge)
-      : fallback.expires ?? Date.now() / 1000 + 60 * 60 * 24 * 7,
+      ? Math.floor(Date.now() / 1000 + Number(parsed.MaxAge))
+      : fallback.expires ?? Math.floor(Date.now() / 1000 + 60 * 60 * 24 * 7),
     httpOnly: !!parsed.HttpOnly,
-    secure: !!parsed.Secure,
+    secure: parsed.Secure ? true : fallback.secure ?? false,
     sameSite: (parsed.SameSite as 'Strict' | 'Lax' | 'None') ?? fallback.sameSite,
   };
 

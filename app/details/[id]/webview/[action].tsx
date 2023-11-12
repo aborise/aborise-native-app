@@ -10,6 +10,8 @@ import { useServicesQuery } from '~/queries/useServicesQuery';
 import { Result } from '~/shared/Result';
 import { AllServices, services } from '~/shared/allServices';
 import GenericWebView from '../genericWebView';
+import { Cookies } from '@react-native-cookies/cookies';
+import { Cookie } from 'playwright-core';
 
 type WebViewConfigKeys = keyof typeof webviews;
 type WebViewConfigActionNames = { [P in WebViewConfigKeys]: keyof (typeof webviews)[P] }[WebViewConfigKeys];
@@ -47,15 +49,25 @@ export const ServiceWebView: React.FC = () => {
   const { addServiceMutation } = useServicesQuery();
   const { mutateAsync: addService } = addServiceMutation();
 
-  const saveData = async (result: Result<FlowReturn, any>) => {
+  const saveData = async (result: Result<FlowReturn, any>, deviceCookies: Cookies) => {
     if (result.err) {
       console.error(result.err);
       return;
     }
 
-    if (result.val.cookies) {
-      await setCookies(local.id!, result.val.cookies);
+    const cooks: Cookie[] = Object.values(deviceCookies).map(
+      (c) =>
+        ({
+          ...c,
+          sameSite: 'None',
+          expires: c.expires ? Number(c.expires) : Math.floor(Date.now() / 1000 + 7 * 24 * 60 * 60),
+        } as Cookie),
+    );
+
+    if (cooks.length > 0) {
+      await setCookies(local.id!, cooks);
     }
+
     await updateServiceData(result.val.data);
 
     if (local.action === 'connect') {
@@ -83,6 +95,7 @@ export const ServiceWebView: React.FC = () => {
         getCookies={config.getCookies}
         getAuth={config.getAuth}
         otherCode={config.otherCode}
+        getHeaders={config.getHeaders}
       />
     </>
   );

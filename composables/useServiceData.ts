@@ -1,5 +1,5 @@
 import { AllServices } from '~/shared/allServices';
-import { useStorage } from './useStorage';
+import { useLargeUnsafeStorage, useStorage } from './useStorage';
 import CookieManager from '@react-native-cookies/cookies';
 import { getUserId } from '~/shared/ensureDataLoaded';
 
@@ -22,6 +22,7 @@ export const addConnectedService = (serviceId: keyof AllServices) => {
 export const deleteConnectedService = (serviceId: keyof AllServices) => {
   const storage = useStorage('local');
   const syncedStorage = useStorage('synced', getUserId());
+  const largeStorage = useLargeUnsafeStorage();
   return storage
     .get<Array<keyof AllServices>>('connectedServices', [])
     .then((connect) => {
@@ -33,19 +34,20 @@ export const deleteConnectedService = (serviceId: keyof AllServices) => {
       }
     })
     .then(() => syncedStorage.delete(`services/${serviceId}/data`))
-    .then(() => storage.delete(`services/${serviceId}/cookies`));
+    .then(() => largeStorage.delete(`services/${serviceId}/cookies`));
 };
 
 export const clearConnectedServices = () => {
   const storage = useStorage('local');
   const syncedStorage = useStorage('synced', getUserId());
+  const largeStorage = useLargeUnsafeStorage();
   return storage
     .get('connectedServices', [])
     .then((connect) => {
       return Promise.all(
         connect.map(async (serviceId) => {
           await syncedStorage.delete(`services/${serviceId}/data`);
-          await storage.delete(`services/${serviceId}/cookies`);
+          await largeStorage.delete(`services/${serviceId}/cookies`);
         }),
       );
     })

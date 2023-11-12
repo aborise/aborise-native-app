@@ -42,7 +42,7 @@ const dataConverter = (data: {
     return Err({ data });
   }
 
-  const cookies = data.cookies.split(';').map((c) => strToCookie(c, { domain: 'netflix.com', path: '/' }));
+  const cookies = data.cookies.split(';').map((c) => strToCookie(c, { domain: '.netflix.com', path: '/' }));
   let flowReturn: FlowReturn['data'];
 
   if (data.userInfo.membershipStatus === 'CURRENT_MEMBER') {

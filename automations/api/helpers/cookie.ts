@@ -1,11 +1,11 @@
 import type { Cookie } from 'playwright-core';
-import { Storage, useStorage } from '~/composables/useStorage';
+import { Storage, useLargeUnsafeStorage, useStorage } from '~/composables/useStorage';
 import { AllServices } from '~/shared/allServices';
 
 export const getCookies = async (
   service: keyof AllServices,
   cookieKeys?: Array<string>,
-  storage: Storage = useStorage('local'),
+  storage: Storage = useLargeUnsafeStorage(),
 ) => {
   const cookies = await storage.get<Cookie[]>(`services/${service}/cookies`, []);
 
@@ -16,7 +16,11 @@ export const getCookies = async (
   return cookies;
 };
 
-export const setCookies = (service: keyof AllServices, cookies: Cookie[], storage: Storage = useStorage('local')) => {
+export const setCookies = (
+  service: keyof AllServices,
+  cookies: Cookie[],
+  storage: Storage = useLargeUnsafeStorage(),
+) => {
   return storage.set(`services/${service}/cookies`, deduplicateCookies(cookies));
 };
 

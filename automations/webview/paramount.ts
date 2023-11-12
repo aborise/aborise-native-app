@@ -9,12 +9,10 @@ import { Err, Ok, Result } from '~/shared/Result';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { strToCookie } from '~/shared/helpers';
 import { getCookies } from '../api/helpers/cookie';
-import { ReactContext, UserContext } from '../api/utils/netflix.types';
 import { FlowReturn } from '../playwright/setup/Runner';
-import { extractAmount, extractDate, timeZoneToUtc } from '../playwright/strings';
+import { timeZoneToUtc } from '../playwright/strings';
+import { AccountData, Plan } from './validators/paramount_userData';
 import { WebViewConfig, javascript } from './webview.helpers';
-import { Cookie } from 'playwright-core';
-import { AccountData, Plan, UserData, userDataSchema } from './validators/paramount_userData';
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`

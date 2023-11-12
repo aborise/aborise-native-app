@@ -1,4 +1,4 @@
-import CookieManager from '@react-native-cookies/cookies';
+import CookieManager, { Cookies } from '@react-native-cookies/cookies';
 import { Stack, router } from 'expo-router';
 import { Cookie } from 'playwright-core';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -56,11 +56,13 @@ type GenericWebViewProps = {
   /** The function that converts the extracted data into the correct format */
   dataConverter: (data: any) => Result<FlowReturn, any>;
   /** The function that gets called when the data is extracted */
-  onSuccess: (data: Result<FlowReturn, any>) => Awaitable<void>;
+  onSuccess: (data: Result<FlowReturn, any>, deviceCookies: Cookies) => Awaitable<void>;
   /** Pass a function that returns the cookies that should be set in the webview */
   getCookies: () => Awaitable<Cookie[]>;
   /** Pass a function that returns the username and password that should be set in the webview */
   getAuth?: () => Awaitable<{ email: string; password: string } | null>;
+  /** Pass a function that returns the headers that should be set in the webview */
+  getHeaders?: () => Awaitable<Record<string, string>>;
   /** Other Code that is injected on every page and serves some functionality (e.g. form autofill) */
   otherCode?: Array<(data: Record<string, unknown>) => string | undefined>;
 };
@@ -78,6 +80,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
   onSuccess,
   getCookies,
   getAuth,
+  getHeaders,
   otherCode,
 }) => {
   const [webviewUrl, setWebviewUrl] = useState<string>();
@@ -103,7 +106,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
       .join('\n');
   }, [auth]);
 
-  const handleWebViewMessage = (event: { nativeEvent: { data: string } }) => {
+  const handleWebViewMessage = async (event: { nativeEvent: { data: string } }) => {
     const response = JSON.parse(event.nativeEvent.data) as Response;
 
     console.log(event.nativeEvent.data);
@@ -130,7 +133,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     }
 
     if (response.type === 'extract') {
-      Promise.resolve(onSuccess(dataConverter(response.data))).then(() => {
+      Promise.resolve(onSuccess(dataConverter(response.data), await CookieManager.get(url, true))).then(() => {
         Toast.show(t('successfully-connected'), { duration: Toast.durations.LONG });
         router.push('/');
       });
@@ -140,8 +143,8 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
   let timeout: ReturnType<typeof setTimeout>;
 
   const checkNavigationState = (navState: WebViewNavigation) => {
-    console.log('Clearing timeout');
-    console.log(navState);
+    // console.log('Clearing timeout');
+    // console.log(navState);
     clearTimeout(timeout);
 
     if (navState.url === targetUrl) {
@@ -151,7 +154,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     if (navState.loading) {
       // sometimes the webview doesnt finish loading
       // in that case we have to fallback and try if our condition is already met
-      console.log('Setting timeout');
+      // console.log('Setting timeout');
       timeout = setTimeout(() => {
         if (targetCondition) {
           return webviewRef!.injectJavaScript(targetCondition());
@@ -202,6 +205,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
             uri: webviewUrl,
             headers: {
               Cookie: cookiesToString(webviewCookies),
+              ...getHeaders?.(),
             },
           }}
           javaScriptEnabled={true}
@@ -212,6 +216,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
           style={{ opacity: loading ? 0 : 1 }}
           ref={setWebviewRef}
           webviewDebuggingEnabled={true}
+          sharedCookiesEnabled={true}
         />
       )}
     </>
