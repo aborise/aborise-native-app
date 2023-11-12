@@ -14,24 +14,21 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.aborise.app",
       "config": {
         "usesNonExemptEncryption": false
-      }
+      },
+      "buildNumber": "1.0.1"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": [
-        "android.permission.INTERNET"
-      ],
+      "permissions": ["android.permission.INTERNET"],
       "package": "com.aborise.app"
     },
     "web": {
@@ -43,10 +40,7 @@
       }
     },
     "owner": "aborise",
-    "plugins": [
-      "expo-router",
-      "expo-localization"
-    ],
+    "plugins": ["expo-router", "expo-localization"],
     "scheme": "abo"
   }
 }

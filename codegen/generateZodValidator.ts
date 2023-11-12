@@ -348,9 +348,40 @@ const object3 = {
   },
 };
 
+// spotify
 const object4 = {
-  planType: 'monthly',
-  planTier: 'standard',
+  props: {
+    pageProps: {
+      widgets: {
+        plan: {
+          cta: {
+            gaData: { category: 'Account Pages', action: 'Subscription Widget CTA clicked', label: 'change plan' },
+            // or
+            // "gaData":{
+            //   "category":"Account Pages",
+            //   "action":"Subscription Widget CTA clicked",
+            //   "label":"join premium"
+            // },
+          },
+          secondCta: {
+            gaData: { category: 'Account Pages', action: 'Subscription Widget CTA clicked', label: 'cancel premium' },
+          }, // or null
+          plan: {
+            name: 'Premium Family', // or "Spotify Free"
+            expiryDate: null,
+          },
+          freeModule: null, // or  { "title":"Free" }
+          paymentInfo: {
+            billingInfo:
+              'Du erhältst deine nächste Rechnung in Höhe von \u003cb class="recurring-price"\u003e17,99 €\u003c/b\u003e am \u003cb class="recurring-date"\u003e08.12.23\u003c/b\u003e.',
+          }, // or null
+          resubscriptionData: false,
+        },
+      },
+      isError: false,
+    },
+    csrfToken: '013acda719615fca4ebd10c44b2005ea4a0d42951b31363939373739323830343332',
+  },
 };
 
 console.log(generateZodValidator(object3));

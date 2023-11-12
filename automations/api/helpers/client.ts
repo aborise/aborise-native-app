@@ -59,7 +59,7 @@ export type ApiError = {
 
 export type ApiResponse<T> = {
   data: T;
-  cookies?: Cookie[];
+  cookies: Cookie[];
   headers?: Record<string, string>;
   request?: RequestSummary;
 };
