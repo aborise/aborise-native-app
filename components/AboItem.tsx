@@ -45,97 +45,37 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
   }, [data]);
 
   return (
-    // <Link asChild href={`/details/${id}`}>
-    <AboCard onPress={() => router.push(`/details/${id}`)} backgroundColor="$blue6">
-      <Image source={getLogo(id)} style={{ width: 60, height: 60 }} className="rounded-xl" />
-      <YStack flex={1}>
-        <SizableText size="$6">{title}</SizableText>
-        {renewsDate && (
-          <SizableText theme="alt2" size="$2">
-            {t('renews')} {renewsDate}
-          </SizableText>
-        )}
-        {expiresDate && (
-          <SizableText theme="alt2" size="$1">
-            {t('expires')} {expiresDate}
-          </SizableText>
-        )}
-        {data.membershipStatus === 'inactive' && <SizableText>{t('inactive')}</SizableText>}
-      </YStack>
-
-      {integer !== undefined &&
-        decimal !== undefined &&
-        (data.membershipStatus === 'active' || data.membershipStatus === 'canceled') && (
-          <>
-            <SizableText>
-              <SizableText size="$7">€{integer}.</SizableText>
-              <SizableText size="$7">{decimal}</SizableText>
+    <Link asChild href={`/details/${id}`}>
+      <AboCard backgroundColor="$blue6">
+        <Image source={getLogo(id)} style={{ width: 60, height: 60 }} className="rounded-xl" />
+        <YStack flex={1}>
+          <SizableText size="$6">{title}</SizableText>
+          {renewsDate && (
+            <SizableText theme="alt2" size="$2">
+              {t('renews')} {renewsDate}
             </SizableText>
+          )}
+          {expiresDate && (
+            <SizableText theme="alt2" size="$1">
+              {t('expires')} {expiresDate}
+            </SizableText>
+          )}
+          {data.membershipStatus === 'inactive' && <SizableText>{t('inactive')}</SizableText>}
+        </YStack>
+
+        {(data.membershipStatus === 'active' || data.membershipStatus === 'canceled') && !!data.nextPaymentPrice && (
+          <YStack alignItems="flex-end">
+            <SizableText>EUR {(data.nextPaymentPrice / 100).toFixed(2)}</SizableText>
             <SizableText theme="alt2" size="$1">
               {' '}
               / {data.billingCycle === 'monthly' ? t('month') : t('year')}
             </SizableText>
-            {/* <SizableText theme="alt2" size="$1">{t('next-payment')}</SizableText> */}
-            {/* <SizableText theme="alt2" size="$1">{nextPaymentRelativeDate}</SizableText> */}
-          </>
+          </YStack>
         )}
 
-      <Icon name="angle-right" size={24} color="#000000" />
-    </AboCard>
-    // </Link>
-
-    // <Link asChild href={`/details/${id}`}>
-    //   <TouchableOpacity onLongPress={onContextMenu}>
-    //     <View
-    //       style={{
-    //         flexDirection: 'row',
-    //         justifyContent: 'space-between',
-    //         alignItems: 'center',
-    //         padding: 16,
-    //         borderWidth: 2,
-    //         borderColor: '#000',
-    //         borderRadius: 16,
-    //         gap: 16,
-    //         marginBottom: 8,
-    //         backgroundColor: '#fff',
-    //         ...styles,
-    //       }}
-    //     >
-    //       <Image source={getLogo(id)} style={{ width: 48, height: 48 }} className="rounded-xl" />
-    //       <View style={{ flex: 1, flexDirection: 'column', alignItems: 'flex-start' }}>
-    //         <Text style={{ fontSize: 24 }}>{title}</Text>
-    //         {renewsDate && (
-    //           <Text style={{ fontSize: 12, color: 'gray' }}>
-    //             {t('renews')}: {renewsDate}
-    //           </Text>
-    //         )}
-    //         {expiresDate && (
-    //           <Text style={{ fontSize: 12, color: 'gray' }}>
-    //             {t('expires')}: {expiresDate}
-    //           </Text>
-    //         )}
-    //         {data.membershipStatus === 'inactive' && (
-    //           <Text style={{ fontSize: 12, color: 'gray' }}>{t('inactive')}</Text>
-    //         )}
-    //       </View>
-    //       <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-    //         {integer && (
-    //           <>
-    //             <Text style={{ fontSize: 24 }}>
-    //               <Text>€{integer}.</Text>
-    //               <Text>{decimal}</Text>
-    //             </Text>
-    //             <Text style={{ fontSize: 12, color: 'gray' }}>{t('next-payment')}</Text>
-    //             <Text style={{ fontSize: 10, color: 'gray' }}>{nextPaymentRelativeDate}</Text>
-    //           </>
-    //         )}
-    //       </View>
-    //       <View style={{ flexDirection: 'column', alignItems: 'flex-end' }}>
-    //         <Icon name="angle-right" size={24} color="#000000" />
-    //       </View>
-    //     </View>
-    //   </TouchableOpacity>
-    // </Link>
+        <Icon name="angle-right" size={24} color="#000000" />
+      </AboCard>
+    </Link>
   );
 };
 

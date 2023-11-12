@@ -11,16 +11,22 @@ type Props = {
 const { t } = useI18n();
 const dayjs = useDayJs();
 
+const capitalize = (s: string | undefined | null) => {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};
+
 const CanceledAbo: React.FC<Props> = ({ serviceData }) => {
   return (
     <YStack>
       <View>
         <SizableText>
-          {t('plan')}: {serviceData.membershipPlan ?? 'Basic'}
+          {t('plan')}: {capitalize(serviceData.membershipPlan) ?? 'Basic'}
         </SizableText>
       </View>
       <SizableText>
-        {((serviceData.nextPaymentPrice ?? 0) / 100).toFixed(2)} / {billingCycle[serviceData.billingCycle ?? 'monthly']}
+        EUR {((serviceData.nextPaymentPrice ?? 0) / 100).toFixed(2)} /{' '}
+        {billingCycle[serviceData.billingCycle ?? 'monthly']}
       </SizableText>
       <SizableText>
         {t('canceled')} - {t('expires')} {dayjs(serviceData.expiresAt ?? 0).fromNow()}

@@ -1,6 +1,8 @@
 import CookieManager from '@react-native-cookies/cookies';
+import { Stack as ExpoStack } from 'expo-router/stack';
 import React, { useState } from 'react';
 import { Alert, Button, Switch, Text, View } from 'react-native';
+import { SizableText, YStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
 import { useServicesQuery } from '~/queries/useServicesQuery';
 
@@ -31,16 +33,57 @@ const Settings = () => {
   };
 
   return (
-    <View>
-      <Text>Settings</Text>
-      <View>
+    <YStack padding="$4" space>
+      <ExpoStack.Screen options={{ title: t('settings') }} />
+
+      {/* <View>
         <Text>Notifications</Text>
         <Switch value={notificationsEnabled} onValueChange={setNotificationsEnabled} />
-      </View>
-      <Button title="Clear Storage" onPress={handleClearStorage} />
-      <Button title="Get Cookies" onPress={getCookies} />
-      <Button title="Clear Cookies" onPress={() => CookieManager.clearAll()} />
-    </View>
+      </View> */}
+
+      <SizableText size="$4" fontWeight="bold">
+        This Screen is mostly for develeopment purposes. You better don't touch this!
+      </SizableText>
+
+      <YStack
+        borderColor="black"
+        borderRadius="$2"
+        backgroundColor="$blue10"
+        padding="$4"
+        onPress={handleClearStorage}
+        elevation="$1"
+        pressStyle={{ backgroundColor: '$blue8' }}
+      >
+        <SizableText size="$6">Clear Storage</SizableText>
+        <SizableText>Removes all data and all connected subscriptions from your device</SizableText>
+      </YStack>
+
+      <YStack
+        borderColor="black"
+        borderRadius="$2"
+        backgroundColor="$blue10"
+        padding="$4"
+        onPress={() => CookieManager.clearAll()}
+        elevation="$1"
+        pressStyle={{ backgroundColor: '$blue8' }}
+      >
+        <SizableText size="$6">Clear Cookies</SizableText>
+        <SizableText>Removes all device cookies from the CookieManager</SizableText>
+      </YStack>
+
+      <YStack
+        borderColor="black"
+        borderRadius="$2"
+        backgroundColor="$blue10"
+        padding="$4"
+        onPress={getCookies}
+        elevation="$1"
+        pressStyle={{ backgroundColor: '$blue8' }}
+      >
+        <SizableText size="$6">Get Cookies</SizableText>
+        <SizableText>Prints the amazon cookies to the console</SizableText>
+      </YStack>
+    </YStack>
   );
 };
 

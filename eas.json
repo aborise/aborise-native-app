@@ -23,6 +23,12 @@
       "ios": {
         "simulator": true
       }
+    },
+    "dev-android": {
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {

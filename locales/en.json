@@ -41,5 +41,9 @@
   "status": "Status",
   "plan": "Plan",
   "account": "Account",
-  "successfully-connected": "Successfully connected!"
+  "successfully-connected": "Successfully connected!",
+  "subscriptions": "Subscriptions",
+  "settings": "Settings",
+  "search-for-a-service": "Search for a service",
+  "dont-have-an-account": "Don't have an account?"
 }

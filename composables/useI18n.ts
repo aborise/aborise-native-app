@@ -19,8 +19,8 @@ const i18n = new I18n({
 });
 
 // Set the locale once at the beginning of your app.
-i18n.locale = 'en'; //getLocales()[0].languageCode;
-dayjs.locale('en');
+i18n.locale = getLocales()[0].languageCode;
+dayjs.locale(getLocales()[0].languageCode);
 
 export const useI18n = () => {
   return objectMap(i18n, (value, key) => {

@@ -6,12 +6,15 @@ import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, Button, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SizableText } from 'tamagui';
 import * as apis from '~/automations/api/index';
+import { useI18n } from '~/composables/useI18n';
 import { useServiceLogin } from '~/composables/useServiceLogin';
 import { AllServices, services } from '~/shared/allServices';
 import { getAction } from '~/shared/apis';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { getActionDefinition } from '~/shared/helpers';
 import { getLogo } from '~/shared/logos';
+
+const { t } = useI18n();
 
 type ConnectProps = {
   id: keyof AllServices;
@@ -106,13 +109,13 @@ const Connect: React.FC = () => {
             onChangeText={(val) => setPassword(val)}
           />
         </View>
-        <Button title="Connect" onPress={doConnect} />
+        <Button title={t('connect')} onPress={doConnect} />
 
         {hasRegisterApi && (
           <>
-            <SizableText mt="$4">Don't have an account?</SizableText>
+            <SizableText mt="$4">{t('dont-have-an-account')}</SizableText>
             <Button
-              title="register"
+              title={t('register')}
               onPress={() =>
                 CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`))
               }

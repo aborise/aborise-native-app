@@ -40,5 +40,10 @@
   "status": "Status",
   "plan": "Plan",
   "account": "Account",
-  "successfully-connected": "Erfolgreich verbunden!"
+  "successfully-connected": "Erfolgreich verbunden!",
+  "subscriptions": "Abonnements",
+  "connect": "Verbinden",
+  "settings": "Einstellungen",
+  "search-for-a-service": "Suche ein Abo",
+  "dont-have-an-account": "Sie haben noch kein Konto?"
 }

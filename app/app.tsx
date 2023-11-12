@@ -73,7 +73,7 @@ const App = () => {
 
         {connectedServices && Object.keys(connectedServices).length ? (
           <YStack space="$2">
-            <SizableText size="$6">{t('active-subscriptions')}</SizableText>
+            <SizableText size="$6">{t('subscriptions')}</SizableText>
             <FlatList
               contentContainerStyle={{ gap: 8 }}
               data={objectEntries(connectedServices)}

@@ -2,8 +2,11 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { useI18n } from '~/composables/useI18n';
 import { Service, services } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
+
+const { t } = useI18n();
 
 const Item: React.FC<{ item: Service }> = ({ item }) => {
   return (
@@ -40,12 +43,12 @@ const Add = () => {
             onChangeText={(value) => {
               setSearch(value);
             }}
-            placeholder="Search for a service"
+            placeholder={t('search-for-a-service')}
             returnKeyType="done"
             autoCapitalize="none"
             autoCorrect={false}
             className="grow"
-            autoFocus
+            // autoFocus
           />
         </View>
 
