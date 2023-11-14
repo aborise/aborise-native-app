@@ -567,6 +567,11 @@ export class DisneyAPI {
       return this.getAuthToken()
         .andThen((token) => {
           // alternatively post 'https://disney.api.edge.bamgrid.com/v2/order/restart'
+          // return this.session.post<{ data: { success: boolean } }>(
+          //   'https://disney.api.edge.bamgrid.com/v2/order/restart',
+          //   { subscriptionId: subscription.id },
+          //   this.getAuthHeader(token),
+          // );
           return this.session.put<{ data: { success: boolean } }>(
             'https://disney.api.edge.bamgrid.com/execution/v1/subscription/restart',
             { subscriptionId: subscription.id },
@@ -616,6 +621,8 @@ const ensureSuccess = <T extends { success: boolean }>(result: T, message: strin
   if (result.success) {
     return Ok(result);
   }
+
+  console.log(result);
 
   const err: ApiError = {
     custom: message,

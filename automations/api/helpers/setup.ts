@@ -55,7 +55,7 @@ export const api = (
 
         return result.map(async (flowReturn) => {
           if (flowReturn.cookies?.length) {
-            await setCookies(item.service, flowReturn.cookies, storage);
+            await setCookies(item.service, flowReturn.cookies);
           }
 
           if (flowReturn.data) {

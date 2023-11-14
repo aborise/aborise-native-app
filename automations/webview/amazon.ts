@@ -128,19 +128,17 @@ export const dataConverter = (data: {
 
 const dataExtractor = () => {
   return javascript`
-    // const cookies = document.cookie;
-
-    const [doc, cookies] = await fetch('${PRIME_URL}', {
+    const doc = await fetch('${PRIME_URL}', {
       credentials: 'include',
       method: 'GET',
     })
-    .then((res) => [res.text(), res.headers.get('Set-Cookie')])
-    .then(([text, cookies]) => [new DOMParser().parseFromString(text, 'text/html'), cookies])
+    .then((res) => res.text())
+    .then((text) => new DOMParser().parseFromString(text, 'text/html'))
 
     const plan = doc.querySelector('${primePlanSelector}')?.textContent;
     const renewalDate = doc.querySelector('${primeRenewalDateSelector}')?.textContent;
 
-    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { cookies, hasPrime: !!plan && !!renewalDate, plan, renewalDate } }));
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { hasPrime: !!plan && !!renewalDate, plan, renewalDate } }));
   `;
 };
 
