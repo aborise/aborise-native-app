@@ -46,7 +46,7 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
 
   return (
     <Link asChild href={`/details/${id}`}>
-      <AboCard backgroundColor="$blue6">
+      <AboCard backgroundColor="$blue6" pressStyle={{ backgroundColor: '$blue5' }}>
         <Image source={getLogo(id)} style={{ width: 60, height: 60 }} className="rounded-xl" />
         <YStack flex={1}>
           <SizableText size="$6">{title}</SizableText>
