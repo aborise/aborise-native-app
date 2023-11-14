@@ -10,6 +10,7 @@
     "build:server": "eas build --profile development --platform android",
     "build:simulator": "eas build --profile development-simulator --platform ios",
     "build:simulator:prod": "eas build --profile prod-simulator --platform ios",
+    "build:preview": "eas build --profile preview",
     "run": "eas build:run --latest --platform android",
     "emulator": "emulator @Pixel_7_API_33",
     "tsc": "tsc --noEmit"
@@ -75,7 +76,8 @@
     "react-navigation": "^5.0.0",
     "tamagui": "^1.76.0",
     "ts-results": "^3.3.0",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "expo-updates": "~0.18.17"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

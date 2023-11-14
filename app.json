@@ -3,8 +3,8 @@
     "experiments": {
       "tsconfigPaths": true
     },
-    "name": "aborise-native-app",
-    "slug": "aborise-native-app",
+    "name": "aborise",
+    "slug": "aborise",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -41,6 +41,12 @@
     },
     "owner": "aborise",
     "plugins": ["expo-router", "expo-localization"],
-    "scheme": "abo"
+    "scheme": "abo",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/af03aabe-215f-4aa5-9ce2-d421cd9e3cb8"
+    }
   }
 }
