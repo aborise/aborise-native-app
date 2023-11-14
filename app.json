@@ -4,7 +4,7 @@
       "tsconfigPaths": true
     },
     "name": "aborise",
-    "slug": "aborise",
+    "slug": "aborise-native-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
