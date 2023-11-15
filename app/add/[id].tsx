@@ -3,7 +3,16 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
-import { ActivityIndicator, Button, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Button,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { SizableText } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import { useI18n } from '~/composables/useI18n';
@@ -97,7 +106,7 @@ const Connect: React.FC = () => {
           title: service.title,
         }}
       />
-      <View style={styles.container}>
+      <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <Image source={getLogo(service.id)} style={styles.image} className="rounded-3xl" />
         <View style={styles.inputContainer}>
           <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={(val) => setEmail(val)} />
@@ -126,7 +135,7 @@ const Connect: React.FC = () => {
         <View>
           <Text>{error}</Text>
         </View>
-      </View>
+      </KeyboardAvoidingView>
       {loading && (
         <View style={styles.overlay}>
           <ActivityIndicator size="large" />
