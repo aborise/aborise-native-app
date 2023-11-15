@@ -17,7 +17,7 @@ export const getAction = <
   obj: T,
   key: U,
 ): toActionFns<U> | undefined => {
-  if (!obj[key as unknown as keyof T]) {
+  if (!obj || !obj[key as unknown as keyof T]) {
     console.log(key, 'is not implemented in', obj);
     return;
   }

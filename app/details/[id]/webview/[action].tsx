@@ -1,7 +1,7 @@
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
 import Toast from 'react-native-root-toast';
-import { setCookies } from '~/automations/api/helpers/cookie';
+import { deviceCookiesToCookies, setCookies } from '~/automations/api/helpers/cookie';
 import { FlowReturn } from '~/automations/playwright/setup/Runner';
 import * as webviews from '~/automations/webview/index';
 import { WebViewConfig } from '~/automations/webview/webview.helpers';
@@ -55,17 +55,12 @@ export const ServiceWebView: React.FC = () => {
       return;
     }
 
-    const cooks: Cookie[] = Object.values(deviceCookies).map(
-      (c) =>
-        ({
-          ...c,
-          sameSite: 'None',
-          expires: c.expires ? Number(c.expires) : Math.floor(Date.now() / 1000 + 7 * 24 * 60 * 60),
-        } as Cookie),
-    );
+    const cooks = deviceCookiesToCookies(deviceCookies);
 
     if (cooks.length > 0) {
       await setCookies(local.id!, cooks);
+    } else if (result.val.cookies?.length) {
+      await setCookies(local.id!, result.val.cookies);
     }
 
     await updateServiceData(result.val.data);

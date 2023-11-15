@@ -38,9 +38,6 @@ export const getJsonFromHtmlResponse = <T>(html: string, selector: string) => {
         throw new Error('Script tag to read auth token wasnt found');
       }
   
-      console.log(script)
-      console.log(JSON.parse(script.innerHTML))
-  
       return JSON.parse(script.innerHTML)
     }
   `;

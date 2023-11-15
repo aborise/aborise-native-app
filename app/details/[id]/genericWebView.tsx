@@ -54,7 +54,7 @@ type GenericWebViewProps = {
    */
   dataExtractor: () => string;
   /** The function that converts the extracted data into the correct format */
-  dataConverter: (data: any) => Result<FlowReturn, any>;
+  dataConverter: (data: any) => Awaitable<Result<FlowReturn, any>>;
   /** The function that gets called when the data is extracted */
   onSuccess: (data: Result<FlowReturn, any>, deviceCookies: Cookies) => Awaitable<void>;
   /** Pass a function that returns the cookies that should be set in the webview */
@@ -109,8 +109,6 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
   const handleWebViewMessage = async (event: { nativeEvent: { data: string } }) => {
     const response = JSON.parse(event.nativeEvent.data) as Response;
 
-    console.log(event.nativeEvent.data);
-
     if (response.type === 'sanity') {
       if (!response.data) {
         console.log('Sanity check failed. Closing webview');
@@ -133,7 +131,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     }
 
     if (response.type === 'extract') {
-      Promise.resolve(onSuccess(dataConverter(response.data), await CookieManager.get(url, true))).then(() => {
+      Promise.resolve(onSuccess(await dataConverter(response.data), await CookieManager.get(url, true))).then(() => {
         Toast.show(t('successfully-connected'), { duration: Toast.durations.LONG });
         router.push('/');
       });

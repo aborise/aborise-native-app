@@ -16,19 +16,19 @@ export interface Storage {
 const regex = /\//g;
 const LocalStorage: Storage = {
   set(key: string, value: any) {
-    console.log('set', key, value);
+    console.log('[local] set', key, value);
     if (value == null) return this.delete(key);
     return setItemAsync(key.replace(regex, '_'), JSON.stringify(value));
   },
   get(key: string, defaultValue: any = null) {
     return getItemAsync(key.replace(regex, '_')).then((value) => {
-      console.log('get', key, value);
+      console.log('[local] get', key, value);
       if (value == null) return defaultValue;
       return JSON.parse(value) ?? defaultValue;
     });
   },
   delete(key: string) {
-    console.log('delete', key);
+    console.log('[local] delete', key);
     return deleteItemAsync(key.replace(regex, '_'));
   },
 };
@@ -81,18 +81,18 @@ export function useLargeUnsafeStorage(): Storage {
   return {
     set(key: string, value: any) {
       if (value == null) return this.delete(key);
-      console.log('set', key, value);
+      console.log('[large] set', key, `${JSON.stringify(value).slice(0, 200)}...`);
       return AsyncStorage.setItem(key, JSON.stringify(value));
     },
     get(key: string, defaultValue: any = null) {
-      console.log('get', key);
       return AsyncStorage.getItem(key).then((value) => {
+        console.log('[large] get', key, `${value?.slice(0, 200)}...`);
         if (value == null) return defaultValue;
         return JSON.parse(value) ?? defaultValue;
       });
     },
     delete(key: string) {
-      console.log('delete', key);
+      console.log('[large] delete', key);
       return AsyncStorage.removeItem(key);
     },
   };

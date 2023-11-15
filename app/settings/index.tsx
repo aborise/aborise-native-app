@@ -3,6 +3,7 @@ import { Stack as ExpoStack } from 'expo-router/stack';
 import React, { useState } from 'react';
 import { Alert, Button, Switch, Text, View } from 'react-native';
 import { SizableText, YStack } from 'tamagui';
+import { getCookies } from '~/automations/api/helpers/cookie';
 import { useI18n } from '~/composables/useI18n';
 import { useServicesQuery } from '~/queries/useServicesQuery';
 
@@ -26,9 +27,10 @@ const Settings = () => {
     ]);
   };
 
-  const getCookies = async () => {
-    CookieManager.get('https://www.amazon.de').then((res) => {
+  const getCookies2 = async () => {
+    CookieManager.get('https://tv.apple.com/').then(async (res) => {
       console.log('CookieManager.get =>', res);
+      console.log('Cookies =>', await getCookies('apple'));
     });
   };
 
@@ -76,7 +78,7 @@ const Settings = () => {
         borderRadius="$2"
         backgroundColor="$blue10"
         padding="$4"
-        onPress={getCookies}
+        onPress={getCookies2}
         elevation="$1"
         pressStyle={{ backgroundColor: '$blue8' }}
       >

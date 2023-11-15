@@ -1,12 +1,10 @@
+import { Cookies } from '@react-native-cookies/cookies';
 import type { Cookie } from 'playwright-core';
 import { Storage, useLargeUnsafeStorage, useStorage } from '~/composables/useStorage';
 import { AllServices } from '~/shared/allServices';
 
-export const getCookies = async (
-  service: keyof AllServices,
-  cookieKeys?: Array<string>,
-  storage: Storage = useLargeUnsafeStorage(),
-) => {
+export const getCookies = async (service: keyof AllServices, cookieKeys?: Array<string>) => {
+  const storage: Storage = useLargeUnsafeStorage();
   const cookies = await storage.get<Cookie[]>(`services/${service}/cookies`, []);
 
   if (cookieKeys) {
@@ -16,11 +14,8 @@ export const getCookies = async (
   return cookies;
 };
 
-export const setCookies = (
-  service: keyof AllServices,
-  cookies: Cookie[],
-  storage: Storage = useLargeUnsafeStorage(),
-) => {
+export const setCookies = (service: keyof AllServices, cookies: Cookie[]) => {
+  const storage: Storage = useLargeUnsafeStorage();
   return storage.set(`services/${service}/cookies`, deduplicateCookies(cookies));
 };
 
@@ -94,4 +89,17 @@ export const parseCookieString = (cookieString: string) => {
 
     return cookie as Cookie;
   });
+};
+
+export const deviceCookiesToCookies = (cookies: Cookies) => {
+  const cooks: Cookie[] = Object.values(cookies).map(
+    (c) =>
+      ({
+        ...c,
+        sameSite: 'None',
+        expires: c.expires ? Number(c.expires) : Math.floor(Date.now() / 1000 + 7 * 24 * 60 * 60),
+      } as Cookie),
+  );
+
+  return cooks;
 };

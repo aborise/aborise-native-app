@@ -98,7 +98,7 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
     const { url, body, headers, method, params, user, service, cookieKeys, storage } = options;
 
     if (user && service) {
-      const cookies = await getCookies(service, cookieKeys, storage);
+      const cookies = await getCookies(service, cookieKeys);
       options.cookies = cookies;
     }
 
