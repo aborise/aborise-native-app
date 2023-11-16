@@ -117,7 +117,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
 
         // For debugging purposes we can disable the sanity check to see what happens
         if (process.env.EXPO_PUBLIC_WEBVIEW_NO_SANITY_CHECK !== 'true') {
-          // return router.back();
+          return router.back();
         }
       }
     }
@@ -138,7 +138,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
       console.log('Extracting data');
       Promise.resolve(onSuccess(await dataConverter(response.data), await CookieManager.get(url, true))).then(() => {
         Toast.show(t('successfully-connected'), { duration: Toast.durations.LONG });
-        // router.push('/');
+        router.push('/');
       });
     }
   };

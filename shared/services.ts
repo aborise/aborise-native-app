@@ -438,18 +438,16 @@ const _joyn = {
       states: [],
       webView: true,
     },
-    // {
-    //   name: 'cancel',
-    //   type: 'manual',
-    //   states: ['active'],
-    //   webView: true,
-    // },
-    // {
-    //   name: 'resume',
-    //   type: 'manual',
-    //   states: ['canceled', 'inactive'],
-    //   webView: true,
-    // },
+    {
+      name: 'cancel',
+      type: 'manual',
+      states: ['active'],
+    },
+    {
+      name: 'resume',
+      type: 'manual',
+      states: ['canceled'],
+    },
   ],
 } as const;
 

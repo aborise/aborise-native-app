@@ -32,7 +32,7 @@ export type AboFetchOptions = {
   body?: Record<string, unknown> | FormData | object;
   cookies?: Cookie[];
   headers?: Record<string, unknown>;
-  method: 'POST' | 'GET' | 'PUT';
+  method: 'POST' | 'GET' | 'PUT' | 'DELETE';
   params?: string | string[][] | Record<string, any> | URLSearchParams;
   user?: string;
   service?: keyof AllServices;
@@ -138,7 +138,7 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
       axios.request<T>({
         url: (url as string) + (params ? `?${new URLSearchParams(params).toString()}` : ''),
         data: body,
-        method: method as any,
+        method: method,
         headers: {
           ...headers,
           Cookie,

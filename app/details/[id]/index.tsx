@@ -102,7 +102,7 @@ const Details: React.FC = () => {
         if (res.ok) {
           Toast.show(t('updated'), { duration: Toast.durations.SHORT });
         } else {
-          // console.error(res.val);
+          console.log(res.val);
           Toast.show(t('error-while-updating') + ' / ' + res.val.message, { duration: Toast.durations.SHORT });
         }
       })
