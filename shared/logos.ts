@@ -5,6 +5,7 @@ import netflix from '../assets/icons/netflix.png';
 import paramount from '../assets/icons/paramount.png';
 import spotify from '../assets/icons/spotify.png';
 import apple from '../assets/icons/apple.png';
+import joyn from '../assets/icons/joyn.png';
 import { objectKeys } from './typeHelpers';
 
 const logos = {
@@ -14,6 +15,7 @@ const logos = {
   paramount,
   spotify,
   apple,
+  joyn,
 };
 
 let cache: { [key: string]: ImageResolvedAssetSource } = {};

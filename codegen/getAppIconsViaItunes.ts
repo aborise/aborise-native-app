@@ -4,6 +4,16 @@ import path from 'path';
 import { services } from '~/shared/allServices';
 
 Object.entries(services).forEach(([id, service]) => {
+  const filename = service.id + '.png';
+  const iconsDir = path.join(__dirname, '..', 'assets/icons');
+  const filepath = path.join(iconsDir, filename);
+
+  // dont do anything if file already exists
+  if (fs.existsSync(filepath)) {
+    console.log(service.title, 'already exists');
+    return;
+  }
+
   const url = `https://itunes.apple.com/lookup?id=${service.appleId}`;
   axios
     .get(url)
@@ -19,10 +29,6 @@ Object.entries(services).forEach(([id, service]) => {
 
       // replace extension to png
       artworkUrl = artworkUrl.replace('512x512bb.jpg', '512x512bb.png');
-
-      const filename = service.id + '.png';
-      const iconsDir = path.join(__dirname, '..', 'assets/icons');
-      const filepath = path.join(iconsDir, filename);
 
       // make sure the icons directory exists
       if (!fs.existsSync(iconsDir)) {
