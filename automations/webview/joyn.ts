@@ -27,6 +27,15 @@ type JoinExtractor = {
 const dataConverter = (data: JoinExtractor): Result<FlowReturn, { data: any }> => {
   const { access_token, refresh_token, client_id, config, subs } = data;
 
+  return Ok({
+    token: {
+      access_token,
+      refresh_token,
+      client_id,
+      expires: Date.now() + 3600000,
+    },
+  });
+
   if (config.hasActivePlus) {
     const product = config.products.find((s) => s.id === 'deplus')!;
     const sub = subs.find((s) => s.productId === 'deplus')!;

@@ -19,6 +19,7 @@ import { getUserId } from '~/shared/ensureDataLoaded';
 import { ERROR_CODES } from '~/shared/errors';
 import { getLogo } from '~/shared/logos';
 import { Service } from '~/shared/validators';
+import { useServiceRefresh } from '~/composables/useServiceRefresh';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
@@ -86,18 +87,11 @@ const Details: React.FC = () => {
 
   const [refreshing, setRefreshing] = useState(false);
 
+  const { onRefresh: onRefreshBase } = useServiceRefresh();
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-
-    getAction(
-      apis[service.id],
-      'connect',
-    )?.({
-      type: 'connect',
-      service: service.id,
-      user: getUserId(),
-      queueId: 'foo',
-    })
+    onRefreshBase(service)
       .then((res) => {
         if (res.ok) {
           Toast.show(t('updated'), { duration: Toast.durations.SHORT });

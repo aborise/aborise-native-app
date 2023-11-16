@@ -12,12 +12,15 @@ import { AllServices, services } from '~/shared/allServices';
 import GenericWebView from '../genericWebView';
 import { Cookies } from '@react-native-cookies/cookies';
 import { Cookie } from 'playwright-core';
+import { useServiceRefresh } from '~/composables/useServiceRefresh';
+import { useQueryClient } from '@tanstack/react-query';
 
 type WebViewConfigKeys = keyof typeof webviews;
 type WebViewConfigActionNames = { [P in WebViewConfigKeys]: keyof (typeof webviews)[P] }[WebViewConfigKeys];
 
 export const ServiceWebView: React.FC = () => {
   const local = useLocalSearchParams<{ id: keyof AllServices; action: WebViewConfigActionNames }>();
+  const queryClient = useQueryClient();
 
   if (!webviews[local.id as WebViewConfigKeys]) {
     console.log('no webview found for this service');
@@ -49,6 +52,8 @@ export const ServiceWebView: React.FC = () => {
   const { addServiceMutation } = useServicesQuery();
   const { mutateAsync: addService } = addServiceMutation();
 
+  const { onRefresh } = useServiceRefresh();
+
   const saveData = async (result: Result<FlowReturn, any>, deviceCookies: Cookies) => {
     if (result.err) {
       console.error(result.err);
@@ -71,6 +76,13 @@ export const ServiceWebView: React.FC = () => {
 
     if (local.action === 'connect') {
       await addService(local.id!);
+    }
+
+    if (!result.val.data && result.val.token) {
+      await onRefresh(service).finally(async () => {
+        await queryClient.invalidateQueries({ queryKey: ['services'] });
+        await queryClient.invalidateQueries({ queryKey: ['servicesData'] });
+      });
     }
   };
 
