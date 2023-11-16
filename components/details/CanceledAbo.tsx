@@ -1,6 +1,7 @@
 import { View } from 'react-native';
 import { SizableText, YStack } from 'tamagui';
 import { FlowResultCanceled } from '~/automations/playwright/helpers';
+import { capitalize } from '~/automations/playwright/strings';
 import { useDayJs, useI18n } from '~/composables/useI18n';
 import { billingCycle } from '~/shared/translationMapping';
 
@@ -10,11 +11,6 @@ type Props = {
 
 const { t } = useI18n();
 const dayjs = useDayJs();
-
-const capitalize = (s: string | undefined | null) => {
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1);
-};
 
 const CanceledAbo: React.FC<Props> = ({ serviceData }) => {
   return (

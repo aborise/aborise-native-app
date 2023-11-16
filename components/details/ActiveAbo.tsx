@@ -1,5 +1,6 @@
 import { SizableText, XStack, YStack } from 'tamagui';
 import { FlowResultActive } from '~/automations/playwright/helpers';
+import { capitalize } from '~/automations/playwright/strings';
 import { useDayJs, useI18n } from '~/composables/useI18n';
 import { billingCycle } from '~/shared/translationMapping';
 
@@ -14,7 +15,7 @@ const ActiveAbo: React.FC<Props> = ({ serviceData }) => {
   return (
     <YStack>
       <SizableText>
-        {t('plan')}: {serviceData.membershipPlan ?? 'Basic'}
+        {t('plan')}: {capitalize(serviceData.membershipPlan) ?? 'Basic'}
       </SizableText>
       <SizableText>
         EUR {((serviceData.nextPaymentPrice ?? 0) / 100).toFixed(2)} /{' '}

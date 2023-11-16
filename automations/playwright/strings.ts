@@ -96,3 +96,8 @@ export const timeZoneToUtc = (dateString: string, timeZone: string) => {
 
   return new Date(isoDate);
 };
+
+export const capitalize = (s: string | undefined | null) => {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+};

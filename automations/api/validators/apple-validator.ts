@@ -1,0 +1,85 @@
+import { z } from 'zod';
+
+// https://buy.tv.apple.com/commerce/web/subscription?subscriptionType=tv
+export const appleSubscriptionSchema = z.object({
+  subscriptions: z.array(
+    z.object({
+      serviceType: z.string(),
+      dayBefore: z.string(),
+      expirationTimestamp: z.number(),
+      type: z.string(),
+      appAdamId: z.number(),
+      renewalOptions: z.array(
+        z.object({
+          buyParams: z.object({
+            offerName: z.string(),
+            quantity: z.string(),
+            price: z.string(),
+            pg: z.string(),
+            appExtVrsId: z.string(),
+            buySubscription: z.string(),
+            salableAdamId: z.string(),
+            pricingParameters: z.string(),
+            bid: z.string(),
+            subscriptionId: z.string(),
+            appAdamId: z.string(),
+            productType: z.string(),
+          }),
+          period: z.string(),
+          isFamilyPlan: z.boolean(),
+          priceForBuy: z.string(),
+          price: z.string(),
+          displayName: z.string(),
+          isSalableSelected: z.boolean(),
+          rank: z.number(),
+          adamId: z.string(),
+        }),
+      ),
+      familyName: z.string(),
+      nextPlan: z.object({
+        agreedToPrice: z.string(),
+        period: z.string(),
+        isFamilyPlan: z.boolean(),
+        displayName: z.string(),
+        salableAdamId: z.string(),
+      }),
+      isBundlable: z.boolean(),
+      isDiscontinued: z.boolean(),
+      latestPlan: z.object({
+        period: z.string(),
+        isFamilyPlan: z.boolean(),
+        displayName: z.string(),
+        salableAdamId: z.string(),
+        paidPrice: z.string(),
+      }),
+      expirationDate: z.string(),
+      isInFreeTrialPeriod: z.boolean(),
+      isAutoRenewEnabled: z.boolean(),
+      bundleId: z.string(),
+      currentPrice: z.string(),
+      coverArt: z.object({
+        backgroundColor: z.string(),
+        isTemplateUrl: z.boolean(),
+        width: z.number(),
+        url: z.string(),
+        height: z.number(),
+      }),
+      familyId: z.number(),
+      contentProviderName: z.string(),
+      showFamilyName: z.boolean(),
+      appHasMultipleSubscriptionFamily: z.boolean(),
+      subType: z.string(),
+      subscriptionId: z.string(),
+      publicationName: z.string(),
+      status: z.string(),
+    }),
+  ),
+  userInfo: z.object({
+    isValidStudent: z.boolean(),
+    isInFamily: z.boolean(),
+    shouldShowSharingMasterToggle: z.boolean(),
+  }),
+  status: z.number(),
+});
+
+export type AppleSubscription = z.infer<typeof appleSubscriptionSchema>;

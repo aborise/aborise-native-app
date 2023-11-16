@@ -27,6 +27,7 @@ const grantUrl = 'https://disney.api.edge.bamgrid.com/accounts/grant';
 const graphqlDeviceEndpoint = 'https://disney.api.edge.bamgrid.com/graph/v1/device/graphql';
 
 // https://bam-sdk-configs.bamgrid.com/bam-sdk/v5.0/disney-svod-3d9324fc/browser/v25.0/windows/chrome/prod.json
+// https://bam-sdk-configs.bamgrid.com/bam-sdk/v5.0/disney-svod-3d9324fc/browser/v27.0/windows/chrome/prod.json
 
 type ApiArgs = {
   email: string;
@@ -81,6 +82,23 @@ const clientKeyRegex = /window.server_path = ({.*});/;
 //   });
 // };
 
+type Subscription = {
+  id: string; // of form "urn:dss:disney:orders:e72544f0-aeae-470d-862e-701a33580430_disney_plus_monthly_de_web_2021_web_04d835d"
+  product: {
+    id: string; // of form "1000000001354"
+    sku: string;
+  };
+  term: {
+    purchaseDate: string;
+    startDate: string;
+    expiryDate: string;
+    nextRenewalDate: string;
+    pausedDate: string;
+    churnedDate: string;
+    isFreeTrial: boolean;
+  };
+};
+
 export type DisneySubscriptionDetails = {
   giftCardInfo: null;
   scheduledInvoice: EdInvoice;
@@ -90,6 +108,7 @@ export type DisneySubscriptionDetails = {
   hasScheduledInvoice: boolean;
   guid: string;
   productId: string;
+  subscription?: Subscription;
 };
 
 export type EdInvoice = {
@@ -177,23 +196,6 @@ export class DisneyAPI {
   }
 
   getSubscriptionDetails() {
-    type Subscription = {
-      id: string; // of form "urn:dss:disney:orders:e72544f0-aeae-470d-862e-701a33580430_disney_plus_monthly_de_web_2021_web_04d835d"
-      product: {
-        id: string; // of form "1000000001354"
-        sku: string;
-      };
-      term: {
-        purchaseDate: string;
-        startDate: string;
-        expiryDate: string;
-        nextRenewalDate: string;
-        pausedDate: string;
-        churnedDate: string;
-        isFreeTrial: boolean;
-      };
-    };
-
     type Response = {
       data: {
         me: {
@@ -482,7 +484,6 @@ export class DisneyAPI {
   }
 
   public _getAuthTokenTruApi() {
-    // console functionality...
     return this._clientApiKey()
       .andThen((clientApiKey) => {
         // console.log("clientApiKey", clientApiKey);
@@ -653,6 +654,30 @@ const wait = (seconds: number) => {
   return <T>(res: T) => new Promise<T>((resolve) => setTimeout(() => resolve(res), seconds * 1000));
 };
 
+const mapSubscriptionDetails = (details: DisneySubscriptionDetails): FlowResult => {
+  if (!details.scheduledInvoice) {
+    return {
+      membershipStatus: 'canceled',
+      expiresAt: details.latestTransactedInvoice.actualExecutionDate
+        ? dayjs(details.latestTransactedInvoice.actualExecutionDate).add(1, 'month').toISOString()
+        : null,
+      billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
+      membershipPlan: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
+      nextPaymentPrice: details.latestTransactedInvoice.totalAmount * 100,
+      lastSyncedAt: new Date().toISOString(),
+    };
+  } else {
+    return {
+      membershipStatus: 'active',
+      nextPaymentDate: details.scheduledInvoice.originalExpectedExecutionDate,
+      billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
+      membershipPlan: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
+      nextPaymentPrice: Math.floor(details.scheduledInvoice.totalAmount * 100),
+      lastSyncedAt: new Date().toISOString(),
+    };
+  }
+};
+
 export const connect = api(({ item, auth, client }) => {
   const storage = useLargeUnsafeStorage();
   const getApiAuth = () => storage.get<TokenData>('services/disney/api/');
@@ -666,19 +691,7 @@ export const connect = api(({ item, auth, client }) => {
   return api
     .getSubscriptionDetails()
     .andThen((subscription) => api.getSubscriptionDetailsById(subscription.id))
-    .map((details): FlowResult => {
-      console.log(details.latestTransactedInvoice);
-      return {
-        membershipStatus: 'canceled',
-        expiresAt: details.latestTransactedInvoice.actualExecutionDate
-          ? dayjs(details.latestTransactedInvoice.actualExecutionDate).add(1, 'month').toISOString()
-          : null,
-        billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
-        membershipPlan: null,
-        nextPaymentPrice: details.latestTransactedInvoice.totalAmount * 100,
-        lastSyncedAt: new Date().toISOString(),
-      };
-    })
+    .map(mapSubscriptionDetails)
     .map((res) => ({ data: res }));
 });
 
@@ -692,24 +705,16 @@ export const cancel = api(({ item, auth, client }) => {
     client,
   );
 
-  return api
-    .cancelSub2()
-    .andThen((res) => ensureSuccess(res, 'Could not cancel subscription'))
-    .map(wait(2))
-    .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
-    .map((details): FlowResult => {
-      return {
-        membershipStatus: 'canceled',
-        expiresAt: details.latestTransactedInvoice.actualExecutionDate
-          ? dayjs(details.latestTransactedInvoice.actualExecutionDate).add(1, 'month').toISOString()
-          : null,
-        lastSyncedAt: new Date().toISOString(),
-        billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
-        membershipPlan: null,
-        nextPaymentPrice: details.latestTransactedInvoice.totalAmount * 100,
-      };
-    })
-    .map((res) => ({ data: res }));
+  return (
+    api
+      .cancelSub2()
+      .andThen((res) => ensureSuccess(res, 'Could not cancel subscription'))
+      .map(wait(3))
+      .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
+      // .logData()
+      .map(mapSubscriptionDetails)
+      .map((res) => ({ data: res }))
+  );
 });
 
 export const resume = api(({ item, auth, client }) => {
@@ -722,22 +727,14 @@ export const resume = api(({ item, auth, client }) => {
     client,
   );
 
-  return api
-    .restartSub()
-    .andThen((res) => ensureSuccess(res, 'Could not resume subscription'))
-    .map(wait(2))
-    .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
-    .map((res): FlowResult => {
-      return {
-        membershipStatus: 'active',
-        billingCycle: res.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
-        membershipPlan: res.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
-        nextPaymentDate: res.scheduledInvoice.expectedExecutionDate
-          ? new Date(res.scheduledInvoice.expectedExecutionDate).toISOString()
-          : null,
-        nextPaymentPrice: res.scheduledInvoice.totalAmount * 100,
-        lastSyncedAt: new Date().toISOString(),
-      };
-    })
-    .map((res) => ({ data: res }));
+  return (
+    api
+      .restartSub()
+      .andThen((res) => ensureSuccess(res, 'Could not resume subscription'))
+      .map(wait(3))
+      .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
+      // .logData()
+      .map(mapSubscriptionDetails)
+      .map((res) => ({ data: res }))
+  );
 });
