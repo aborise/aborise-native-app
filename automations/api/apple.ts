@@ -36,6 +36,7 @@ export const connect = api(({ client, item }) => {
             errorMessage: err.message,
           } satisfies ApiError;
         })
+        .logData()
         .map(({ data }) => {
           if (data.subscriptions.length === 0) {
             return {

@@ -22,7 +22,7 @@ export type FlowReturn = {
   cookies?: Cookie[];
   data?: FlowResult;
   debug?: Record<string, any>;
-  token?: string;
+  token?: any;
 };
 
 export type RequestTypeAsk = { status: 'ask'; key: string; id: string };

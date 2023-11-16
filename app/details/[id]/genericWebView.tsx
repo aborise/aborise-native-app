@@ -106,6 +106,8 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
       .join('\n');
   }, [auth]);
 
+  // console.log('Other code string', otherCodeString);
+
   const handleWebViewMessage = async (event: { nativeEvent: { data: string } }) => {
     const response = JSON.parse(event.nativeEvent.data) as Response;
 
@@ -115,25 +117,28 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
 
         // For debugging purposes we can disable the sanity check to see what happens
         if (process.env.EXPO_PUBLIC_WEBVIEW_NO_SANITY_CHECK !== 'true') {
-          return router.back();
+          // return router.back();
         }
       }
     }
 
     if (response.type === 'condition') {
+      console.log('Condition check');
       if (!response.data) {
         // Condition is not met yet. Do nothing
         return;
       }
 
       // Condition is met. Extract data
+      console.log('Injecting data extraction');
       return webviewRef!.injectJavaScript(dataExtractor());
     }
 
     if (response.type === 'extract') {
+      console.log('Extracting data');
       Promise.resolve(onSuccess(await dataConverter(response.data), await CookieManager.get(url, true))).then(() => {
         Toast.show(t('successfully-connected'), { duration: Toast.durations.LONG });
-        router.push('/');
+        // router.push('/');
       });
     }
   };
@@ -142,6 +147,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
 
   const checkNavigationState = (navState: WebViewNavigation) => {
     // console.log('Clearing timeout');
+    console.log('Checking navigation state');
     // console.log(navState);
     clearTimeout(timeout);
 
@@ -152,9 +158,10 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     if (navState.loading) {
       // sometimes the webview doesnt finish loading
       // in that case we have to fallback and try if our condition is already met
-      // console.log('Setting timeout');
+      console.log('Setting timeout');
       timeout = setTimeout(() => {
         if (targetCondition) {
+          console.log('Timeout reached. Injecting condition check');
           return webviewRef!.injectJavaScript(targetCondition());
         }
       }, 3000);
@@ -162,7 +169,15 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     }
 
     if (targetCondition) {
-      return webviewRef!.injectJavaScript(targetCondition());
+      console.log('Injecting condition check');
+      webviewRef!.injectJavaScript(targetCondition());
+    }
+
+    if (otherCodeString) {
+      console.log('Injecting other code');
+      setTimeout(() => {
+        webviewRef!.injectJavaScript(otherCodeString);
+      }, 1000);
     }
   };
 
@@ -171,10 +186,6 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
       setSanityCheckDone(true);
       setLoading(false);
       webviewRef!.injectJavaScript(sanityCheck());
-    }
-
-    if (otherCodeString) {
-      webviewRef!.injectJavaScript(otherCodeString);
     }
   };
 

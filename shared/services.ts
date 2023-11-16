@@ -252,3 +252,348 @@ const _apple = {
 type Apple = typeof _apple;
 
 export const apple = _apple as DeepWriteable<Apple> satisfies Service;
+
+// const _dazn = {
+//   id: 'dazn',
+//   title: 'DAZN',
+//   appleId: '1129523589',
+//   description: 'Watch sports',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: [],
+//       webView: true,
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//       webView: true,
+//     },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled', 'inactive'],
+//       webView: true,
+//     },
+//   ],
+// } as const;
+
+// type Dazn = typeof _dazn;
+
+// export const dazn = _dazn as DeepWriteable<Dazn> satisfies Service;
+
+// const _rtl = {
+//   id: 'rtl',
+//   title: 'RTL+',
+//   appleId: '1057991212',
+//   description: 'Watch TV',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: [],
+//       webView: true,
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//       webView: true,
+//     },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled', 'inactive'],
+//       webView: true,
+//     },
+//   ],
+// } as const;
+
+// type Rtl = typeof _rtl;
+
+// export const rtl = _rtl as DeepWriteable<Rtl> satisfies Service;
+
+// const _hbo = {
+//   id: 'hbo',
+//   title: 'HBO',
+//   appleId: '971265422',
+//   description: 'Watch movies and series',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: [],
+//       webView: true,
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//       webView: true,
+//     },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled', 'inactive'],
+//       webView: true,
+//     },
+//   ],
+// } as const;
+
+// type Hbo = typeof _hbo;
+
+// export const hbo = _hbo as DeepWriteable<Hbo> satisfies Service;
+
+// const _sky = {
+//   id: 'sky',
+//   title: 'Sky',
+//   appleId: '691785964',
+//   description: 'Watch movies and series',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: [],
+//       webView: true,
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//       webView: true,
+//     },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled', 'inactive'],
+//       webView: true,
+//     },
+//   ],
+// } as const;
+
+// type Sky = typeof _sky;
+
+// export const sky = _sky as DeepWriteable<Sky> satisfies Service;
+
+// const _tvnow = {
+//   id: 'tvnow',
+//   title: 'TVNOW',
+//   appleId: '1057991212',
+//   description: 'Watch TV',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: [],
+//       webView: true,
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//       webView: true,
+//     },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled', 'inactive'],
+//       webView: true,
+//     },
+//   ],
+// } as const;
+
+// type Tvnow = typeof _tvnow;
+
+// export const tvnow = _tvnow as DeepWriteable<Tvnow> satisfies Service;
+
+const _joyn = {
+  id: 'joyn',
+  title: 'Joyn',
+  appleId: '826510222',
+  description: 'Watch TV',
+  auth: ['email', 'password'],
+  optionalDataKeys: [],
+  optional: [],
+  actions: [
+    {
+      name: 'connect',
+      type: 'manual',
+      states: [],
+      webView: true,
+    },
+    // {
+    //   name: 'cancel',
+    //   type: 'manual',
+    //   states: ['active'],
+    //   webView: true,
+    // },
+    // {
+    //   name: 'resume',
+    //   type: 'manual',
+    //   states: ['canceled', 'inactive'],
+    //   webView: true,
+    // },
+  ],
+} as const;
+
+type Joyn = typeof _joyn;
+
+export const joyn = _joyn as DeepWriteable<Joyn> satisfies Service;
+
+// const _tvplus = {
+//   id: 'tvplus',
+//   title: 'TV+',
+//   appleId: '1057991212',
+//   description: 'Watch TV',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: [],
+//       webView: true,
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//       webView: true,
+//     },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled', 'inactive'],
+//       webView: true,
+//     },
+//   ],
+// } as const;
+
+// type Tvplus = typeof _tvplus;
+
+// export const tvplus = _tvplus as DeepWriteable<Tvplus> satisfies Service;
+
+// const _freenet = {
+//   id: 'freenet',
+//   title: 'Freenet',
+//   appleId: '1057991212',
+//   description: 'Watch TV',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: [],
+//       webView: true,
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//       webView: true,
+//     },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled', 'inactive'],
+//       webView: true,
+//     },
+//   ],
+// } as const;
+
+// type Freenet = typeof _freenet;
+
+// export const freenet = _freenet as DeepWriteable<Freenet> satisfies Service;
+
+// const _maxdome = {
+//   id: 'maxdome',
+//   title: 'Maxdome',
+//   appleId: '1057991212',
+//   description: 'Watch TV',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: ['canceled'],
+//       webView: true,
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//     },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled', 'inactive'],
+//     },
+//   ],
+// } as const;
+
+// type Maxdome = typeof _maxdome;
+
+// export const maxdome = _maxdome as DeepWriteable<Maxdome> satisfies Service;
+
+// const _mubi = {
+//   id: 'mubi',
+//   title: 'Mubi',
+//   appleId: '1057991212',
+//   description: 'Watch TV',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [
+//     {
+//       key: 'creditcard',
+//       value: {
+//         number: '1234 1234 1234 1234',
+//         expiration: '12/24',
+//         cvc: '123',
+//       },
+//     },
+//   ],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: ['canceled'],
+//       webView: true,
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//     },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled', 'inactive'],
+//     },
+//   ],
+// } as const;
+
+// type Mubi = typeof _mubi;
+
+// export const mubi = _mubi as DeepWriteable

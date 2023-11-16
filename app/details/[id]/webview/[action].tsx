@@ -1,7 +1,7 @@
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
 import Toast from 'react-native-root-toast';
-import { deviceCookiesToCookies, setCookies } from '~/automations/api/helpers/cookie';
+import { deviceCookiesToCookies, setCookies, setToken } from '~/automations/api/helpers/cookie';
 import { FlowReturn } from '~/automations/playwright/setup/Runner';
 import * as webviews from '~/automations/webview/index';
 import { WebViewConfig } from '~/automations/webview/webview.helpers';
@@ -61,6 +61,10 @@ export const ServiceWebView: React.FC = () => {
       await setCookies(local.id!, cooks);
     } else if (result.val.cookies?.length) {
       await setCookies(local.id!, result.val.cookies);
+    }
+
+    if (result.val.token) {
+      await setToken(local.id!, result.val.token);
     }
 
     await updateServiceData(result.val.data);

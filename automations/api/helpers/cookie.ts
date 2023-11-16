@@ -19,6 +19,11 @@ export const setCookies = (service: keyof AllServices, cookies: Cookie[]) => {
   return storage.set(`services/${service}/cookies`, deduplicateCookies(cookies));
 };
 
+export const setToken = (service: keyof AllServices, token: any) => {
+  const storage: Storage = useLargeUnsafeStorage();
+  return storage.set(`services/${service}/api`, token);
+};
+
 export const mergeCookies = (oldCookies: Cookie[], newCookies: Cookie[]) => {
   const cookies = [...oldCookies];
 

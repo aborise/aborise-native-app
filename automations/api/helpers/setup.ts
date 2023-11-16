@@ -5,7 +5,7 @@ import { Storage, useStorage } from '~/composables/useStorage';
 import type { AsyncResult } from '~/shared/Result';
 import type { BaseQueueItem } from '~/shared/validators/queueItem';
 import { Session, type ApiError } from './client';
-import { setCookies } from './cookie';
+import { setCookies, setToken } from './cookie';
 import { setFlowData } from './data';
 
 // globalThis.process = globalThis.process ?? {};
@@ -56,6 +56,10 @@ export const api = (
         return result.map(async (flowReturn) => {
           if (flowReturn.cookies?.length) {
             await setCookies(item.service, flowReturn.cookies);
+          }
+
+          if (flowReturn.token) {
+            await setToken(item.service, flowReturn.token);
           }
 
           if (flowReturn.data) {
