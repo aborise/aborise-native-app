@@ -287,39 +287,37 @@ export const apple = _apple as DeepWriteable<Apple> satisfies Service;
 
 // export const dazn = _dazn as DeepWriteable<Dazn> satisfies Service;
 
-// const _rtl = {
-//   id: 'rtl',
-//   title: 'RTL+',
-//   appleId: '1057991212',
-//   description: 'Watch TV',
-//   auth: ['email', 'password'],
-//   optionalDataKeys: [],
-//   optional: [],
-//   actions: [
-//     {
-//       name: 'connect',
-//       type: 'manual',
-//       states: [],
-//       webView: true,
-//     },
-//     {
-//       name: 'cancel',
-//       type: 'manual',
-//       states: ['active'],
-//       webView: true,
-//     },
-//     {
-//       name: 'resume',
-//       type: 'manual',
-//       states: ['canceled', 'inactive'],
-//       webView: true,
-//     },
-//   ],
-// } as const;
+const _rtl = {
+  id: 'rtl',
+  title: 'RTL+',
+  appleId: '1057991212',
+  description: 'Watch TV',
+  auth: ['email', 'password'],
+  optionalDataKeys: [],
+  optional: [],
+  actions: [
+    {
+      name: 'connect',
+      type: 'manual',
+      states: [],
+      webView: true,
+    },
+    {
+      name: 'cancel',
+      type: 'manual',
+      states: ['active'],
+    },
+    {
+      name: 'resume',
+      type: 'manual',
+      states: ['canceled'],
+    },
+  ],
+} as const;
 
-// type Rtl = typeof _rtl;
+type Rtl = typeof _rtl;
 
-// export const rtl = _rtl as DeepWriteable<Rtl> satisfies Service;
+export const rtl = _rtl as DeepWriteable<Rtl> satisfies Service;
 
 // const _hbo = {
 //   id: 'hbo',

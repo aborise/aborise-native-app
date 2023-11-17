@@ -1,7 +1,7 @@
 import { SizableText, XStack, YStack } from 'tamagui';
 import { FlowResultActive } from '~/automations/playwright/helpers';
 import { capitalize } from '~/automations/playwright/strings';
-import { useDayJs, useI18n } from '~/composables/useI18n';
+import { toDisplayDate, useDayJs, useI18n } from '~/composables/useI18n';
 import { billingCycle } from '~/shared/translationMapping';
 
 type Props = {
@@ -9,7 +9,6 @@ type Props = {
 };
 
 const { t } = useI18n();
-const dayjs = useDayJs();
 
 const ActiveAbo: React.FC<Props> = ({ serviceData }) => {
   return (
@@ -23,7 +22,7 @@ const ActiveAbo: React.FC<Props> = ({ serviceData }) => {
       </SizableText>
       <XStack>
         <SizableText>{t('next-payment')}: </SizableText>
-        <SizableText>{dayjs(serviceData.nextPaymentDate ?? 0).format('DD.MM.YYYY')}</SizableText>
+        <SizableText>{toDisplayDate(serviceData.nextPaymentDate)}</SizableText>
       </XStack>
     </YStack>
   );

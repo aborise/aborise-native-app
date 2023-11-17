@@ -6,6 +6,7 @@ import paramount from '../assets/icons/paramount.png';
 import spotify from '../assets/icons/spotify.png';
 import apple from '../assets/icons/apple.png';
 import joyn from '../assets/icons/joyn.png';
+import rtl from '../assets/icons/rtl.png';
 import { objectKeys } from './typeHelpers';
 
 const logos = {
@@ -16,6 +17,7 @@ const logos = {
   spotify,
   apple,
   joyn,
+  rtl,
 };
 
 let cache: { [key: string]: ImageResolvedAssetSource } = {};

@@ -5,3 +5,4 @@ export * as spotify from './spotify';
 export * as paramount from './paramount';
 export * as apple from './apple';
 export * as joyn from './joyn';
+export * as rtl from './rtl';

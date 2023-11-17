@@ -9,7 +9,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { Button, ScrollView, SizableText, Stack, XStack, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import AboDetails from '~/components/details/AboDetails';
-import { useDayJs, useI18n } from '~/composables/useI18n';
+import { toDisplayDate, useDayJs, useI18n } from '~/composables/useI18n';
 import { useServiceLogin } from '~/composables/useServiceLogin';
 import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
 import { useServicesQuery } from '~/queries/useServicesQuery';
@@ -70,10 +70,7 @@ const Details: React.FC = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const height = useHeaderHeight();
 
-  const lastSyncDate = useMemo(
-    () => dayjs(serviceData?.lastSyncedAt ?? new Date()).format('DD.MM.YYYY'),
-    [serviceData?.lastSyncedAt],
-  );
+  const lastSyncDate = useMemo(() => toDisplayDate(serviceData?.lastSyncedAt), [serviceData?.lastSyncedAt]);
 
   const actions = useMemo(
     () =>

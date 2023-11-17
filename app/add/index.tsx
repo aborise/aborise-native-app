@@ -2,6 +2,7 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import { YStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
 import { Service, services } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
@@ -35,42 +36,38 @@ const Add = () => {
   }, [search]);
 
   return (
-    <>
-      <View className="flex flex-col">
-        <View className="w-full flex flex-row p-4  bg-white relative z-10" style={{ elevation: 10 }}>
-          <TextInput
-            value={search}
-            onChangeText={(value) => {
-              setSearch(value);
-            }}
-            placeholder={t('search-for-a-service')}
-            returnKeyType="done"
-            autoCapitalize="none"
-            autoCorrect={false}
-            className="grow"
-            // autoFocus
-          />
-        </View>
-
-        <View className="flex grow flex-row justify-center">
-          {selectedService.length === 0 && (
-            <View className="flex flex-col grow items-center justify-center">
-              <Image source={require('../../assets/no-results.png')} className="w-full aspect-square" />
-            </View>
-          )}
-
-          {selectedService.length > 0 && (
-            <FlatList
-              data={selectedService}
-              numColumns={2}
-              renderItem={({ item }) => <Item item={item} />}
-              keyExtractor={(item) => item.id}
-              style={{ flex: 1, paddingHorizontal: 4, paddingTop: 2 }}
-            />
-          )}
-        </View>
+    <YStack fullscreen>
+      <View className="w-full flex flex-row p-4  bg-white relative z-10" style={{ elevation: 10 }}>
+        <TextInput
+          value={search}
+          onChangeText={(value) => {
+            setSearch(value);
+          }}
+          placeholder={t('search-for-a-service')}
+          returnKeyType="done"
+          autoCapitalize="none"
+          autoCorrect={false}
+          className="grow"
+          // autoFocus
+        />
       </View>
-    </>
+
+      {selectedService.length === 0 && (
+        <View className="flex flex-col grow items-center justify-center">
+          <Image source={require('../../assets/no-results.png')} className="w-full aspect-square" />
+        </View>
+      )}
+
+      {selectedService.length > 0 && (
+        <FlatList
+          data={selectedService}
+          numColumns={2}
+          renderItem={({ item }) => <Item item={item} />}
+          keyExtractor={(item) => item.id}
+          style={{ flex: 1, paddingHorizontal: 4, paddingTop: 2 }}
+        />
+      )}
+    </YStack>
   );
 };
 

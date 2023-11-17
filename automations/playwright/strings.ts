@@ -89,10 +89,17 @@ export const timeZoneToUtc = (dateString: string, timeZone: string) => {
     timeZone: 'UTC',
   });
 
-  const hoursDiff = (parseInt(utcTime.split(':')[0]) - parseInt(timeZoneTime.split(':')[0]) + 24) % 24;
-  const padded = hoursDiff.toString().padStart(2, '0');
+  const hoursDiff = parseInt(utcTime.split(':')[0]) - parseInt(timeZoneTime.split(':')[0]);
+  const padded = ((hoursDiff + 24) % 24).toString().padStart(2, '0');
 
-  const isoDate = new Date(dateString).toISOString().replace('Z', `-${padded}:00`);
+  let minusDays = 0;
+  if (hoursDiff < 0) {
+    minusDays = 1;
+  }
+
+  const isoDate =
+    new Date(new Date(dateString).toISOString().replace('Z', `-${padded}:00`)).getTime() -
+    minusDays * 24 * 60 * 60 * 1000;
 
   return new Date(isoDate);
 };

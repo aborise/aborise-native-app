@@ -7,46 +7,44 @@ import { getUserId } from '~/shared/ensureDataLoaded';
 import { Response } from '~/app/details/[id]/genericWebView';
 import { getCookies } from '../api/helpers/cookie';
 
-const LOGIN_URL = 'https://www.joyn.de/mein-account';
+const LOGIN_URL = 'https://my.plus.rtl.de/account';
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`
-    const data = !!JSON.parse(localStorage.getItem('meQuery')).account;
+    const data = location.host === 'my.plus.rtl.de' && location.pathname === '/account';
       window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data: ${negative ? '!data' : 'data'} }));
     `;
 };
 
-type JoinExtractor = {
+type RTLExtractor = {
   access_token: string;
+  expires_in: number;
+  id_token: string;
+  refresh_expires_in: number;
   refresh_token: string;
-  client_id: string;
-  config: JoynSubConfig;
-  subs: JoynSubscriptions;
+  client_id: 'rtlplus-web';
 };
 
-const dataConverter = (data: JoinExtractor): Result<FlowReturn, { data: any }> => {
-  const { access_token, refresh_token, client_id, config, subs } = data;
+const dataConverter = (data: RTLExtractor): Result<FlowReturn, { data: any }> => {
+  const { access_token, refresh_token, client_id, expires_in, refresh_expires_in } = data;
 
   return Ok({
     token: {
       access_token,
       refresh_token,
       client_id,
-      expires: Date.now() + 3600000,
+      expires: Date.now() + expires_in * 1000,
+      refresh_expires: Date.now() + refresh_expires_in * 1000,
     },
   });
 };
 
 const dataExtractor = () => {
   return javascript`
-    const tokenConfig = JSON.parse(localStorage.getItem('token'));
-    const { access_token, refresh_token } = tokenConfig;
-    const client_id = JSON.parse(localStorage.getItem('ajs_anonymous_id'));
+    const { access_token, expires_in, id_token, refresh_expires_in, refresh_token } = JSON.parse(localStorage["0-rtlplus-ffc"]).authnResult 
+    const client_id = 'rtlplus-web';
 
-    const config = JSON.parse(localStorage.meQuery).subscriptionsData.config
-    const subs = JSON.parse(localStorage.meQuery).productSubscriptions
-
-    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { access_token, refresh_token, client_id, config, subs } }));
+    window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'extract', data: { access_token, expires_in, id_token, refresh_expires_in, refresh_token, client_id } }));
   `;
 };
 
@@ -54,7 +52,7 @@ const fillInEmailAndPw = () => {
   return (data: Record<string, unknown> = {}) => {
     if (!data.email || !data.password) return undefined;
     return javascript`
-      if (document.location.host !== 'signin.7pass.de') return
+      if (document.location.host !== 'auth.rtl.de') return
       
       const mouseClickEvents = ['mousedown', 'click', 'mouseup'];
       function simulateMouseClick(element){
@@ -72,7 +70,7 @@ const fillInEmailAndPw = () => {
 
       function fill() {
       
-        const email = document.querySelector('input[name="email"]');
+        const email = document.querySelector('input[name="username"]');
         const password = document.querySelector('input[name="password"]');
         const button = document.querySelector('button[type="submit"]');
 
@@ -118,7 +116,7 @@ export const connect: WebViewConfig = {
   otherCode: [fillInEmailAndPw()],
   getAuth: () => {
     const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
-    return storage.get<{ email: string; password: string }>(`services/joyn/login`);
+    return storage.get<{ email: string; password: string }>(`services/rtl/login`);
   },
   getCookies: () => [], // getCookies('joyn'),
 };

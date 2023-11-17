@@ -1,4 +1,4 @@
-import { getLocales } from 'expo-localization';
+import { getCalendars, getLocales } from 'expo-localization';
 import { I18n } from 'i18n-js';
 import de from '~/locales/de.json';
 import en from '~/locales/en.json';
@@ -30,4 +30,17 @@ export const useI18n = () => {
 
 export const useDayJs = () => {
   return dayjs;
+};
+
+export let timeZone = getCalendars()[0].timeZone;
+export let locale = getLocales()[0].languageCode;
+
+export const toDisplayDate = (date: Date | string | undefined | null) => {
+  if (!date) return '';
+  return new Date(date).toLocaleDateString(locale, { timeZone: timeZone as string });
+};
+
+export const toDisplayTime = (date: Date | string | undefined | null) => {
+  if (!date) return '';
+  return new Date(date).toLocaleTimeString(locale, { timeZone: timeZone as string });
 };

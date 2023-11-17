@@ -588,4 +588,43 @@ const object7 = [
   },
 ];
 
-console.log(generateZodValidator(object7));
+// rtl
+
+const object8 = {
+  startDate: '2023-11-17',
+  productName: 'Free',
+  productSubscriptions: [
+    {
+      productId: 'FR001',
+      productName: 'Free',
+      contractType: 'INTERNAL',
+      paymentBearerType: null,
+      startDate: '2023-11-17',
+      nextBillingDate: '2024-11-17',
+      cancellationDate: null,
+    },
+  ],
+  nextBillingDate: '2024-11-17',
+  nextBillingPreviewAmount: { amountPayable: 0.0, totalGross: 0.0, billingDate: null },
+  statusKey: 'subscription.status.active',
+  customerStatusKey: 'customer.status.active',
+  userCanTransition: true,
+  userCanCancelSubscription: false,
+  userCanRevertCancellation: false,
+  userCanRedeemCouponCode: false,
+  userCanDeletePaymentMethod: false,
+  userIsInTrialPhase: false,
+  userCanRedeemPrepaidCard: true,
+  userCanPayWithDebit: true,
+  userCanInheritPaymentBearer: false,
+  userCanBeRetained: false,
+  userCanChangeToDebit: false,
+  cancellationEffectivenessDate: '2024-11-17',
+  billingPeriod: { unit: 'YEAR', quantity: 1 },
+  hasDiscount: false,
+  writtenOff: false,
+  isNewCustomer: true,
+  eligibleForCreditTypes: [],
+};
+
+console.log(generateZodValidator(object8));
