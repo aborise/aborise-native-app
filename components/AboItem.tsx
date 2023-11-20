@@ -60,7 +60,11 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
               {t('expires')} {expiresDate}
             </SizableText>
           )}
-          {data.membershipStatus === 'inactive' && <SizableText>{t('inactive')}</SizableText>}
+          {data.membershipStatus === 'inactive' && (
+            <SizableText theme="alt2" size="$2">
+              {t('inactive')}
+            </SizableText>
+          )}
         </YStack>
 
         {(data.membershipStatus === 'active' || data.membershipStatus === 'canceled') && !!data.nextPaymentPrice && (
