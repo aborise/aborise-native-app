@@ -253,39 +253,38 @@ type Apple = typeof _apple;
 
 export const apple = _apple as DeepWriteable<Apple> satisfies Service;
 
-// const _dazn = {
-//   id: 'dazn',
-//   title: 'DAZN',
-//   appleId: '1129523589',
-//   description: 'Watch sports',
-//   auth: ['email', 'password'],
-//   optionalDataKeys: [],
-//   optional: [],
-//   actions: [
-//     {
-//       name: 'connect',
-//       type: 'manual',
-//       states: [],
-//       webView: true,
-//     },
-//     {
-//       name: 'cancel',
-//       type: 'manual',
-//       states: ['active'],
-//       webView: true,
-//     },
-//     {
-//       name: 'resume',
-//       type: 'manual',
-//       states: ['canceled', 'inactive'],
-//       webView: true,
-//     },
-//   ],
-// } as const;
+const _dazn = {
+  id: 'dazn',
+  title: 'DAZN',
+  appleId: '1129523589',
+  description: 'Watch sports',
+  auth: ['email', 'password'],
+  optionalDataKeys: [],
+  optional: [],
+  actions: [
+    {
+      name: 'connect',
+      type: 'manual',
+      states: [],
+    },
+    // {
+    //   name: 'cancel',
+    //   type: 'manual',
+    //   states: ['active'],
+    //   webView: true,
+    // },
+    // {
+    //   name: 'resume',
+    //   type: 'manual',
+    //   states: ['canceled', 'inactive'],
+    //   webView: true,
+    // },
+  ],
+} as const;
 
-// type Dazn = typeof _dazn;
+type Dazn = typeof _dazn;
 
-// export const dazn = _dazn as DeepWriteable<Dazn> satisfies Service;
+export const dazn = _dazn as DeepWriteable<Dazn> satisfies Service;
 
 const _rtl = {
   id: 'rtl',
