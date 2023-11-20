@@ -6,6 +6,7 @@
     "mhutchie.git-graph",
     "esbenp.prettier-vscode",
     "yoavbls.pretty-ts-errors",
-    "bradlc.vscode-tailwindcss"
+    "bradlc.vscode-tailwindcss",
+    "zjcompt.es6-string-javascript"
   ]
 }
