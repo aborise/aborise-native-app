@@ -66,7 +66,7 @@ const App = () => {
           ),
         }}
       />
-      <YStack padding="$3" space fullscreen>
+      <YStack padding="$3" paddingBottom="$0" space fullscreen>
         <MonthlyExpenses amount={price} />
 
         {isLoading && <ActivityIndicator />}

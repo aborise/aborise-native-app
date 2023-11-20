@@ -18,7 +18,7 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-let resolve: (value: ParseResult) => void;
+let resolve: (value: ParseResult<any>) => void;
 
 export default function Layout() {
   const { t } = useI18n();
@@ -45,7 +45,7 @@ export default function Layout() {
       setJS(js);
       setShowWebView(true);
 
-      return new Promise<ParseResult>((res) => {
+      return new Promise<ParseResult<any>>((res) => {
         resolve = res;
       });
     });
@@ -115,8 +115,6 @@ export default function Layout() {
             flex: 0,
             width: 0,
             height: 0,
-            // @ts-expect-error
-            ...StyleSheet.absoluteFill,
             zIndex: -1,
             position: 'absolute',
           }}
