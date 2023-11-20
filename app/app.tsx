@@ -72,7 +72,7 @@ const App = () => {
         {isLoading && <ActivityIndicator />}
 
         {connectedServices && Object.keys(connectedServices).length ? (
-          <YStack space="$2">
+          <YStack space="$2" flex={1}>
             <SizableText size="$6">{t('subscriptions')}</SizableText>
             <FlatList
               contentContainerStyle={{ gap: 8 }}
