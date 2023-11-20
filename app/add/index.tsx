@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
+import { KeyboardAvoidingView } from 'react-native';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 import { YStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
@@ -36,7 +37,7 @@ const Add = () => {
   }, [search]);
 
   return (
-    <YStack fullscreen>
+    <KeyboardAvoidingView className="h-full">
       <View className="w-full flex flex-row p-4  bg-white relative z-10" style={{ elevation: 10 }}>
         <TextInput
           value={search}
@@ -65,9 +66,10 @@ const Add = () => {
           renderItem={({ item }) => <Item item={item} />}
           keyExtractor={(item) => item.id}
           style={{ flex: 1, paddingHorizontal: 4, paddingTop: 2 }}
+          ListFooterComponent={<View style={{ marginVertical: 50 }} />}
         />
       )}
-    </YStack>
+    </KeyboardAvoidingView>
   );
 };
 
