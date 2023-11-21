@@ -1,7 +1,7 @@
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { useServicesQuery } from './useServicesQuery';
 import { useStorage } from '~/composables/useStorage';
-import { FlowReturn } from '~/automations/playwright/setup/Runner';
+import { ActionReturn } from '~/automations/helpers/helpers';
 import { AllServices } from '~/shared/allServices';
 import { useEffect } from 'react';
 
@@ -18,13 +18,13 @@ export const useServicesDataQuery = () => {
       const entries = await Promise.all(
         serviceIds.map(async (serviceId) => [
           serviceId,
-          await storage.get<FlowReturn['data']>(`services/${serviceId}/data`),
+          await storage.get<ActionReturn['data']>(`services/${serviceId}/data`),
         ]),
       );
 
       const entriesFiltered = entries.filter(([, val]) => !!val);
       return Object.fromEntries(entriesFiltered) as Partial<{
-        [K in keyof AllServices]: FlowReturn['data'];
+        [K in keyof AllServices]: ActionReturn['data'];
       }>;
     },
     queryKey: ['servicesData', serviceIds],

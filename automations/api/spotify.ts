@@ -6,6 +6,7 @@ import { getCookies, mergeCookies } from './helpers/cookie';
 import { api } from './helpers/setup';
 import { getJsonFromHtmlResponse, stringToDocument } from './helpers/strings';
 import { solveCaptcha } from './helpers/captcha';
+import { getUserId } from '~/shared/ensureDataLoaded';
 
 const doGetCancelPage = (client: Session, cookies: Cookie[]) => {
   return client
@@ -83,20 +84,20 @@ const doResumeConfirm = (
 };
 
 // TODO: test failure case (e.g. wrong crp token)
-export const cancel = api(({ item, client }) => {
-  return getSpotifyCsrfToken(client, item.user)
+export const cancel = api(({ client }) => {
+  return getSpotifyCsrfToken(client, getUserId())
     .andThen(({ data, cookies }) => doCancelConfirm(client, data, cookies))
-    .map((result) => ({ debug: result }));
+    .map((result) => ({}));
 });
 
-export const resume = api(({ item, client }) => {
-  return getSpotifyCsrfToken(client, item.user)
+export const resume = api(({ client }) => {
+  return getSpotifyCsrfToken(client, getUserId())
     .andThen(({ data, cookies }) => doResumeConfirm(client, data, cookies)) // result.data = { success: true }
-    .map((result) => ({ debug: result }));
+    .map((result) => ({}));
 });
 
 // export const connect = api(({ auth, client, item }) => {
-//   return getSpotifyCsrfToken(client, item.user, 'https://accounts.spotify.com/de/login')
+//   return getSpotifyCsrfToken(client, getUserId(), 'https://accounts.spotify.com/de/login')
 //     .andThen({data, cookies} => )
 // })
 

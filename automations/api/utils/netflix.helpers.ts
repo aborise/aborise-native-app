@@ -127,9 +127,9 @@ export const getApiData = async (reactContext: ReactContext | Promise<ReactConte
   return apiData;
 };
 
-export const checkMembershipStatus = (membershipStatus: string): void => {
-  if (membershipStatus !== 'CURRENT_MEMBER') {
-    throw new Error(`User membership status is ${membershipStatus}`);
+export const checkstatus = (status: string): void => {
+  if (status !== 'CURRENT_MEMBER') {
+    throw new Error(`User membership status is ${status}`);
   }
 };
 

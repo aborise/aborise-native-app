@@ -1,7 +1,7 @@
 import { Ok, Result } from '~/shared/Result';
 import { JoynSubConfig, JoynSubscriptions } from './validators/joyn';
 import { WebViewConfig, javascript } from './webview.helpers';
-import { FlowReturn } from '../playwright/setup/Runner';
+import { ActionReturn } from '../helpers/helpers';
 import { useStorage } from '~/composables/useStorage';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { Response } from '~/app/details/[id]/genericWebView';
@@ -25,7 +25,7 @@ type RTLExtractor = {
   client_id: 'rtlplus-web';
 };
 
-const dataConverter = (data: RTLExtractor): Result<FlowReturn, { data: any }> => {
+const dataConverter = (data: RTLExtractor): Result<ActionReturn, { data: any }> => {
   const { access_token, refresh_token, client_id, expires_in, refresh_expires_in } = data;
 
   return Ok({

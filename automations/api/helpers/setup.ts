@@ -1,12 +1,13 @@
-import type { FlowReturn, RequestTypeDone } from '~/automations/playwright/setup/Runner';
 import { addConnectedService } from '~/composables/useServiceData';
 import { getServiceLogin } from '~/composables/useServiceLogin';
 import { Storage, useStorage } from '~/composables/useStorage';
 import type { AsyncResult } from '~/shared/Result';
-import type { BaseQueueItem } from '~/shared/validators/queueItem';
 import { Session, type ApiError } from './client';
 import { setCookies, setToken } from './cookie';
 import { setFlowData } from './data';
+import { ActionReturn, ApiResult } from '~/automations/helpers/helpers';
+import { AllServices } from '~/shared/allServices';
+import { Action } from '~/shared/validators';
 
 // globalThis.process = globalThis.process ?? {};
 
@@ -33,11 +34,10 @@ const sanitizeDebug = (debug: Record<string, unknown> = {}) => {
 };
 
 type ApiCallback = (options: {
-  item: BaseQueueItem;
   auth: Record<string, string>;
   client: Session;
   storage: Storage;
-}) => AsyncResult<Partial<FlowReturn>, ApiError>;
+}) => AsyncResult<ActionReturn, ApiError>;
 
 type ApiOptions = {
   storage?: Storage;
@@ -46,35 +46,33 @@ type ApiOptions = {
 export const api = (
   cb: ApiCallback,
   { storage = useStorage('local') }: ApiOptions = {},
-): ((item: BaseQueueItem) => AsyncResult<Partial<RequestTypeDone>, ApiError>) => {
-  return (item: BaseQueueItem) => {
-    return getServiceLogin(item.service)
+): ((action: Action, service: keyof AllServices) => AsyncResult<ApiResult, ApiError>) => {
+  return (action: Action, service: keyof AllServices) => {
+    return getServiceLogin(service)
       .andThen((login) => {
         const client = new Session();
-        const result = cb({ item, auth: login, client, storage });
+        const result = cb({ auth: login, client, storage });
 
-        return result.map(async (flowReturn) => {
-          if (flowReturn.cookies?.length) {
-            await setCookies(item.service, flowReturn.cookies);
+        return result.map(async (ActionReturn) => {
+          if (ActionReturn.cookies?.length) {
+            await setCookies(service, ActionReturn.cookies);
           }
 
-          if (flowReturn.token) {
-            await setToken(item.service, flowReturn.token);
+          if (ActionReturn.token) {
+            await setToken(service, ActionReturn.token);
           }
 
-          if (flowReturn.data) {
-            await setFlowData(item.service, flowReturn.data);
+          if (ActionReturn.data) {
+            await setFlowData(service, ActionReturn.data);
           }
 
-          if (item.type === 'connect') {
-            await addConnectedService(item.service);
+          if (action === 'connect') {
+            await addConnectedService(service);
           }
 
-          const response: RequestTypeDone = {
-            status: 'done',
-            debug: flowReturn.debug,
+          const response: ApiResult = {
             history: client.toJSON(),
-            data: flowReturn.data,
+            data: ActionReturn.data,
           };
 
           return response;

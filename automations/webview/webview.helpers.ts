@@ -1,7 +1,7 @@
 import { Cookie } from 'playwright-core';
 import { Result } from '~/shared/Result';
 import { Awaitable } from '~/shared/typeHelpers';
-import { FlowReturn } from '../playwright/setup/Runner';
+import { ActionReturn } from '../helpers/helpers';
 
 export type WebViewConfig = {
   url: string;
@@ -10,7 +10,7 @@ export type WebViewConfig = {
   targetCondition?: () => string;
   dataExtractor: () => string;
   getCookies: () => Awaitable<Cookie[]>;
-  dataConverter: (data: any) => Awaitable<Result<FlowReturn, { data: any }>>;
+  dataConverter: (data: any) => Awaitable<Result<ActionReturn, { data: any }>>;
   getAuth?: () => Awaitable<{ email: string; password: string } | null>;
   getHeaders?: () => Awaitable<Record<string, string>>;
   otherCode?: Array<(data: Record<string, unknown>) => string | undefined>;

@@ -8,7 +8,8 @@
       "~/*": ["./*"]
     },
     "baseUrl": ".",
-    "importHelpers": true
+    "importHelpers": true,
+    "experimentalDecorators": true
   },
   "include": ["./reset.d.ts", "./env.d.ts", "./**/*.ts", "./**/*.tsx"],
   "exclude": ["node_modules"]

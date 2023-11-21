@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import { ActivityIndicator, FlatList, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SizableText, Stack, XStack, YStack } from 'tamagui';
-import { FlowResultActive } from '~/automations/playwright/helpers';
+import { ActionResultActive } from '~/automations/helpers/helpers';
 import AboCard from '~/components/AboCard';
 import AboItem from '~/components/AboItem';
 import { AboItemUnconnected } from '~/components/AboItemUnconnected';
@@ -36,9 +36,9 @@ const MonthlyExpenses: React.FC<{ amount: number }> = ({ amount }) => {
   );
 };
 
-const factors: Record<FlowResultActive['billingCycle'], number> = {
+const factors: Record<ActionResultActive['billingCycle'], number> = {
   monthly: 1,
-  yearly: 12,
+  annual: 12,
 };
 
 const App = () => {
@@ -46,8 +46,8 @@ const App = () => {
 
   const price = useMemo(() => {
     return Object.values(connectedServices ?? {}).reduce((acc, curr) => {
-      if (curr.membershipStatus === 'active') {
-        return acc + (curr.nextPaymentPrice ?? 0) / factors[curr.billingCycle];
+      if (curr.status === 'active') {
+        return acc + (curr.planPrice ?? 0) / factors[curr.billingCycle];
       }
       return acc;
     }, 0);

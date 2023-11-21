@@ -76,10 +76,9 @@ const Details: React.FC = () => {
     () =>
       (service?.actions as Action[]).filter(
         (action) =>
-          action.states.includes(serviceData?.membershipStatus as string) ||
-          process.env.EXPO_PUBLIC_SHOW_ALL_ACTIONS === 'true',
+          action.states.includes(serviceData?.status as string) || process.env.EXPO_PUBLIC_SHOW_ALL_ACTIONS === 'true',
       ),
-    [service?.actions, serviceData?.membershipStatus],
+    [service?.actions, serviceData?.status],
   );
 
   const [refreshing, setRefreshing] = useState(false);
@@ -127,12 +126,7 @@ const Details: React.FC = () => {
 
       if (!actionHandler) return;
 
-      const res = await actionHandler({
-        queueId: 'foo',
-        service: serviceId,
-        type: action.name,
-        user: getUserId(),
-      });
+      const res = await actionHandler(serviceId);
 
       await queryClient.invalidateQueries({ queryKey: ['services'] });
       await queryClient.invalidateQueries({ queryKey: ['servicesData'] });

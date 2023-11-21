@@ -6,10 +6,11 @@ import { api } from './helpers/setup';
 import { getJsonFromHtmlResponse } from './helpers/strings';
 import { toFormData } from 'axios';
 import { AccountData } from '../webview/validators/paramount_userData';
-import { timeZoneToUtc } from '../playwright/strings';
-import { FlowReturn } from '../playwright/setup/Runner';
-import { FlowResult } from '../playwright/helpers';
+import { timeZoneToUtc } from '../helpers/strings';
+import { ActionReturn, BillingCycle } from '../helpers/helpers';
+import { ActionResult } from '../helpers/helpers';
 import { getCookies } from './helpers/cookie';
+import { getUserId } from '~/shared/ensureDataLoaded';
 
 const getJsonData = <T>(client: Session, userId: string): AsyncAboFetchResult<T> => {
   console.info('Getting auth token');
@@ -146,23 +147,23 @@ const doCancelConfirm = (client: Session, authToken: string, userId: string) => 
   });
 };
 
-export const cancel = api(({ client, auth, item }) => {
-  return getCancelInfo(client, item.user)
-    .andThen(({ data }) => doCancelConfirm(client, data.authToken, item.user))
+export const cancel = api(({ client }) => {
+  return getCancelInfo(client, getUserId())
+    .andThen(({ data }) => doCancelConfirm(client, data.authToken, getUserId()))
     .andThen((response) => failOnError(response, 'Failed to cancel subscription'))
-    .andThen(() => connect(item));
+    .andThen(() => connect('connect', 'paramount'));
 });
 
-export const resume = api(({ client, auth, item }) => {
-  return getAuthToken(client, item.user)
-    .andThen(({ data }) => doResumeSubscription(client, data, item.user))
+export const resume = api(({ client }) => {
+  return getAuthToken(client, getUserId())
+    .andThen(({ data }) => doResumeSubscription(client, data, getUserId()))
     .andThen((response) => failOnError(response, 'Failed to resume subscription'))
-    .andThen(() => connect(item));
+    .andThen(() => connect('connect', 'paramount'));
 });
 
-export const connectNotWorking = api(({ client, auth, item }) => {
+export const connectNotWorking = api(({ client, auth }) => {
   return (
-    getAuthToken(client, item.user)
+    getAuthToken(client, getUserId())
       // .andThen(({ data, cookies }) => {
       //   return solveCaptcha({
       //     siteKey: data.captchaKey,
@@ -229,7 +230,7 @@ export const connectNotWorking = api(({ client, auth, item }) => {
     //   if (response.data.isExSubscriber) {
     //     return {
     //       data: {
-    //         membershipStatus: 'inactive',
+    //         status: 'inactive',
     //         lastSyncedAt: new Date().toISOString(),
     //       },
     //       cookies: response.cookies,
@@ -237,12 +238,12 @@ export const connectNotWorking = api(({ client, auth, item }) => {
     //   } else {
     //     return {
     //       data: {
-    //         membershipStatus: 'active',
+    //         status: 'active',
     //         lastSyncedAt: new Date().toISOString(),
     //         billingCycle: 'monthly',
-    //         membershipPlan: null,
+    //         planName: null,
     //         nextPaymentDate: null,
-    //         nextPaymentPrice: null,
+    //         planPrice: null,
     //       },
     //       cookies: response.cookies,
     //     };
@@ -251,31 +252,31 @@ export const connectNotWorking = api(({ client, auth, item }) => {
   );
 });
 
-export const connect = api(({ client, auth, item }) => {
+export const connect = api(({ client }) => {
   // @ts-expect-error
-  return getJsonData<AccountData>(client, item.user).andThen(({ data }) => {
+  return getJsonData<AccountData>(client, getUserId()).andThen(({ data }) => {
     const { user, currentSubscription } = data;
 
     if (user.statusCode === 'reg') {
       return Ok({
         data: {
-          membershipStatus: 'preactive' as const,
+          status: 'preactive' as const,
           lastSyncedAt: new Date().toISOString(),
         },
-      } satisfies FlowReturn);
+      } satisfies ActionReturn);
     }
 
     if (user.isExSubscriber) {
       return Ok({
         data: {
-          membershipStatus: 'inactive' as const,
+          status: 'inactive' as const,
           lastSyncedAt: new Date().toISOString(),
         },
-      } satisfies FlowReturn);
+      } satisfies ActionReturn);
     }
 
     if (user.isSubscriber) {
-      const nextPaymentPrice = currentSubscription.plan_bill_amount * currentSubscription.currency_subunits;
+      const planPrice = currentSubscription.plan_bill_amount * currentSubscription.currency_subunits;
 
       if (currentSubscription.cancel_date) {
         const expiresAt = timeZoneToUtc(
@@ -285,16 +286,16 @@ export const connect = api(({ client, auth, item }) => {
 
         return Ok({
           data: {
-            membershipStatus: 'canceled' as const,
-            membershipPlan: data.user.svod.user_package.plan_tier ?? 'standard',
+            status: 'canceled' as const,
+            planName: data.user.svod.user_package.plan_tier ?? 'standard',
             lastSyncedAt: new Date().toISOString(),
             expiresAt,
-            nextPaymentPrice,
+            planPrice,
             billingCycle: ((data.user.svod.user_package.plan_type ?? 'monthly') === 'monthly'
               ? 'monthly'
-              : 'yearly') as 'monthly' | 'yearly',
+              : 'annual') as BillingCycle,
           },
-        } satisfies FlowReturn);
+        } satisfies ActionReturn);
       }
 
       const nextPaymentDate = timeZoneToUtc(
@@ -304,14 +305,14 @@ export const connect = api(({ client, auth, item }) => {
 
       return Ok({
         data: {
-          membershipStatus: 'active' as const,
-          membershipPlan: 'basic',
+          status: 'active' as const,
+          planName: 'basic',
           lastSyncedAt: new Date().toISOString(),
-          nextPaymentPrice,
+          planPrice,
           nextPaymentDate: nextPaymentDate,
           billingCycle: 'monthly' as const,
         },
-      } satisfies FlowReturn);
+      } satisfies ActionReturn);
     }
 
     return Err({

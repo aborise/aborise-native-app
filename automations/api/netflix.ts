@@ -1,6 +1,6 @@
 import { AsyncResult, Err, Ok, Result } from '~/shared/Result';
-import { FlowResult } from '../playwright/helpers';
-import { extractAmount, extractDate } from '../playwright/strings';
+import { ActionResult } from '../helpers/helpers';
+import { extractAmount, extractDate } from '../helpers/strings';
 import { ApiError, ApiResponse, Session } from './helpers/client';
 import { api } from './helpers/setup';
 import { stringToDocument } from './helpers/strings';
@@ -12,8 +12,9 @@ import {
   getReactContextWithCookies,
 } from './utils/netflix.helpers';
 import { NetflixCancelResponse, NetflixResumeResponse, ReactContext, UserContext } from './utils/netflix.types';
-import { FlowReturn } from '../playwright/setup/Runner';
+import { ActionReturn } from '../helpers/helpers';
 import { ERROR_CODES } from '~/shared/errors';
+import { getUserId } from '~/shared/ensureDataLoaded';
 
 const failOnNotLoggedIn = (context: ReactContext) => {
   const isLoggedIn = !!context?.models?.memberContext?.data?.userInfo?.authURL;
@@ -76,7 +77,6 @@ const getMoneyballValue = <T extends object>(json: Moneyball<T>) => {
 export const cancelOrResume = <T extends Moneyball<{ fields: any }>>(
   endpoint: 'cancel' | 'resume',
   client: Session,
-  item: { user: string },
 ) => {
   const paramToUse =
     endpoint === 'cancel'
@@ -91,12 +91,12 @@ export const cancelOrResume = <T extends Moneyball<{ fields: any }>>(
   // }
   // callPath: '["moeyball","websiteMember","yourAccount"]',
 
-  return getReactContext(client, item.user)
+  return getReactContext(client, getUserId())
     .andThen(failOnNotLoggedIn)
     .map(getApiData)
-    .andThen((apiData) => doCancelResumeRequest<T>(client, paramToUse, apiData.authUrl, item.user))
+    .andThen((apiData) => doCancelResumeRequest<T>(client, paramToUse, apiData.authUrl, getUserId()))
     .map((response) => response.data)
-    .andThen((data) => ensurCorrectMembershipStatus(data, endpoint))
+    .andThen((data) => ensurCorrectstatus(data, endpoint))
     .map((json): GetFields<T> => getMoneyballValue(json).result.fields);
 };
 
@@ -104,29 +104,29 @@ export const cancelOrResume = <T extends Moneyball<{ fields: any }>>(
 // if the response does NOT match the validator, log an error but try to recover
 
 // check if the response let us know that the account might have been inactive
-export const cancel = api(({ item, client }) => {
-  return cancelOrResume<NetflixCancelResponse>('cancel', client, item).andThen(() => connect(item));
+export const cancel = api(({ client }) => {
+  return cancelOrResume<NetflixCancelResponse>('cancel', client).andThen(() => connect('connect', 'netflix'));
   // .logData()
   // .map((json) => ({
   //   data: {
-  //     membershipStatus: 'canceled',
+  //     status: 'canceled',
   //     expiresAt: extractDate(json.cancelEffectiveDate.value),
   //     lastSyncedAt: new Date().toISOString(),
   //   },
   // }));
 });
 
-// const membershipPlanMap = {
+// const planNameMap = {
 //   '4001': 'Basic',
 // };
 
-const ensurCorrectMembershipStatus = <T extends { fields: { errorCode?: { value: string } } }>(
+const ensurCorrectstatus = <T extends { fields: { errorCode?: { value: string } } }>(
   context: Moneyball<T>,
   endpoint: 'cancel' | 'resume',
 ) => {
   const moneyball = getMoneyballValue(context);
 
-  if (moneyball.userContext.membershipStatus === 'FORMER_MEMBER') {
+  if (moneyball.userContext.status === 'FORMER_MEMBER') {
     const msg = `Your account cant be ${endpoint}ed because it is inactive`;
     return Err({
       message: msg,
@@ -150,14 +150,14 @@ const ensurCorrectMembershipStatus = <T extends { fields: { errorCode?: { value:
   return Ok(context);
 };
 
-export const resume = api(({ item, client }) => {
-  return cancelOrResume<NetflixResumeResponse>('resume', client, item).map((json) => ({
+export const resume = api(({ client }) => {
+  return cancelOrResume<NetflixResumeResponse>('resume', client).map((json) => ({
     data: {
       billingCycle: 'monthly',
-      membershipStatus: 'active',
-      membershipPlan: json.currentPlan.fields.localizedPlanName.value,
-      nextPaymentDate: extractDate(json.periodEndDate?.value, 1),
-      nextPaymentPrice: extractAmount(json.currentPlan.fields.planPrice.value),
+      status: 'active',
+      planName: json.currentPlan.fields.localizedPlanName.value,
+      nextPaymentDate: extractDate(json.periodEndDate?.value, 1)!,
+      planPrice: extractAmount(json.currentPlan.fields.planPrice.value)!,
       lastSyncedAt: new Date().toISOString(),
     },
   }));
@@ -171,8 +171,8 @@ const PAGE_ITEM_ERROR_CODE = (json: any) => json?.models?.flow?.data?.fields?.er
 //   }
 // };
 
-export const connectNotWorking = api(({ auth, client, item }) => {
-  return getReactContextWithCookies(client, item.user)
+export const connectNotWorking = api(({ auth, client }) => {
+  return getReactContextWithCookies(client, getUserId())
     .andThen(({ cookies, data: reactContext }) => {
       return getApiData(reactContext).then((apiData) =>
         getLoginPayload({ email: auth.email, password: auth.password }, apiData.authUrl, reactContext).then(
@@ -347,10 +347,10 @@ export const connect = api(({ auth, client }) => {
         .map(async ({ data }) => stringToDocument(data))
         .map((document) => ({ cookies, data: extractReactContext(document) }));
     })
-    .andThen(({ data, cookies }): Result<FlowReturn, ApiError> => {
-      const membershipStatus = data?.models?.userInfo?.data.membershipStatus;
+    .andThen(({ data, cookies }): Result<ActionReturn, ApiError> => {
+      const status = data?.models?.userInfo?.data.status;
 
-      if (membershipStatus === 'ANONYMOUS') {
+      if (status === 'ANONYMOUS') {
         return Err({
           custom: 'You are not connected anymore. Please reconnect',
           errorMessage: 'User is not logged in',
@@ -366,41 +366,41 @@ export const connect = api(({ auth, client }) => {
       const planName = data?.models?.signupContext?.data?.flow?.fields?.currentPlan?.fields?.localizedPlanName?.value;
       const planPrice = data?.models?.signupContext?.data?.flow?.fields?.currentPlan?.fields?.planPrice?.value;
 
-      if (membershipStatus === 'FORMER_MEMBER') {
+      if (status === 'FORMER_MEMBER') {
         return Ok({
           cookies,
           data: {
-            membershipStatus: 'inactive' as const,
+            status: 'inactive' as const,
             lastSyncedAt: new Date().toISOString(),
           },
         });
       }
 
-      if (membershipStatus === 'NEVER_MEMBER') {
+      if (status === 'NEVER_MEMBER') {
         return Ok({
           cookies,
           data: {
-            membershipStatus: 'preactive' as const,
+            status: 'preactive' as const,
             lastSyncedAt: new Date().toISOString(),
           },
         });
       }
 
-      const flowResult: FlowResult = periodEndDate
+      const flowResult: ActionResult = periodEndDate
         ? {
-            membershipStatus: 'canceled',
+            status: 'canceled',
             expiresAt: extractDate(periodEndDate),
             lastSyncedAt: new Date().toISOString(),
-            membershipPlan: planName,
+            planName: planName,
             billingCycle: 'monthly',
-            nextPaymentPrice: extractAmount(planPrice),
+            planPrice: extractAmount(planPrice),
           }
         : {
-            membershipStatus: 'active',
-            membershipPlan: planName,
+            status: 'active',
+            planName: planName,
             billingCycle: 'monthly',
-            nextPaymentPrice: extractAmount(planPrice),
-            nextPaymentDate: extractDate(nextBillingDate),
+            planPrice: extractAmount(planPrice)!,
+            nextPaymentDate: extractDate(nextBillingDate)!,
             lastSyncedAt: new Date().toISOString(),
           };
 

@@ -93,8 +93,8 @@ import { Err, Ok, Result } from '~/shared/Result';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { strToCookie } from '~/shared/helpers';
 import { getCookies } from '../api/helpers/cookie';
-import { FlowReturn } from '../playwright/setup/Runner';
-import { timeZoneToUtc } from '../playwright/strings';
+import { ActionReturn, BillingCycle } from '../helpers/helpers';
+import { timeZoneToUtc } from '../helpers/strings';
 import { AccountData, Plan } from './validators/paramount_userData';
 import { WebViewConfig, javascript } from './webview.helpers';
 
@@ -156,7 +156,7 @@ const dataConverter = (data: {
   cookies: string;
   accountData: AccountData;
   plan: Plan | undefined;
-}): Result<FlowReturn, { data: any }> => {
+}): Result<ActionReturn, { data: any }> => {
   const cookies = data.cookies
     .split(';')
     .map((c) => strToCookie(c, { domain: '.spotify.com', path: '/' }))
@@ -168,7 +168,7 @@ const dataConverter = (data: {
     return Ok({
       cookies,
       data: {
-        membershipStatus: 'preactive' as const,
+        status: 'preactive' as const,
         lastSyncedAt: new Date().toISOString(),
       },
     });
@@ -178,14 +178,14 @@ const dataConverter = (data: {
     return Ok({
       cookies,
       data: {
-        membershipStatus: 'inactive' as const,
+        status: 'inactive' as const,
         lastSyncedAt: new Date().toISOString(),
       },
     });
   }
 
   if (user.isSubscriber) {
-    const nextPaymentPrice = currentSubscription.plan_bill_amount * currentSubscription.currency_subunits;
+    const planPrice = currentSubscription.plan_bill_amount * currentSubscription.currency_subunits;
 
     if (currentSubscription.cancel_date) {
       const expiresAt = timeZoneToUtc(
@@ -196,16 +196,14 @@ const dataConverter = (data: {
       return Ok({
         cookies,
         data: {
-          membershipStatus: 'canceled' as const,
-          membershipPlan: data.plan?.planTier ?? 'standard',
+          status: 'canceled' as const,
+          planName: data.plan?.planTier ?? 'standard',
           lastSyncedAt: new Date().toISOString(),
           expiresAt,
-          nextPaymentPrice,
-          billingCycle: ((data.plan?.planType ?? 'monthly') === 'monthly' ? 'monthly' : 'yearly') as
-            | 'monthly'
-            | 'yearly',
+          planPrice,
+          billingCycle: ((data.plan?.planType ?? 'monthly') === 'monthly' ? 'monthly' : 'annual') as BillingCycle,
         },
-      });
+      } satisfies ActionReturn);
     }
 
     const nextPaymentDate = timeZoneToUtc(
@@ -216,10 +214,10 @@ const dataConverter = (data: {
     return Ok({
       cookies,
       data: {
-        membershipStatus: 'active' as const,
-        membershipPlan: 'basic',
+        status: 'active' as const,
+        planName: 'basic',
         lastSyncedAt: new Date().toISOString(),
-        nextPaymentPrice,
+        planPrice,
         nextPaymentDate: nextPaymentDate,
         billingCycle: 'monthly' as const,
       },

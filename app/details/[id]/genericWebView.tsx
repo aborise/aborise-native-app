@@ -7,7 +7,7 @@ import Toast from 'react-native-root-toast';
 import WebView from 'react-native-webview';
 import { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
 import { cookiesToString } from '~/automations/api/helpers/cookie';
-import { FlowReturn } from '~/automations/playwright/setup/Runner';
+import { ActionReturn } from '~/automations/helpers/helpers';
 import { useI18n } from '~/composables/useI18n';
 import { Result } from '~/shared/Result';
 import { Awaitable } from '~/shared/typeHelpers';
@@ -54,9 +54,9 @@ type GenericWebViewProps = {
    */
   dataExtractor: () => string;
   /** The function that converts the extracted data into the correct format */
-  dataConverter: (data: any) => Awaitable<Result<FlowReturn, any>>;
+  dataConverter: (data: any) => Awaitable<Result<ActionReturn, any>>;
   /** The function that gets called when the data is extracted */
-  onSuccess: (data: Result<FlowReturn, any>, deviceCookies: Cookies) => Awaitable<void>;
+  onSuccess: (data: Result<ActionReturn, any>, deviceCookies: Cookies) => Awaitable<void>;
   /** Pass a function that returns the cookies that should be set in the webview */
   getCookies: () => Awaitable<Cookie[]>;
   /** Pass a function that returns the username and password that should be set in the webview */

@@ -1,9 +1,9 @@
 import { SizableText, XStack } from 'tamagui';
-import { FlowResultInactive } from '~/automations/playwright/helpers';
+import { ActionResultInactive } from '~/automations/helpers/helpers';
 import { useI18n } from '~/composables/useI18n';
 
 type Props = {
-  serviceData: FlowResultInactive;
+  serviceData: ActionResultInactive;
 };
 
 const { t } = useI18n();

@@ -14,7 +14,7 @@ export const PAGE_ITEMS_INFO = {
   guid: (json: any): string => json.models.userInfo.data.guid,
   userGuid: (json: any): string => json.models.userInfo.data.userGuid,
   countryOfSignup: (json: any): string => json.models.userInfo.data.countryOfSignup,
-  membershipStatus: (json: any): string => json.models.userInfo.data.membershipStatus,
+  status: (json: any): string => json.models.userInfo.data.status,
   isTestAccount: (json: any): boolean => json.models.userInfo.data.isTestAccount,
   deviceTypeId: (json: any): number => json.models.userInfo.data.deviceTypeId,
   isAdultVerified: (json: any): boolean => json.models.userInfo.data.isAdultVerified,
@@ -50,7 +50,7 @@ export interface ReactContext {
         userGuid: string;
         countryOfSignup: string;
         currentCountry: string;
-        membershipStatus: string;
+        status: string;
       };
     };
     serverDefs: {
@@ -161,7 +161,7 @@ export type UserContext = {
   guid: string;
   isInFreeTrial: boolean;
   memberSince: string;
-  membershipStatus: 'FORMER_MEMBER' | 'ANONYMOUS' | 'NEVER_MEMBER' | 'CURRENT_MEMBER';
+  status: 'FORMER_MEMBER' | 'ANONYMOUS' | 'NEVER_MEMBER' | 'CURRENT_MEMBER';
   name: string;
   userGuid: string;
 };

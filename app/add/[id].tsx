@@ -80,12 +80,7 @@ const Connect: React.FC = () => {
       password,
     });
 
-    const res = await connect({
-      user: getUserId(),
-      queueId: '123',
-      service: service.id,
-      type: 'connect',
-    });
+    const res = await connect(service.id);
 
     await queryClient.invalidateQueries({ queryKey: ['services'] });
 

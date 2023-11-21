@@ -3,14 +3,15 @@ import { parse } from '~/shared/parser';
 import { PRIME_URL, dataConverter, primePlanSelector, primeRenewalDateSelector } from '../webview/amazon';
 import { ApiError } from './helpers/client';
 import { api } from './helpers/setup';
+import { getUserId } from '~/shared/ensureDataLoaded';
 
-export const connect = api(({ client, item }) => {
+export const connect = api(({ client }) => {
   return client
     .fetch<string>({
       url: PRIME_URL,
       method: 'GET',
       service: 'amazon',
-      user: item.user,
+      user: getUserId(),
       headers: {
         Host: 'www.amazon.de',
         'User-Agent':

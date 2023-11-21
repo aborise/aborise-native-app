@@ -1,10 +1,10 @@
-import { AsyncResult, Err, Ok, Result } from '~/shared/Result';
-import { FlowReturn } from '../playwright/setup/Runner';
+import dayjs from 'dayjs';
+import { Ok, Result } from '~/shared/Result';
+import { ActionResultActive, ActionResultCanceled } from '../helpers/helpers';
+import { ActionReturn } from '../helpers/helpers';
 import { ApiError, Session } from './helpers/client';
 import { api } from './helpers/setup';
 import { DaznLogin, DaznSubscription } from './validators/dazn-validator';
-import { FlowResultActive, FlowResultCanceled } from '../playwright/helpers';
-import dayjs from 'dayjs';
 
 type Token = {
   access_token: string;
@@ -20,36 +20,36 @@ const getSubscriptions = (client: Session, token: Token) => {
         Authorization: `Bearer ${token.access_token}`,
       },
     })
-    .andThen((res): Result<FlowReturn, ApiError> => {
+    .andThen((res): Result<ActionReturn, ApiError> => {
       if (res.data.length === 0) {
         return Ok({
           token,
           data: {
-            membershipStatus: 'inactive',
+            status: 'inactive',
             lastSyncedAt: new Date().toISOString(),
           },
-        } satisfies FlowReturn);
+        } satisfies ActionReturn);
       }
 
       console.log(res.data[0]);
 
       const subscription = res.data[0];
-      const billingCycle = subscription.activePass.period === 'Annual' ? 'yearly' : 'monthly';
-      const nextPaymentPrice = subscription.activePass.price * 100;
+      const billingCycle = subscription.activePass.period === 'Annual' ? 'annual' : 'monthly';
+      const planPrice = subscription.activePass.price * 100;
       const nextPaymentDate = subscription.nextPaymentDate;
-      const membershipPlan = subscription.tiers?.currentPlan.name ?? 'Unknown';
+      const planName = subscription.tiers?.currentPlan.name ?? 'Unknown';
       if (subscription.status === 'Active' && subscription.inProgress === 'NONE') {
         return Ok({
           token,
           data: {
-            membershipStatus: 'active' as const,
+            status: 'active' as const,
             lastSyncedAt: new Date().toISOString(),
             billingCycle,
             nextPaymentDate,
-            nextPaymentPrice,
-            membershipPlan,
-          } satisfies FlowResultActive,
-        } satisfies FlowReturn);
+            planPrice: planPrice,
+            planName: planName,
+          } satisfies ActionResultActive,
+        } satisfies ActionReturn);
       } else if (
         (subscription.status === 'Active' && subscription.inProgress === 'SUBSCRIPTION_CANCEL') ||
         subscription.status === 'Cancelled'
@@ -57,27 +57,27 @@ const getSubscriptions = (client: Session, token: Token) => {
         return Ok({
           token,
           data: {
-            membershipStatus: 'canceled',
+            status: 'canceled',
             lastSyncedAt: new Date().toISOString(),
             expiresAt: dayjs().endOf('day').toISOString(),
-            membershipPlan,
-            nextPaymentPrice,
+            planName: planName,
+            planPrice: planPrice,
             billingCycle,
-          } satisfies FlowResultCanceled,
-        } satisfies FlowReturn);
+          } satisfies ActionResultCanceled,
+        } satisfies ActionReturn);
       } else {
         return Ok({
           token,
           data: {
-            membershipStatus: 'inactive',
+            status: 'inactive',
             lastSyncedAt: new Date().toISOString(),
           },
-        } satisfies FlowReturn);
+        } satisfies ActionReturn);
       }
     });
 };
 
-export const connect = api(({ client, auth, item }) => {
+export const connect = api(({ client, auth }) => {
   return client
     .fetch<DaznLogin>({
       url: 'https://authentication-prod.ar.indazn.com/v5/SignIn',

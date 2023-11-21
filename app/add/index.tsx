@@ -1,9 +1,7 @@
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { KeyboardAvoidingView } from 'react-native';
-import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
-import { YStack } from 'tamagui';
+import { FlatList, KeyboardAvoidingView, Pressable, Text, TextInput, View } from 'react-native';
 import { useI18n } from '~/composables/useI18n';
 import { Service, services } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';

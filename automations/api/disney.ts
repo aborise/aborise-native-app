@@ -6,11 +6,12 @@ import dayjs from 'dayjs';
 import { get, getDatabase, ref, set, type DatabaseReference } from 'firebase/database';
 import { useFirebaseApp } from '~/composables/useFirebase';
 import { Err, Ok, wrapAsync, type AsyncResult, type Result } from '~/shared/Result';
-import { type FlowResult } from '../playwright/helpers';
+import { BillingCycle, type ActionResult } from '../helpers/helpers';
 import { Session, type ApiError } from './helpers/client';
 import { api } from './helpers/setup';
 import { numberToDecimal } from './helpers/strings';
 import { useLargeUnsafeStorage } from '~/composables/useStorage';
+import { getUserId } from '~/shared/ensureDataLoaded';
 
 // type SubscriberStatus = 'Churned'
 
@@ -638,13 +639,13 @@ const ensureSuccess = <T extends { success: boolean }>(result: T, message: strin
 // const mapToApiData = (api: DisneyAPI, res: DisneyResponse) => {
 //   return fromPromise(api.getSubscriptionDetailsById(res.subscriptionId)).map((res): FlowResult => {
 //     return {
-//       membershipStatus: 'active',
+//       status: 'active',
 //       billingCycle: res.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
-//       membershipPlan: res.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
+//       planName: res.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
 //       nextPaymentDate: res.scheduledInvoice.expectedExecutionDate
 //         ? new Date(res.scheduledInvoice.expectedExecutionDate).toISOString()
 //         : null,
-//       nextPaymentPrice: numberToDecimal(res.scheduledInvoice.totalAmount),
+//       planPrice: numberToDecimal(res.scheduledInvoice.totalAmount),
 //       lastSyncedAt: new Date().toISOString(),
 //     };
 //   });
@@ -654,37 +655,37 @@ const wait = (seconds: number) => {
   return <T>(res: T) => new Promise<T>((resolve) => setTimeout(() => resolve(res), seconds * 1000));
 };
 
-const mapSubscriptionDetails = (details: DisneySubscriptionDetails): FlowResult => {
+const mapSubscriptionDetails = (details: DisneySubscriptionDetails): ActionResult => {
   if (!details.scheduledInvoice) {
     return {
-      membershipStatus: 'canceled',
+      status: 'canceled',
       expiresAt: details.latestTransactedInvoice.actualExecutionDate
         ? dayjs(details.latestTransactedInvoice.actualExecutionDate).add(1, 'month').toISOString()
         : null,
-      billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
-      membershipPlan: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
-      nextPaymentPrice: details.latestTransactedInvoice.totalAmount * 100,
+      billingCycle: (details.billingFrequency === 'MONTH' ? 'monthly' : 'annual') as BillingCycle,
+      planName: details.billingFrequency === 'MONTH' ? 'monthly' : 'annual',
+      planPrice: details.latestTransactedInvoice.totalAmount * 100,
       lastSyncedAt: new Date().toISOString(),
     };
   } else {
     return {
-      membershipStatus: 'active',
+      status: 'active',
       nextPaymentDate: details.scheduledInvoice.originalExpectedExecutionDate,
-      billingCycle: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
-      membershipPlan: details.billingFrequency === 'MONTH' ? 'monthly' : 'yearly',
-      nextPaymentPrice: Math.floor(details.scheduledInvoice.totalAmount * 100),
+      billingCycle: (details.billingFrequency === 'MONTH' ? 'monthly' : 'annual') as BillingCycle,
+      planName: details.billingFrequency === 'MONTH' ? 'monthly' : 'annual',
+      planPrice: Math.floor(details.scheduledInvoice.totalAmount * 100),
       lastSyncedAt: new Date().toISOString(),
     };
   }
 };
 
-export const connect = api(({ item, auth, client }) => {
+export const connect = api(({ auth, client }) => {
   const storage = useLargeUnsafeStorage();
   const getApiAuth = () => storage.get<TokenData>('services/disney/api/');
   const setApiAuth = (data: TokenData) => storage.set('services/disney/api/', data);
 
   const api = new DisneyAPI(
-    { email: auth.email, password: auth.password, uid: item.user, getApiAuth, setApiAuth },
+    { email: auth.email, password: auth.password, uid: getUserId(), getApiAuth, setApiAuth },
     client,
   );
 
@@ -695,13 +696,13 @@ export const connect = api(({ item, auth, client }) => {
     .map((res) => ({ data: res }));
 });
 
-export const cancel = api(({ item, auth, client }) => {
+export const cancel = api(({ auth, client }) => {
   const storage = useLargeUnsafeStorage();
   const getApiAuth = () => storage.get<TokenData>('services/disney/api/');
   const setApiAuth = (data: TokenData) => storage.set('services/disney/api/', data);
 
   const api = new DisneyAPI(
-    { email: auth.email, password: auth.password, uid: item.user, getApiAuth, setApiAuth },
+    { email: auth.email, password: auth.password, uid: getUserId(), getApiAuth, setApiAuth },
     client,
   );
 
@@ -717,13 +718,13 @@ export const cancel = api(({ item, auth, client }) => {
   );
 });
 
-export const resume = api(({ item, auth, client }) => {
+export const resume = api(({ auth, client }) => {
   const storage = useLargeUnsafeStorage();
   const getApiAuth = () => storage.get<TokenData>('services/disney/api/');
   const setApiAuth = (data: TokenData) => storage.set('services/disney/api/', data);
 
   const api = new DisneyAPI(
-    { email: auth.email, password: auth.password, uid: item.user, getApiAuth, setApiAuth },
+    { email: auth.email, password: auth.password, uid: getUserId(), getApiAuth, setApiAuth },
     client,
   );
 

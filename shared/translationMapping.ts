@@ -4,5 +4,5 @@ const { t } = useI18n();
 
 export const billingCycle = {
   monthly: t('month'),
-  yearly: t('year'),
+  annual: t('year'),
 };

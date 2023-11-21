@@ -1,15 +1,15 @@
-import { FlowResult } from '~/automations/playwright/helpers';
+import { ActionResult } from '~/automations/helpers/helpers';
 import ActiveAbo from './ActiveAbo';
 import CanceledAbo from './CanceledAbo';
 import InactiveAbo from './InactiveAbo';
 import PreactiveAbo from './PreActiveAbo';
 
 type Props = {
-  serviceData: FlowResult;
+  serviceData: ActionResult;
 };
 
 const AboDetails: React.FC<Props> = ({ serviceData }) => {
-  switch (serviceData.membershipStatus) {
+  switch (serviceData.status) {
     case 'active':
       return <ActiveAbo serviceData={serviceData} />;
     case 'inactive':

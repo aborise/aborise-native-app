@@ -3,7 +3,7 @@ import { api } from './helpers/setup';
 import { AsyncResult, Err, Ok, wrapAsync } from '~/shared/Result';
 import { ApiError, Session } from './helpers/client';
 import { JoynSubscriptions } from '../webview/validators/joyn';
-import { FlowReturn, RequestTypeDone } from '../playwright/setup/Runner';
+import { ActionReturn, ApiResult } from '../helpers/helpers';
 
 type TokenConfig = {
   access_token: string;
@@ -93,40 +93,37 @@ const fetchSubscriptions = (client: Session, config: TokenConfig) => {
     });
 };
 
-const handleSubscriptionResult = (
-  client: Session,
-  apiAuth: TokenConfig,
-): AsyncResult<Partial<RequestTypeDone>, ApiError> => {
+const handleSubscriptionResult = (client: Session, apiAuth: TokenConfig): AsyncResult<ApiResult, ApiError> => {
   return fetchSubscriptions(client, apiAuth).map(({ data: subscriptions }) => {
     if (subscriptions.length === 0) {
       return {
         token: apiAuth,
         data: {
-          membershipStatus: 'inactive',
+          status: 'inactive',
           lastSyncedAt: new Date().toISOString(),
         },
-      } satisfies FlowReturn;
+      } satisfies ActionReturn;
     } else if (subscriptions[0].state.state === 'cancelled') {
       return {
         token: apiAuth,
         data: {
-          membershipStatus: 'canceled',
+          status: 'canceled',
           lastSyncedAt: new Date().toISOString(),
           billingCycle: 'monthly',
           expiresAt: subscriptions[0].state.expiresOn + 'Z',
-          membershipPlan: subscriptions[0].config.name,
-          nextPaymentPrice: subscriptions[0].config.price,
+          planName: subscriptions[0].config.name,
+          planPrice: subscriptions[0].config.price,
         },
-      } satisfies FlowReturn;
+      } satisfies ActionReturn;
     } else {
       return {
         token: apiAuth,
         data: {
-          membershipStatus: 'active',
+          status: 'active',
           billingCycle: 'monthly',
-          membershipPlan: subscriptions[0].config.name,
+          planName: subscriptions[0].config.name,
           nextPaymentDate: subscriptions[0].state.renewOn + 'Z',
-          nextPaymentPrice: subscriptions[0].state.renewalPrice,
+          planPrice: subscriptions[0].state.renewalPrice,
           lastSyncedAt: new Date().toISOString(),
         },
       };
@@ -136,11 +133,11 @@ const handleSubscriptionResult = (
 
 // TODO: add pre-active check
 
-export const connect = api(({ client, auth, item }) => {
+export const connect = api(({ client }) => {
   return ensureValidToken(client).andThen((apiAuth) => handleSubscriptionResult(client, apiAuth));
 });
 
-export const cancel = api(({ client, auth, item }) => {
+export const cancel = api(({ client }) => {
   return ensureValidToken(client).andThen((apiAuth) => {
     return client
       .fetch({

@@ -3,15 +3,15 @@ import { Err, Ok, Result } from '~/shared/Result';
 import { strToCookie } from '~/shared/helpers';
 import { getCookies } from '../api/helpers/cookie';
 import { ReactContext, UserContext } from '../api/utils/netflix.types';
-import { FlowReturn } from '../playwright/setup/Runner';
-import { extractAmount, extractDate } from '../playwright/strings';
+import { ActionReturn } from '../helpers/helpers';
+import { extractAmount, extractDate } from '../helpers/strings';
 import { WebViewConfig, javascript } from './webview.helpers';
 
-const generateMembershipCheck = (membershipStatus: UserContext['membershipStatus'][], type: Response['type']) => {
+const generateMembershipCheck = (status: UserContext['status'][], type: Response['type']) => {
   return javascript`
-    const data = [${membershipStatus
+    const data = [${status
       .map((s) => `'${s}'`)
-      .join(',')}].includes(window.netflix.reactContext.models.userInfo.data.membershipStatus)
+      .join(',')}].includes(window.netflix.reactContext.models.userInfo.data.status)
     window.ReactNativeWebView.postMessage(JSON.stringify({ type: '${type}', data }));
   `;
 };
@@ -37,49 +37,49 @@ const dataConverter = (data: {
   signupContext: ReactContext['models']['signupContext']['data'];
   userInfo: UserContext;
   cookies: string;
-}): Result<FlowReturn, { data: any }> => {
-  if (data.userInfo.membershipStatus === 'ANONYMOUS') {
+}): Result<ActionReturn, { data: any }> => {
+  if (data.userInfo.status === 'ANONYMOUS') {
     return Err({ data });
   }
 
   const cookies = data.cookies.split(';').map((c) => strToCookie(c, { domain: '.netflix.com', path: '/' }));
-  let flowReturn: FlowReturn['data'];
+  let ActionReturn: ActionReturn['data'];
 
-  if (data.userInfo.membershipStatus === 'CURRENT_MEMBER') {
+  if (data.userInfo.status === 'CURRENT_MEMBER') {
     if (data.signupContext.flow.fields.nextBillingDate) {
-      flowReturn = {
-        membershipStatus: 'active',
+      ActionReturn = {
+        status: 'active',
         billingCycle: 'monthly',
-        membershipPlan: data.signupContext.flow.fields.currentPlan.fields.localizedPlanName.value,
-        nextPaymentDate: extractDate(data.signupContext.flow.fields.nextBillingDate.value),
-        nextPaymentPrice: extractAmount(data.signupContext.flow.fields.currentPlan.fields.planPrice.value),
+        planName: data.signupContext.flow.fields.currentPlan.fields.localizedPlanName.value,
+        nextPaymentDate: extractDate(data.signupContext.flow.fields.nextBillingDate.value)!,
+        planPrice: extractAmount(data.signupContext.flow.fields.currentPlan.fields.planPrice.value)!,
         lastSyncedAt: new Date().toISOString(),
       };
     } else {
-      flowReturn = {
-        membershipStatus: 'canceled',
+      ActionReturn = {
+        status: 'canceled',
         expiresAt: extractDate(data.signupContext.flow.fields.periodEndDate.value),
         lastSyncedAt: new Date().toISOString(),
-        nextPaymentPrice: extractAmount(data.signupContext.flow.fields.currentPlan.fields.planPrice.value),
+        planPrice: extractAmount(data.signupContext.flow.fields.currentPlan.fields.planPrice.value),
         billingCycle: 'monthly',
-        membershipPlan: data.signupContext.flow.fields.currentPlan.fields.localizedPlanName.value,
+        planName: data.signupContext.flow.fields.currentPlan.fields.localizedPlanName.value,
       };
     }
-  } else if (data.userInfo.membershipStatus === 'NEVER_MEMBER') {
-    flowReturn = {
-      membershipStatus: 'preactive',
+  } else if (data.userInfo.status === 'NEVER_MEMBER') {
+    ActionReturn = {
+      status: 'preactive',
       lastSyncedAt: new Date().toISOString(),
     };
   } else {
-    flowReturn = {
-      membershipStatus: 'inactive',
+    ActionReturn = {
+      status: 'inactive',
       lastSyncedAt: new Date().toISOString(),
     };
   }
 
   return Ok({
     cookies,
-    data: flowReturn,
+    data: ActionReturn,
   });
 };
 

@@ -2,12 +2,12 @@ import { parse } from '~/shared/parser';
 import { api } from './helpers/setup';
 import { Err, Ok, fromPromise, wrapAsync } from '~/shared/Result';
 import { ApiError } from './helpers/client';
-import { FlowResult } from '../playwright/helpers';
+import { ActionResult, BillingCycle } from '../helpers/helpers';
 import { getCookies } from './helpers/cookie';
 import { Cookie } from 'playwright-core';
 import { AppleSubscription } from './validators/apple-validator';
-import { FlowReturn } from '../playwright/setup/Runner';
-import { extractAmount } from '../playwright/strings';
+import { ActionReturn } from '../helpers/helpers';
+import { extractAmount } from '../helpers/strings';
 
 const genericApiError: ApiError = {
   custom: 'Something went wrong.',
@@ -16,7 +16,7 @@ const genericApiError: ApiError = {
   statusCode: 500,
 };
 
-export const connect = api(({ client, item }) => {
+export const connect = api(({ client }) => {
   return fromPromise(getCookies('apple'))
     .mapErr(() => genericApiError)
     .andThen((cookies) => {
@@ -42,10 +42,10 @@ export const connect = api(({ client, item }) => {
             return {
               cookies,
               data: {
-                membershipStatus: 'inactive',
+                status: 'inactive',
                 lastSyncedAt: new Date().toISOString(),
               },
-            } satisfies FlowReturn;
+            } satisfies ActionReturn;
           } else {
             // TODO: check if status goes from 'ACTIVE' to 'CANCELED' when subscription is canceled
             const { latestPlan, status, expirationTimestamp } = data.subscriptions[0];
@@ -55,14 +55,14 @@ export const connect = api(({ client, item }) => {
             return {
               cookies,
               data: {
-                membershipStatus: 'active',
+                status: 'active',
                 lastSyncedAt: new Date().toISOString(),
-                membershipPlan: latestPlan.displayName,
-                billingCycle: latestPlan.period === 'P1M' ? 'monthly' : 'yearly',
+                planName: latestPlan.displayName,
+                billingCycle: (latestPlan.period === 'P1M' ? 'monthly' : 'annual') as BillingCycle,
                 nextPaymentDate: new Date(expirationTimestamp).toISOString(),
-                nextPaymentPrice: Number(price) / 10,
+                planPrice: Number(price) / 10,
               },
-            } satisfies FlowReturn;
+            } satisfies ActionReturn;
           }
         });
       // return client

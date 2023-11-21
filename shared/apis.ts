@@ -1,11 +1,10 @@
-import { RequestTypeDone } from '~/automations/playwright/setup/Runner';
-import { AsyncResult } from './Result';
-import { Service } from './allServices';
-import { BaseQueueItem } from './validators/queueItem';
 import { ApiError } from '~/automations/api/helpers/client';
+import { AsyncResult } from './Result';
+import { AllServices, Service } from './allServices';
+import { ApiResult } from '~/automations/helpers/helpers';
 
 type toActionFns<U extends string> = {
-  [K in U]: (item: BaseQueueItem) => AsyncResult<Partial<RequestTypeDone>, ApiError>;
+  [K in U]: (action: K, service: keyof AllServices) => AsyncResult<ApiResult, ApiError>;
 }[U];
 
 type Values<T> = T[keyof T];
@@ -16,11 +15,11 @@ export const getAction = <
 >(
   obj: T,
   key: U,
-): toActionFns<U> | undefined => {
+) => {
   if (!obj || !obj[key as unknown as keyof T]) {
     console.log(key, 'is not implemented in', obj);
     return;
   }
 
-  return obj[key as unknown as keyof T] as toActionFns<U>;
+  return (obj[key as unknown as keyof T] as toActionFns<U>).bind(null, key);
 };

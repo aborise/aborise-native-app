@@ -3,7 +3,7 @@ import { useFonts } from 'expo-font';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import WebView from 'react-native-webview';
 import { TamaguiProvider } from 'tamagui';

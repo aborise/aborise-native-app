@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { setFlowData } from '~/automations/api/helpers/data';
-import { FlowResult } from '~/automations/playwright/helpers';
-import { FlowReturn } from '~/automations/playwright/setup/Runner';
+import { ActionResult } from '~/automations/helpers/helpers';
+import { ActionReturn } from '~/automations/helpers/helpers';
 import { useStorage } from '~/composables/useStorage';
 import { AllServices } from '~/shared/allServices';
 
@@ -12,12 +12,12 @@ export const useServiceDataQuery = (serviceId: keyof AllServices) => {
   const serviceDataQuery = () =>
     useQuery({
       queryKey: ['servicesData', serviceId],
-      queryFn: () => storage.get<FlowResult>(`services/${serviceId}/data`),
+      queryFn: () => storage.get<ActionResult>(`services/${serviceId}/data`),
     });
 
   const serviceDataMutation = () =>
     useMutation({
-      mutationFn: (val: FlowResult | null | undefined) => {
+      mutationFn: (val: ActionResult | null | undefined) => {
         return setFlowData(serviceId, val);
       },
       onSuccess: () =>

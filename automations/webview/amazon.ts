@@ -12,8 +12,8 @@ import { Err, Ok, Result } from '~/shared/Result';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { strToCookie } from '~/shared/helpers';
 import { getCookies } from '../api/helpers/cookie';
-import { FlowReturn } from '../playwright/setup/Runner';
-import { extractAmount, extractDate } from '../playwright/strings';
+import { ActionReturn } from '../helpers/helpers';
+import { extractAmount, extractDate } from '../helpers/strings';
 import { WebViewConfig, javascript } from './webview.helpers';
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
@@ -87,7 +87,7 @@ export const dataConverter = (data: {
   hasPrime: boolean;
   plan?: string; // Annual EUR 89.90
   renewalDate?: string; // 01 May 2024
-}): Result<FlowReturn, { data: any }> => {
+}): Result<ActionReturn, { data: any }> => {
   const cookies = data.cookies
     ?.split(';')
     .map((c) => strToCookie(c, { domain: '.amazon.de', path: '/', secure: true }));
@@ -96,7 +96,7 @@ export const dataConverter = (data: {
     return Ok({
       cookies,
       data: {
-        membershipStatus: 'inactive' as const,
+        status: 'inactive' as const,
         lastSyncedAt: new Date().toISOString(),
       },
     });
@@ -115,15 +115,15 @@ export const dataConverter = (data: {
 
   return Ok({
     data: {
-      membershipStatus: 'active' as const,
-      membershipPlan: plan,
+      status: 'active',
+      planName: plan,
       lastSyncedAt: new Date().toISOString(),
-      nextPaymentPrice: price,
-      nextPaymentDate: renewalDate,
-      billingCycle: (plan === 'monthly' ? 'monthly' : 'yearly') as 'monthly' | 'yearly',
+      planPrice: price ?? 0,
+      nextPaymentDate: renewalDate ?? new Date().toISOString(),
+      billingCycle: plan,
     },
     cookies,
-  });
+  } satisfies ActionReturn);
 };
 
 const dataExtractor = () => {

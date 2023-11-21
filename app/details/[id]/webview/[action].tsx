@@ -2,7 +2,6 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
 import Toast from 'react-native-root-toast';
 import { deviceCookiesToCookies, setCookies, setToken } from '~/automations/api/helpers/cookie';
-import { FlowReturn } from '~/automations/playwright/setup/Runner';
 import * as webviews from '~/automations/webview/index';
 import { WebViewConfig } from '~/automations/webview/webview.helpers';
 import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
@@ -14,6 +13,7 @@ import { Cookies } from '@react-native-cookies/cookies';
 import { Cookie } from 'playwright-core';
 import { useServiceRefresh } from '~/composables/useServiceRefresh';
 import { useQueryClient } from '@tanstack/react-query';
+import { ActionReturn } from '~/automations/helpers/helpers';
 
 type WebViewConfigKeys = keyof typeof webviews;
 type WebViewConfigActionNames = { [P in WebViewConfigKeys]: keyof (typeof webviews)[P] }[WebViewConfigKeys];
@@ -54,7 +54,7 @@ export const ServiceWebView: React.FC = () => {
 
   const { onRefresh } = useServiceRefresh();
 
-  const saveData = async (result: Result<FlowReturn, any>, deviceCookies: Cookies) => {
+  const saveData = async (result: Result<ActionReturn, any>, deviceCookies: Cookies) => {
     if (result.err) {
       console.error(result.err);
       return;

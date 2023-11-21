@@ -5,7 +5,7 @@ import React, { useMemo } from 'react';
 import { Pressable, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SizableText, Text, XStack, YStack, styled } from 'tamagui';
-import { FlowReturn } from '~/automations/playwright/setup/Runner';
+import { ActionReturn } from '~/automations/helpers/helpers';
 import { useDayJs, useI18n } from '~/composables/useI18n';
 import { AllServices } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
@@ -16,7 +16,7 @@ const { t } = useI18n();
 
 interface AboItemProps {
   title: string;
-  data: NonNullable<FlowReturn['data']>;
+  data: NonNullable<ActionReturn['data']>;
   styles?: any;
   className?: string;
   id: keyof AllServices;
@@ -25,15 +25,15 @@ interface AboItemProps {
 
 const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, id }) => {
   const nextPaymentRelativeDate = useMemo(
-    () => (data.membershipStatus === 'active' ? dayjs(data.nextPaymentDate).fromNow() : undefined),
+    () => (data.status === 'active' ? dayjs(data.nextPaymentDate).fromNow() : undefined),
     [data],
   );
   const renewsDate = useMemo(
-    () => (data.membershipStatus === 'active' ? dayjs(data.nextPaymentDate).format('MMM DD') : undefined),
+    () => (data.status === 'active' ? dayjs(data.nextPaymentDate).format('MMM DD') : undefined),
     [data],
   );
   const expiresDate = useMemo(
-    () => (data.membershipStatus === 'canceled' ? dayjs(data.expiresAt).format('MMM DD') : undefined),
+    () => (data.status === 'canceled' ? dayjs(data.expiresAt).format('MMM DD') : undefined),
     [data],
   );
 
@@ -41,7 +41,7 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
     integer?: number;
     decimal?: number;
   }>(() => {
-    return data.membershipStatus === 'active' ? data.nextPaymentPrice ?? {} : {};
+    return data.status === 'active' ? data.planPrice ?? {} : {};
   }, [data]);
 
   return (
@@ -60,16 +60,16 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
               {t('expires')} {expiresDate}
             </SizableText>
           )}
-          {data.membershipStatus === 'inactive' && (
+          {data.status === 'inactive' && (
             <SizableText theme="alt2" size="$2">
               {t('inactive')}
             </SizableText>
           )}
         </YStack>
 
-        {(data.membershipStatus === 'active' || data.membershipStatus === 'canceled') && !!data.nextPaymentPrice && (
+        {(data.status === 'active' || data.status === 'canceled') && !!data.planPrice && (
           <YStack alignItems="flex-end">
-            <SizableText>EUR {(data.nextPaymentPrice / 100).toFixed(2)}</SizableText>
+            <SizableText>EUR {(data.planPrice / 100).toFixed(2)}</SizableText>
             <SizableText theme="alt2" size="$1">
               {' '}
               / {data.billingCycle === 'monthly' ? t('month') : t('year')}

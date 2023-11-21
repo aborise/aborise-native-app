@@ -1,12 +1,12 @@
 import { View } from 'react-native';
 import { SizableText, YStack } from 'tamagui';
-import { FlowResultCanceled } from '~/automations/playwright/helpers';
-import { capitalize } from '~/automations/playwright/strings';
+import { ActionResultCanceled } from '~/automations/helpers/helpers';
+import { capitalize } from '~/automations/helpers/strings';
 import { useDayJs, useI18n } from '~/composables/useI18n';
 import { billingCycle } from '~/shared/translationMapping';
 
 type Props = {
-  serviceData: FlowResultCanceled;
+  serviceData: ActionResultCanceled;
 };
 
 const { t } = useI18n();
@@ -17,12 +17,11 @@ const CanceledAbo: React.FC<Props> = ({ serviceData }) => {
     <YStack>
       <View>
         <SizableText>
-          {t('plan')}: {capitalize(serviceData.membershipPlan) ?? 'Basic'}
+          {t('plan')}: {capitalize(serviceData.planName) ?? 'Basic'}
         </SizableText>
       </View>
       <SizableText>
-        EUR {((serviceData.nextPaymentPrice ?? 0) / 100).toFixed(2)} /{' '}
-        {billingCycle[serviceData.billingCycle ?? 'monthly']}
+        EUR {((serviceData.planPrice ?? 0) / 100).toFixed(2)} / {billingCycle[serviceData.billingCycle ?? 'monthly']}
       </SizableText>
       <SizableText>
         {t('canceled')} - {t('expires')} {dayjs(serviceData.expiresAt ?? 0).fromNow()}

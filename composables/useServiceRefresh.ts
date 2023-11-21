@@ -11,12 +11,7 @@ const { t } = useI18n();
 
 export const useServiceRefresh = () => {
   const onRefresh = async (service: Service) => {
-    return getAction(apis[service.id], 'connect')!({
-      type: 'connect',
-      service: service.id,
-      user: getUserId(),
-      queueId: 'foo',
-    });
+    return getAction(apis[service.id], 'connect')!(service.id);
   };
 
   return {

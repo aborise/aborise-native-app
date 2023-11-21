@@ -10,7 +10,7 @@ import { getUserId } from '~/shared/ensureDataLoaded';
 import { strToCookie } from '~/shared/helpers';
 import { aboFetch } from '../api/helpers/client';
 import { deviceCookiesToCookies, getCookies } from '../api/helpers/cookie';
-import { FlowReturn } from '../playwright/setup/Runner';
+import { ActionReturn } from '../helpers/helpers';
 import { WebViewConfig, javascript } from './webview.helpers';
 import CookieManager from '@react-native-cookies/cookies';
 
@@ -97,7 +97,7 @@ const fillInEmailAndPw = () => {
   };
 };
 
-const dataConverter = async (data: { token: string }): Promise<Result<FlowReturn, { data: any }>> => {
+const dataConverter = async (data: { token: string }): Promise<Result<ActionReturn, { data: any }>> => {
   //   const cookies = data.cookies
   //     .split(';')
   //     .map((c) => strToCookie(c, { domain: '.apple.com', path: '/' }))
@@ -129,21 +129,22 @@ const dataConverter = async (data: { token: string }): Promise<Result<FlowReturn
     return Ok({
       cookies,
       data: {
-        membershipStatus: 'inactive' as const,
+        status: 'inactive',
         lastSyncedAt: new Date().toISOString(),
       },
-    });
+    } satisfies ActionReturn);
   } else {
     return Ok({
       cookies,
       data: {
-        membershipStatus: 'active' as const,
-        billingCycle: 'monthly' as const,
-        membershipPlan: null,
-        nextPaymentDate: null,
-        nextPaymentPrice: null,
+        status: 'active',
+        billingCycle: 'monthly',
+        planName: 'Unknown',
+        nextPaymentDate: new Date().toISOString(),
+        planPrice: 0,
+        lastSyncedAt: new Date().toISOString(),
       },
-    });
+    } satisfies ActionReturn);
   }
 
   //   return Err({ data: result.val });

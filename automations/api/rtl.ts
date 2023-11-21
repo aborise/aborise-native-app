@@ -2,9 +2,9 @@ import { useLargeUnsafeStorage } from '~/composables/useStorage';
 import { api } from './helpers/setup';
 import { AsyncResult, Err, Ok, wrapAsync } from '~/shared/Result';
 import { ApiError, Session } from './helpers/client';
-import { FlowReturn, RequestTypeDone } from '../playwright/setup/Runner';
 import { RTLSubscriptions } from './validators/rtl-validator';
-import { timeZoneToUtc } from '../playwright/strings';
+import { timeZoneToUtc } from '../helpers/strings';
+import { ActionReturn, ApiResult } from '../helpers/helpers';
 
 type TokenConfig = {
   access_token: string;
@@ -103,63 +103,60 @@ const fetchSubscriptions = (client: Session, config: TokenConfig) => {
     });
 };
 
-const handleSubscriptionResult = (
-  client: Session,
-  apiAuth: TokenConfig,
-): AsyncResult<Partial<RequestTypeDone>, ApiError> => {
+const handleSubscriptionResult = (client: Session, apiAuth: TokenConfig): AsyncResult<ApiResult, ApiError> => {
   return fetchSubscriptions(client, apiAuth).map(({ data }) => {
     const sub = data.productSubscriptions[0];
-    const nextPaymentPrice = data.nextBillingPreviewAmount.totalGross * 100;
-    const membershipPlan = sub.productName;
-    const billingCycle = data.billingPeriod.unit === 'YEAR' ? 'yearly' : 'monthly';
+    const planPrice = data.nextBillingPreviewAmount.totalGross * 100;
+    const planName = sub.productName;
+    const billingCycle = data.billingPeriod.unit === 'YEAR' ? 'annual' : 'monthly';
     const lastSyncedAt = new Date().toISOString();
 
-    if (membershipPlan === 'Free') {
+    if (planName === 'Free') {
       return {
         token: apiAuth,
         data: {
-          membershipStatus: 'inactive',
+          status: 'inactive',
           lastSyncedAt,
         },
-      } satisfies FlowReturn;
+      } satisfies ActionReturn;
     } else if (sub.cancellationDate) {
       const expiresAt = timeZoneToUtc(data.cancellationEffectivenessDate + 'T00:00:00', 'Europe/Berlin').toISOString();
 
       return {
         token: apiAuth,
         data: {
-          membershipStatus: 'canceled',
+          status: 'canceled',
           lastSyncedAt,
           billingCycle,
           expiresAt,
-          membershipPlan,
-          nextPaymentPrice,
+          planName,
+          planPrice,
         },
-      } satisfies FlowReturn;
+      } satisfies ActionReturn;
     } else {
       const nextPaymentDate = timeZoneToUtc(data.nextBillingDate + 'T00:00:00', 'Europe/Berlin').toISOString();
       return {
         token: apiAuth,
         data: {
-          membershipStatus: 'active',
+          status: 'active',
           billingCycle,
-          membershipPlan,
+          planName,
           nextPaymentDate,
-          nextPaymentPrice,
+          planPrice,
           lastSyncedAt,
         },
-      } satisfies FlowReturn;
+      } satisfies ActionReturn;
     }
   });
 };
 
 // TODO: add pre-active check
 
-export const connect = api(({ client, auth, item }) => {
+export const connect = api(({ client }) => {
   return ensureValidToken(client).andThen((apiAuth) => handleSubscriptionResult(client, apiAuth));
 });
 
-export const cancel = api(({ client, auth, item }) => {
+export const cancel = api(({ client, auth }) => {
   return ensureValidToken(client).andThen((apiAuth) => {
     return client
       .fetch({

@@ -1,26 +1,3 @@
-const translations = {
-  loginFailed: 'Wrong email or password. Please check your credentials and try again.',
-  otpPrompt:
-    'Your email address needs to be varified. You have received an email containing a 6-digit code which expires in 15 minutes. Please enter it.',
-  otpFailed: "You've entered the wrong passcode. Please tray again!",
-  twofaPrompt: 'This is a test',
-  twofaFailed: 'You waited too long. Please try again.',
-  connectSuccess: 'Congratulations! Your membership is now connected.',
-  connectFailed: 'Something went wrong. Please try again.',
-  cancelSuccess: 'Your membership has been canceled',
-  cancelFailed: 'Your membership is already canceled',
-  resumeSuccess: 'Your membership has been resumed',
-  resumeFailedActive: 'Your membership is already active.',
-  resumeFailedInactive: "Your membership is inactive. Currently we don't support resuming inactive memberships.",
-  registerSuccess: 'Account created successfully.',
-  registerFailed:
-    'An account related to this email already exists. Try to connect your existing account or enter a new email address.',
-};
-
-export const t = (key: string) => {
-  return translations[key as keyof typeof translations];
-};
-
 const dateFormats = [
   /\b(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})\b/,
   /\b(\d{1,2})\s*([a-zA-Z]+)\s*(\d{4})\b/,
