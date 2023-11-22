@@ -1,11 +1,10 @@
+import { Response } from '~/app/details/[id]/genericWebView';
+import { useStorage } from '~/composables/useStorage';
 import { Ok, Result } from '~/shared/Result';
+import { getUserId } from '~/shared/ensureDataLoaded';
+import { ActionReturn } from '../helpers/helpers';
 import { JoynSubConfig, JoynSubscriptions } from './validators/joyn';
 import { WebViewConfig, javascript } from './webview.helpers';
-import { ActionReturn } from '../helpers/helpers';
-import { useStorage } from '~/composables/useStorage';
-import { getUserId } from '~/shared/ensureDataLoaded';
-import { Response } from '~/app/details/[id]/genericWebView';
-import { getCookies } from '../api/helpers/cookie';
 
 const LOGIN_URL = 'https://www.joyn.de/mein-account';
 

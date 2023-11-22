@@ -137,44 +137,44 @@ type Disney = typeof _disney;
 
 export const disney = _disney as DeepWriteable<Disney> satisfies Service;
 
-const _spotify = {
-  id: 'spotify',
-  title: 'Spotify',
-  appleId: '324684580',
-  description: 'Listen to music',
-  auth: ['email', 'password'],
-  optionalDataKeys: [],
-  optional: [],
-  actions: [
-    {
-      name: 'connect',
-      type: 'manual',
-      states: [],
-    },
-    {
-      name: 'cancel',
-      type: 'manual',
-      states: ['active'],
-    },
-    // {
-    //   name: 'reactivate',
-    //   type: 'manual',
-    // },
-    {
-      name: 'resume',
-      type: 'manual',
-      states: ['canceled'],
-    },
-    // {
-    //   name: 'register',
-    //   type: 'manual',
-    // },
-  ],
-} as const;
+// const _spotify = {
+//   id: 'spotify',
+//   title: 'Spotify',
+//   appleId: '324684580',
+//   description: 'Listen to music',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: [],
+//     },
+//     {
+//       name: 'cancel',
+//       type: 'manual',
+//       states: ['active'],
+//     },
+//     // {
+//     //   name: 'reactivate',
+//     //   type: 'manual',
+//     // },
+//     {
+//       name: 'resume',
+//       type: 'manual',
+//       states: ['canceled'],
+//     },
+//     // {
+//     //   name: 'register',
+//     //   type: 'manual',
+//     // },
+//   ],
+// } as const;
 
-type Spotify = typeof _spotify;
+// type Spotify = typeof _spotify;
 
-export const spotify = _spotify as DeepWriteable<Spotify> satisfies Service;
+// export const spotify = _spotify as DeepWriteable<Spotify> satisfies Service;
 
 const _paramount = {
   id: 'paramount',

@@ -1,5 +1,4 @@
 import CookieManager from '@react-native-cookies/cookies';
-import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
@@ -44,8 +43,6 @@ const Connect: React.FC = () => {
 
   const hasRegisterApi = useMemo(() => !!getActionDefinition(service, 'register'), [service]);
 
-  const queryClient = useQueryClient();
-
   useEffect(() => {
     if (loadingLoginData) return;
     setEmail(data?.email || '');
@@ -81,8 +78,6 @@ const Connect: React.FC = () => {
     });
 
     const res = await connect(service.id);
-
-    await queryClient.invalidateQueries({ queryKey: ['services'] });
 
     setLoading(false);
 

@@ -50,7 +50,7 @@ export interface ReactContext {
         userGuid: string;
         countryOfSignup: string;
         currentCountry: string;
-        status: string;
+        membershipStatus: string;
       };
     };
     serverDefs: {

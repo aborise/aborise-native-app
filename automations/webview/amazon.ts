@@ -95,10 +95,7 @@ export const dataConverter = (data: {
   if (!data.hasPrime) {
     return Ok({
       cookies,
-      data: {
-        status: 'inactive' as const,
-        lastSyncedAt: new Date().toISOString(),
-      },
+      data: [],
     });
   }
 
@@ -114,14 +111,15 @@ export const dataConverter = (data: {
   const renewalDate = extractDate(data.renewalDate);
 
   return Ok({
-    data: {
-      status: 'active',
-      planName: plan,
-      lastSyncedAt: new Date().toISOString(),
-      planPrice: price ?? 0,
-      nextPaymentDate: renewalDate ?? new Date().toISOString(),
-      billingCycle: plan,
-    },
+    data: [
+      {
+        status: 'active',
+        planName: plan,
+        planPrice: price ?? 0,
+        nextPaymentDate: renewalDate ?? new Date().toISOString(),
+        billingCycle: plan,
+      },
+    ],
     cookies,
   } satisfies ActionReturn);
 };

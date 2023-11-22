@@ -3,16 +3,15 @@ const LOGIN_URL = 'https://tv.apple.com/';
 // const CONNECT_URL = 'https://www.paramountplus.com/account/';
 // const REACTIVATE_URL = 'https://www.paramountplus.com/de/account/signup/plan/';
 
+import CookieManager from '@react-native-cookies/cookies';
 import { Response } from '~/app/details/[id]/genericWebView';
 import { useStorage } from '~/composables/useStorage';
 import { Err, Ok, Result } from '~/shared/Result';
 import { getUserId } from '~/shared/ensureDataLoaded';
-import { strToCookie } from '~/shared/helpers';
 import { aboFetch } from '../api/helpers/client';
 import { deviceCookiesToCookies, getCookies } from '../api/helpers/cookie';
 import { ActionReturn } from '../helpers/helpers';
 import { WebViewConfig, javascript } from './webview.helpers';
-import CookieManager from '@react-native-cookies/cookies';
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`
@@ -128,22 +127,20 @@ const dataConverter = async (data: { token: string }): Promise<Result<ActionRetu
   if (!result.val.data.meta.subscription.active) {
     return Ok({
       cookies,
-      data: {
-        status: 'inactive',
-        lastSyncedAt: new Date().toISOString(),
-      },
+      data: [],
     } satisfies ActionReturn);
   } else {
     return Ok({
       cookies,
-      data: {
-        status: 'active',
-        billingCycle: 'monthly',
-        planName: 'Unknown',
-        nextPaymentDate: new Date().toISOString(),
-        planPrice: 0,
-        lastSyncedAt: new Date().toISOString(),
-      },
+      data: [
+        {
+          status: 'active',
+          billingCycle: 'monthly',
+          planName: 'Unknown',
+          nextPaymentDate: new Date().toISOString(),
+          planPrice: 0,
+        },
+      ],
     } satisfies ActionReturn);
   }
 

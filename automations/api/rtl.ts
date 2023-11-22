@@ -114,37 +114,36 @@ const handleSubscriptionResult = (client: Session, apiAuth: TokenConfig): AsyncR
     if (planName === 'Free') {
       return {
         token: apiAuth,
-        data: {
-          status: 'inactive',
-          lastSyncedAt,
-        },
+        data: [],
       } satisfies ActionReturn;
     } else if (sub.cancellationDate) {
       const expiresAt = timeZoneToUtc(data.cancellationEffectivenessDate + 'T00:00:00', 'Europe/Berlin').toISOString();
 
       return {
         token: apiAuth,
-        data: {
-          status: 'canceled',
-          lastSyncedAt,
-          billingCycle,
-          expiresAt,
-          planName,
-          planPrice,
-        },
+        data: [
+          {
+            status: 'canceled',
+            billingCycle,
+            expiresAt,
+            planName,
+            planPrice,
+          },
+        ],
       } satisfies ActionReturn;
     } else {
       const nextPaymentDate = timeZoneToUtc(data.nextBillingDate + 'T00:00:00', 'Europe/Berlin').toISOString();
       return {
         token: apiAuth,
-        data: {
-          status: 'active',
-          billingCycle,
-          planName,
-          nextPaymentDate,
-          planPrice,
-          lastSyncedAt,
-        },
+        data: [
+          {
+            status: 'active',
+            billingCycle,
+            planName,
+            nextPaymentDate,
+            planPrice,
+          },
+        ],
       } satisfies ActionReturn;
     }
   });

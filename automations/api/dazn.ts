@@ -24,10 +24,7 @@ const getSubscriptions = (client: Session, token: Token) => {
       if (res.data.length === 0) {
         return Ok({
           token,
-          data: {
-            status: 'inactive',
-            lastSyncedAt: new Date().toISOString(),
-          },
+          data: [],
         } satisfies ActionReturn);
       }
 
@@ -41,14 +38,15 @@ const getSubscriptions = (client: Session, token: Token) => {
       if (subscription.status === 'Active' && subscription.inProgress === 'NONE') {
         return Ok({
           token,
-          data: {
-            status: 'active' as const,
-            lastSyncedAt: new Date().toISOString(),
-            billingCycle,
-            nextPaymentDate,
-            planPrice: planPrice,
-            planName: planName,
-          } satisfies ActionResultActive,
+          data: [
+            {
+              status: 'active' as const,
+              billingCycle,
+              nextPaymentDate,
+              planPrice: planPrice,
+              planName: planName,
+            },
+          ],
         } satisfies ActionReturn);
       } else if (
         (subscription.status === 'Active' && subscription.inProgress === 'SUBSCRIPTION_CANCEL') ||
@@ -56,22 +54,20 @@ const getSubscriptions = (client: Session, token: Token) => {
       ) {
         return Ok({
           token,
-          data: {
-            status: 'canceled',
-            lastSyncedAt: new Date().toISOString(),
-            expiresAt: dayjs().endOf('day').toISOString(),
-            planName: planName,
-            planPrice: planPrice,
-            billingCycle,
-          } satisfies ActionResultCanceled,
+          data: [
+            {
+              status: 'canceled',
+              expiresAt: dayjs().endOf('day').toISOString(),
+              planName: planName,
+              planPrice: planPrice,
+              billingCycle,
+            },
+          ],
         } satisfies ActionReturn);
       } else {
         return Ok({
           token,
-          data: {
-            status: 'inactive',
-            lastSyncedAt: new Date().toISOString(),
-          },
+          data: [],
         } satisfies ActionReturn);
       }
     });

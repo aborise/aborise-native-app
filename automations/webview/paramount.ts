@@ -81,20 +81,14 @@ const dataConverter = (data: {
   if (user.statusCode === 'reg') {
     return Ok({
       cookies,
-      data: {
-        status: 'preactive',
-        lastSyncedAt: new Date().toISOString(),
-      },
+      data: [],
     } satisfies ActionReturn);
   }
 
   if (user.isExSubscriber) {
     return Ok({
       cookies,
-      data: {
-        status: 'inactive',
-        lastSyncedAt: new Date().toISOString(),
-      },
+      data: [],
     } satisfies ActionReturn);
   }
 
@@ -109,14 +103,15 @@ const dataConverter = (data: {
 
       return Ok({
         cookies,
-        data: {
-          status: 'canceled',
-          planName: data.plan?.planTier ?? 'standard',
-          lastSyncedAt: new Date().toISOString(),
-          expiresAt,
-          planPrice,
-          billingCycle: (data.plan?.planType ?? 'monthly') === 'monthly' ? 'monthly' : 'annual',
-        },
+        data: [
+          {
+            status: 'canceled',
+            planName: data.plan?.planTier ?? 'standard',
+            expiresAt,
+            planPrice,
+            billingCycle: (data.plan?.planType ?? 'monthly') === 'monthly' ? 'monthly' : 'annual',
+          },
+        ],
       } satisfies ActionReturn);
     }
 
@@ -127,14 +122,15 @@ const dataConverter = (data: {
 
     return Ok({
       cookies,
-      data: {
-        status: 'active',
-        planName: 'basic',
-        lastSyncedAt: new Date().toISOString(),
-        planPrice,
-        nextPaymentDate: nextPaymentDate,
-        billingCycle: 'monthly',
-      },
+      data: [
+        {
+          status: 'active',
+          planName: 'basic',
+          planPrice,
+          nextPaymentDate: nextPaymentDate,
+          billingCycle: 'monthly',
+        },
+      ],
     } satisfies ActionReturn);
   }
 

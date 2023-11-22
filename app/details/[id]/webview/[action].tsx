@@ -1,26 +1,22 @@
+import { Cookies } from '@react-native-cookies/cookies';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
 import Toast from 'react-native-root-toast';
 import { deviceCookiesToCookies, setCookies, setToken } from '~/automations/api/helpers/cookie';
+import { ActionReturn } from '~/automations/helpers/helpers';
 import * as webviews from '~/automations/webview/index';
 import { WebViewConfig } from '~/automations/webview/webview.helpers';
-import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
-import { useServicesQuery } from '~/queries/useServicesQuery';
+import { useServiceRefresh } from '~/composables/useServiceRefresh';
+import { Service } from '~/realms/Service';
 import { Result } from '~/shared/Result';
 import { AllServices, services } from '~/shared/allServices';
 import GenericWebView from '../genericWebView';
-import { Cookies } from '@react-native-cookies/cookies';
-import { Cookie } from 'playwright-core';
-import { useServiceRefresh } from '~/composables/useServiceRefresh';
-import { useQueryClient } from '@tanstack/react-query';
-import { ActionReturn } from '~/automations/helpers/helpers';
 
 type WebViewConfigKeys = keyof typeof webviews;
 type WebViewConfigActionNames = { [P in WebViewConfigKeys]: keyof (typeof webviews)[P] }[WebViewConfigKeys];
 
 export const ServiceWebView: React.FC = () => {
   const local = useLocalSearchParams<{ id: keyof AllServices; action: WebViewConfigActionNames }>();
-  const queryClient = useQueryClient();
 
   if (!webviews[local.id as WebViewConfigKeys]) {
     console.log('no webview found for this service');
@@ -46,12 +42,6 @@ export const ServiceWebView: React.FC = () => {
     return webviews[service.id as WebViewConfigKeys][local.action];
   }, [service, local.action]);
 
-  const { serviceDataMutation } = useServiceDataQuery(local.id!);
-  const { mutateAsync: updateServiceData } = serviceDataMutation();
-
-  const { addServiceMutation } = useServicesQuery();
-  const { mutateAsync: addService } = addServiceMutation();
-
   const { onRefresh } = useServiceRefresh();
 
   const saveData = async (result: Result<ActionReturn, any>, deviceCookies: Cookies) => {
@@ -72,17 +62,10 @@ export const ServiceWebView: React.FC = () => {
       await setToken(local.id!, result.val.token);
     }
 
-    await updateServiceData(result.val.data);
-
-    if (local.action === 'connect') {
-      await addService(local.id!);
-    }
+    Service.recreateServiceFromActionResult(local.id!, result.val.data);
 
     if (!result.val.data && result.val.token) {
-      await onRefresh(service).finally(async () => {
-        await queryClient.invalidateQueries({ queryKey: ['services'] });
-        await queryClient.invalidateQueries({ queryKey: ['servicesData'] });
-      });
+      await onRefresh(service);
     }
   };
 

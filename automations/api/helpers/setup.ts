@@ -5,9 +5,12 @@ import type { AsyncResult } from '~/shared/Result';
 import { Session, type ApiError } from './client';
 import { setCookies, setToken } from './cookie';
 import { setFlowData } from './data';
-import { ActionReturn, ApiResult } from '~/automations/helpers/helpers';
+import { ActionResult, ActionReturn, ApiResult } from '~/automations/helpers/helpers';
 import { AllServices } from '~/shared/allServices';
 import { Action } from '~/shared/validators';
+import { Service } from '~/realms/Service';
+import { getRealm } from '~/realms/realm';
+import { Subscription } from '~/realms/Subscription';
 
 // globalThis.process = globalThis.process ?? {};
 
@@ -53,26 +56,20 @@ export const api = (
         const client = new Session();
         const result = cb({ auth: login, client, storage });
 
-        return result.map(async (ActionReturn) => {
-          if (ActionReturn.cookies?.length) {
-            await setCookies(service, ActionReturn.cookies);
+        return result.map(async ({ cookies, token, data }) => {
+          if (cookies?.length) {
+            await setCookies(service, cookies);
           }
 
-          if (ActionReturn.token) {
-            await setToken(service, ActionReturn.token);
+          if (token) {
+            await setToken(service, token);
           }
 
-          if (ActionReturn.data) {
-            await setFlowData(service, ActionReturn.data);
-          }
-
-          if (action === 'connect') {
-            await addConnectedService(service);
-          }
+          Service.recreateServiceFromActionResult(service, data);
 
           const response: ApiResult = {
             history: client.toJSON(),
-            data: ActionReturn.data,
+            data,
           };
 
           return response;

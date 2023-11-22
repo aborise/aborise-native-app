@@ -98,35 +98,34 @@ const handleSubscriptionResult = (client: Session, apiAuth: TokenConfig): AsyncR
     if (subscriptions.length === 0) {
       return {
         token: apiAuth,
-        data: {
-          status: 'inactive',
-          lastSyncedAt: new Date().toISOString(),
-        },
+        data: [],
       } satisfies ActionReturn;
     } else if (subscriptions[0].state.state === 'cancelled') {
       return {
         token: apiAuth,
-        data: {
-          status: 'canceled',
-          lastSyncedAt: new Date().toISOString(),
-          billingCycle: 'monthly',
-          expiresAt: subscriptions[0].state.expiresOn + 'Z',
-          planName: subscriptions[0].config.name,
-          planPrice: subscriptions[0].config.price,
-        },
+        data: [
+          {
+            status: 'canceled',
+            billingCycle: 'monthly',
+            expiresAt: subscriptions[0].state.expiresOn + 'Z',
+            planName: subscriptions[0].config.name,
+            planPrice: subscriptions[0].config.price,
+          },
+        ],
       } satisfies ActionReturn;
     } else {
       return {
         token: apiAuth,
-        data: {
-          status: 'active',
-          billingCycle: 'monthly',
-          planName: subscriptions[0].config.name,
-          nextPaymentDate: subscriptions[0].state.renewOn + 'Z',
-          planPrice: subscriptions[0].state.renewalPrice,
-          lastSyncedAt: new Date().toISOString(),
-        },
-      };
+        data: [
+          {
+            status: 'active',
+            billingCycle: 'monthly',
+            planName: subscriptions[0].config.name,
+            nextPaymentDate: subscriptions[0].state.renewOn + 'Z',
+            planPrice: subscriptions[0].state.renewalPrice,
+          },
+        ],
+      } satisfies ActionReturn;
     }
   });
 };

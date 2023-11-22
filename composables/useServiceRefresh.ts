@@ -1,11 +1,7 @@
-import { useQueryClient } from '@tanstack/react-query';
-import Toast from 'react-native-root-toast';
-import { getAction } from '~/shared/apis';
-import { getUserId } from '~/shared/ensureDataLoaded';
-import { useI18n } from './useI18n';
-import { AllServices, Service } from '~/shared/allServices';
-import { useCallback } from 'react';
 import * as apis from '~/automations/api/index';
+import { Service } from '~/shared/allServices';
+import { getAction } from '~/shared/apis';
+import { useI18n } from './useI18n';
 
 const { t } = useI18n();
 

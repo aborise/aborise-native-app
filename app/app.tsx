@@ -1,17 +1,16 @@
 import { Image } from 'expo-image';
 import { Stack as ExpoStack, Link, router } from 'expo-router';
 import React, { useMemo } from 'react';
-import { ActivityIndicator, FlatList, TouchableOpacity } from 'react-native';
+import { FlatList, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SizableText, Stack, XStack, YStack } from 'tamagui';
 import { ActionResultActive } from '~/automations/helpers/helpers';
 import AboCard from '~/components/AboCard';
 import AboItem from '~/components/AboItem';
-import { AboItemUnconnected } from '~/components/AboItemUnconnected';
 import { useI18n } from '~/composables/useI18n';
-import { useServicesDataQuery } from '~/queries/useServicesDataQuery';
+import { Service } from '~/realms/Service';
+import { useQuery } from '~/realms/realm';
 import { services } from '~/shared/allServices';
-import { objectEntries } from '~/shared/typeHelpers';
 
 const { t } = useI18n();
 
@@ -42,14 +41,11 @@ const factors: Record<ActionResultActive['billingCycle'], number> = {
 };
 
 const App = () => {
-  const { data: connectedServices, isLoading } = useServicesDataQuery();
+  const connectedServices = useQuery(Service);
 
   const price = useMemo(() => {
-    return Object.values(connectedServices ?? {}).reduce((acc, curr) => {
-      if (curr.status === 'active') {
-        return acc + (curr.planPrice ?? 0) / factors[curr.billingCycle];
-      }
-      return acc;
+    return connectedServices.reduce((acc, curr) => {
+      return acc + curr.getMonthlyPrice();
     }, 0);
   }, [connectedServices]);
 
@@ -69,27 +65,21 @@ const App = () => {
       <YStack padding="$3" paddingBottom="$0" space fullscreen>
         <MonthlyExpenses amount={price} />
 
-        {isLoading && <ActivityIndicator />}
+        {/* {isLoading && <ActivityIndicator />} */}
 
         {connectedServices && Object.keys(connectedServices).length ? (
           <YStack space="$2" flex={1}>
             <SizableText size="$6">{t('subscriptions')}</SizableText>
             <FlatList
               contentContainerStyle={{ gap: 8 }}
-              data={objectEntries(connectedServices)}
-              keyExtractor={([id]) => id}
-              renderItem={({ item }) =>
-                item[1] ? (
-                  <AboItem data={item[1]!} title={services[item[0]].title} id={item[0]} />
-                ) : (
-                  <AboItemUnconnected id={item[0]} title={services[item[0]].title} />
-                )
-              }
+              data={connectedServices}
+              keyExtractor={({ id }) => id}
+              renderItem={({ item }) => <AboItem data={item} title={services[item.id].title} id={item.id} />}
             />
           </YStack>
         ) : null}
 
-        {!isLoading && (!connectedServices || !Object.keys(connectedServices).length) ? (
+        {!connectedServices.length ? (
           <YStack alignItems="center">
             <Image source={require('../assets/no-subs.png')} className="w-full aspect-square" />
             <SizableText>{t('you-dont-have-any-subscriptions-yet')}</SizableText>

@@ -167,20 +167,14 @@ const dataConverter = (data: {
   if (user.statusCode === 'reg') {
     return Ok({
       cookies,
-      data: {
-        status: 'preactive' as const,
-        lastSyncedAt: new Date().toISOString(),
-      },
+      data: [],
     });
   }
 
   if (user.isExSubscriber) {
     return Ok({
       cookies,
-      data: {
-        status: 'inactive' as const,
-        lastSyncedAt: new Date().toISOString(),
-      },
+      data: [],
     });
   }
 
@@ -195,14 +189,15 @@ const dataConverter = (data: {
 
       return Ok({
         cookies,
-        data: {
-          status: 'canceled' as const,
-          planName: data.plan?.planTier ?? 'standard',
-          lastSyncedAt: new Date().toISOString(),
-          expiresAt,
-          planPrice,
-          billingCycle: ((data.plan?.planType ?? 'monthly') === 'monthly' ? 'monthly' : 'annual') as BillingCycle,
-        },
+        data: [
+          {
+            status: 'canceled',
+            planName: data.plan?.planTier ?? 'standard',
+            expiresAt,
+            planPrice,
+            billingCycle: ((data.plan?.planType ?? 'monthly') === 'monthly' ? 'monthly' : 'annual') as BillingCycle,
+          },
+        ],
       } satisfies ActionReturn);
     }
 
@@ -213,15 +208,16 @@ const dataConverter = (data: {
 
     return Ok({
       cookies,
-      data: {
-        status: 'active' as const,
-        planName: 'basic',
-        lastSyncedAt: new Date().toISOString(),
-        planPrice,
-        nextPaymentDate: nextPaymentDate,
-        billingCycle: 'monthly' as const,
-      },
-    });
+      data: [
+        {
+          status: 'active',
+          planName: 'basic',
+          planPrice,
+          nextPaymentDate: nextPaymentDate,
+          billingCycle: 'monthly',
+        },
+      ],
+    } satisfies ActionReturn);
   }
 
   return Err({ data: user });

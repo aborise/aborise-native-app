@@ -3,28 +3,27 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Stack as ExpoStack, router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, Modal, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Modal, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-root-toast';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Button, ScrollView, SizableText, Stack, XStack, YStack } from 'tamagui';
-import * as apis from '~/automations/api/index';
+
 import AboDetails from '~/components/details/AboDetails';
 import { toDisplayDate, useDayJs, useI18n } from '~/composables/useI18n';
 import { useServiceLogin } from '~/composables/useServiceLogin';
-import { useServiceDataQuery } from '~/queries/useServiceDataQuery';
-import { useServicesQuery } from '~/queries/useServicesQuery';
 import { AllServices, services } from '~/shared/allServices';
-import { getAction } from '~/shared/apis';
-import { getUserId } from '~/shared/ensureDataLoaded';
-import { ERROR_CODES } from '~/shared/errors';
 import { getLogo } from '~/shared/logos';
-import { Service } from '~/shared/validators';
+
 import { useServiceRefresh } from '~/composables/useServiceRefresh';
+import { Service } from '~/realms/Service';
+import { useObject } from '~/realms/realm';
+import { getAction } from '~/shared/apis';
+
+import * as apis from '~/automations/api/index';
+import { Service as ServiceDefinition } from '~/shared/validators';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
-
-type Action = Service['actions'][number];
 
 const confirmDelete = (serviceTitle: string, cb: () => void) =>
   Alert.alert(
@@ -41,17 +40,7 @@ const confirmDelete = (serviceTitle: string, cb: () => void) =>
     ],
   );
 
-const confirmAction = (serviceTitle: string, action: string, cb: () => void) =>
-  Alert.alert(t('confirm-X', [t(action)]), t('are-you-sure-you-want-to-X-Y', [t(action), serviceTitle]), [
-    {
-      text: t('cancel2'),
-      style: 'cancel',
-    },
-    { text: t('confirm'), onPress: cb },
-  ]);
-
 const Details: React.FC = () => {
-  const [executing, setExecuting] = useState(false);
   const [actionError, setActionError] = useState<string | undefined>(undefined);
 
   const local = useLocalSearchParams<{ id: keyof AllServices }>();
@@ -62,24 +51,12 @@ const Details: React.FC = () => {
   const { t } = useI18n();
 
   const queryClient = useQueryClient();
-  const { deleteServiceMutation } = useServicesQuery();
-  const { mutateAsync: deleteConnectedService } = deleteServiceMutation();
-  const { serviceDataQuery } = useServiceDataQuery(service.id);
-  const { data: serviceData, isLoading, error } = serviceDataQuery();
+  const serviceData = useObject(Service, local.id!);
   const { data: login } = useServiceLogin(service.id);
   const [menuVisible, setMenuVisible] = useState(false);
   const height = useHeaderHeight();
 
   const lastSyncDate = useMemo(() => toDisplayDate(serviceData?.lastSyncedAt), [serviceData?.lastSyncedAt]);
-
-  const actions = useMemo(
-    () =>
-      (service?.actions as Action[]).filter(
-        (action) =>
-          action.states.includes(serviceData?.status as string) || process.env.EXPO_PUBLIC_SHOW_ALL_ACTIONS === 'true',
-      ),
-    [service?.actions, serviceData?.status],
-  );
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -103,67 +80,28 @@ const Details: React.FC = () => {
       });
   }, []);
 
-  const handleWebViewActions = async (serviceId: keyof AllServices, actionName: Service['actions'][number]['name']) => {
-    router.push(`/details/${serviceId}/webview/${actionName}`);
-  };
-
-  const handleAction = (serviceId: keyof AllServices, action: Service['actions'][number]) => {
-    confirmAction(service.title, action.name, async () => {
-      if (action.type === 'api') return;
-
-      if (action.webView) {
-        return handleWebViewActions(serviceId, action.name);
-      }
-
-      setExecuting(true);
-
-      const api = apis[serviceId];
-
-      const actionHandler = getAction(
-        api,
-        action.name as import('~/shared/allServices').Service['actions'][number]['name'],
-      );
-
-      if (!actionHandler) return;
-
-      const res = await actionHandler(serviceId);
-
-      await queryClient.invalidateQueries({ queryKey: ['services'] });
-      await queryClient.invalidateQueries({ queryKey: ['servicesData'] });
-
-      setExecuting(false);
-
-      if (res.ok) {
-        return;
-      }
-
-      const err = res.val;
-
-      // Special handling for inactive accounts that want to resume -> let them reactivate
-      if (err.code === ERROR_CODES.INVALID_MEMBERSHIP_STATUS && action.name === 'resume') {
-        return Alert.alert(
-          t('invalid-membership-status'),
-          t('it-seems-like-your-account-is-inactive-do-you-want-to-reactivate-it') + '?',
-          [
-            {
-              text: t('cancel2'),
-              style: 'cancel',
-            },
-            { text: t('confirm'), onPress: () => handleWebViewActions(serviceId, 'reactivate') },
-          ],
-        );
-      }
-
-      Toast.show(res.val.message, { duration: Toast.durations.LONG });
-    });
-  };
-
   const deleteSubscription = () => {
     confirmDelete(service.title, () => {
-      deleteConnectedService(service.id).then(() => {
-        router.push('/');
-      });
+      serviceData?.$remove();
+      router.push('/');
     });
+  };
+
+  const reactivate = async () => {
+    const action = service.actions.find((a) => a.name === 'reactivate') as ServiceDefinition['actions'][number];
+
+    if (action.type === 'api') return;
+
+    if (action.webView) {
+      return router.push(`/details/${local.id}/webview/${action.name}`);
+    }
+
+    const api = apis[service.id];
+    const actionHandler = getAction(
+      api,
+      'reactivate' as import('~/shared/allServices').Service['actions'][number]['name'],
+    );
+    actionHandler?.(service.id);
   };
 
   if (!service || !serviceData) {
@@ -228,31 +166,18 @@ const Details: React.FC = () => {
           </YStack>
         </XStack>
 
-        <Stack p="$4" bg="white" borderRadius="$4">
-          <AboDetails serviceData={serviceData} />
-        </Stack>
-
-        {/* Third Section */}
-        <YStack space="$1">
-          {actions.map((action, index) => (
-            <Button key={index} size="$6" onPress={() => handleAction(service.id, action)} bg="$green7">
-              <SizableText>{t(action.name)}</SizableText>
-            </Button>
+        <YStack space>
+          {serviceData.subscriptions.map((sub) => (
+            <AboDetails subscription={sub} key={sub.id} />
           ))}
-        </YStack>
 
-        {executing && (
-          <View
-            style={{
-              // @ts-expect-error
-              ...StyleSheet.absoluteFill,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <ActivityIndicator size="large" />
-          </View>
-        )}
+          {!serviceData.subscriptions.length && (
+            <>
+              <SizableText>You dont have an active subscription at {service.title}</SizableText>
+              {service.actions.some((a) => a.name === 'reactivate') && <Button onPress={reactivate}>Activate</Button>}
+            </>
+          )}
+        </YStack>
       </ScrollView>
     </>
   );

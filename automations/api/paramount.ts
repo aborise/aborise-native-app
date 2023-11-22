@@ -259,19 +259,13 @@ export const connect = api(({ client }) => {
 
     if (user.statusCode === 'reg') {
       return Ok({
-        data: {
-          status: 'preactive' as const,
-          lastSyncedAt: new Date().toISOString(),
-        },
+        data: [],
       } satisfies ActionReturn);
     }
 
     if (user.isExSubscriber) {
       return Ok({
-        data: {
-          status: 'inactive' as const,
-          lastSyncedAt: new Date().toISOString(),
-        },
+        data: [],
       } satisfies ActionReturn);
     }
 
@@ -285,16 +279,17 @@ export const connect = api(({ client }) => {
         ).toISOString();
 
         return Ok({
-          data: {
-            status: 'canceled' as const,
-            planName: data.user.svod.user_package.plan_tier ?? 'standard',
-            lastSyncedAt: new Date().toISOString(),
-            expiresAt,
-            planPrice,
-            billingCycle: ((data.user.svod.user_package.plan_type ?? 'monthly') === 'monthly'
-              ? 'monthly'
-              : 'annual') as BillingCycle,
-          },
+          data: [
+            {
+              status: 'canceled',
+              planName: data.user.svod.user_package.plan_tier ?? 'standard',
+              expiresAt,
+              planPrice,
+              billingCycle: ((data.user.svod.user_package.plan_type ?? 'monthly') === 'monthly'
+                ? 'monthly'
+                : 'annual') as BillingCycle,
+            },
+          ],
         } satisfies ActionReturn);
       }
 
@@ -304,14 +299,15 @@ export const connect = api(({ client }) => {
       ).toISOString();
 
       return Ok({
-        data: {
-          status: 'active' as const,
-          planName: 'basic',
-          lastSyncedAt: new Date().toISOString(),
-          planPrice,
-          nextPaymentDate: nextPaymentDate,
-          billingCycle: 'monthly' as const,
-        },
+        data: [
+          {
+            status: 'active',
+            planName: 'basic',
+            planPrice,
+            nextPaymentDate: nextPaymentDate,
+            billingCycle: 'monthly' as const,
+          },
+        ],
       } satisfies ActionReturn);
     }
 

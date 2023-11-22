@@ -1,48 +1,26 @@
 import { Image } from 'expo-image';
-import { router } from 'expo-router';
 import { Link } from 'expo-router/src/exports';
 import React, { useMemo } from 'react';
-import { Pressable, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { SizableText, Text, XStack, YStack, styled } from 'tamagui';
-import { ActionReturn } from '~/automations/helpers/helpers';
-import { useDayJs, useI18n } from '~/composables/useI18n';
+import { SizableText, YStack } from 'tamagui';
+import { useI18n } from '~/composables/useI18n';
+import { Service } from '~/realms/Service';
 import { AllServices } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
 import AboCard from './AboCard';
 
-const dayjs = useDayJs();
 const { t } = useI18n();
 
 interface AboItemProps {
   title: string;
-  data: NonNullable<ActionReturn['data']>;
-  styles?: any;
+  data: Service;
   className?: string;
   id: keyof AllServices;
-  onContextMenu?: (event: any) => void; // Note: React Native doesn't have native context menu
 }
 
-const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, id }) => {
-  const nextPaymentRelativeDate = useMemo(
-    () => (data.status === 'active' ? dayjs(data.nextPaymentDate).fromNow() : undefined),
-    [data],
-  );
-  const renewsDate = useMemo(
-    () => (data.status === 'active' ? dayjs(data.nextPaymentDate).format('MMM DD') : undefined),
-    [data],
-  );
-  const expiresDate = useMemo(
-    () => (data.status === 'canceled' ? dayjs(data.expiresAt).format('MMM DD') : undefined),
-    [data],
-  );
-
-  const { integer, decimal } = useMemo<{
-    integer?: number;
-    decimal?: number;
-  }>(() => {
-    return data.status === 'active' ? data.planPrice ?? {} : {};
-  }, [data]);
+const AboItem: React.FC<AboItemProps> = ({ title, data, id }) => {
+  const renewsDate = useMemo(() => data.getPaymentDate(), [data]);
+  const expiresDate = useMemo(() => data.getExpirationDate(), [data]);
 
   return (
     <Link asChild href={`/details/${id}`}>
@@ -50,29 +28,29 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, onContextMenu, styles, i
         <Image source={getLogo(id)} style={{ width: 60, height: 60 }} className="rounded-xl" />
         <YStack flex={1}>
           <SizableText size="$6">{title}</SizableText>
-          {renewsDate && (
+          {data.hasSubscriptions() && !data.areSomeCanceled() && (
             <SizableText theme="alt2" size="$2">
               {t('renews')} {renewsDate}
             </SizableText>
           )}
-          {expiresDate && (
+          {data.hasSubscriptions() && !data.areSomeActive() && (
             <SizableText theme="alt2" size="$1">
               {t('expires')} {expiresDate}
             </SizableText>
           )}
-          {data.status === 'inactive' && (
+          {data.hasOnlyInactive() && (
             <SizableText theme="alt2" size="$2">
               {t('inactive')}
             </SizableText>
           )}
         </YStack>
 
-        {(data.status === 'active' || data.status === 'canceled') && !!data.planPrice && (
+        {data.hasSubscriptions() && !data.hasOnlyInactive() && (
           <YStack alignItems="flex-end">
-            <SizableText>EUR {(data.planPrice / 100).toFixed(2)}</SizableText>
+            <SizableText>EUR {(data.getSubscriptionPrice() / 100).toFixed(2)}</SizableText>
             <SizableText theme="alt2" size="$1">
               {' '}
-              / {data.billingCycle === 'monthly' ? t('month') : t('year')}
+              / {t('month')}
             </SizableText>
           </YStack>
         )}

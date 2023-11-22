@@ -665,7 +665,6 @@ const mapSubscriptionDetails = (details: DisneySubscriptionDetails): ActionResul
       billingCycle: (details.billingFrequency === 'MONTH' ? 'monthly' : 'annual') as BillingCycle,
       planName: details.billingFrequency === 'MONTH' ? 'monthly' : 'annual',
       planPrice: details.latestTransactedInvoice.totalAmount * 100,
-      lastSyncedAt: new Date().toISOString(),
     };
   } else {
     return {
@@ -674,7 +673,6 @@ const mapSubscriptionDetails = (details: DisneySubscriptionDetails): ActionResul
       billingCycle: (details.billingFrequency === 'MONTH' ? 'monthly' : 'annual') as BillingCycle,
       planName: details.billingFrequency === 'MONTH' ? 'monthly' : 'annual',
       planPrice: Math.floor(details.scheduledInvoice.totalAmount * 100),
-      lastSyncedAt: new Date().toISOString(),
     };
   }
 };
@@ -693,7 +691,7 @@ export const connect = api(({ auth, client }) => {
     .getSubscriptionDetails()
     .andThen((subscription) => api.getSubscriptionDetailsById(subscription.id))
     .map(mapSubscriptionDetails)
-    .map((res) => ({ data: res }));
+    .map((res) => ({ data: [res] }));
 });
 
 export const cancel = api(({ auth, client }) => {
@@ -714,7 +712,7 @@ export const cancel = api(({ auth, client }) => {
       .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
       // .logData()
       .map(mapSubscriptionDetails)
-      .map((res) => ({ data: res }))
+      .map((res) => ({ data: [res] }))
   );
 });
 
@@ -736,6 +734,6 @@ export const resume = api(({ auth, client }) => {
       .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
       // .logData()
       .map(mapSubscriptionDetails)
-      .map((res) => ({ data: res }))
+      .map((res) => ({ data: [res] }))
   );
 });

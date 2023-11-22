@@ -1,13 +1,9 @@
-import { parse } from '~/shared/parser';
-import { api } from './helpers/setup';
-import { Err, Ok, fromPromise, wrapAsync } from '~/shared/Result';
+import { fromPromise } from '~/shared/Result';
+import { ActionReturn, BillingCycle } from '../helpers/helpers';
 import { ApiError } from './helpers/client';
-import { ActionResult, BillingCycle } from '../helpers/helpers';
 import { getCookies } from './helpers/cookie';
-import { Cookie } from 'playwright-core';
+import { api } from './helpers/setup';
 import { AppleSubscription } from './validators/apple-validator';
-import { ActionReturn } from '../helpers/helpers';
-import { extractAmount } from '../helpers/strings';
 
 const genericApiError: ApiError = {
   custom: 'Something went wrong.',
@@ -41,10 +37,7 @@ export const connect = api(({ client }) => {
           if (data.subscriptions.length === 0) {
             return {
               cookies,
-              data: {
-                status: 'inactive',
-                lastSyncedAt: new Date().toISOString(),
-              },
+              data: [],
             } satisfies ActionReturn;
           } else {
             // TODO: check if status goes from 'ACTIVE' to 'CANCELED' when subscription is canceled
@@ -54,14 +47,15 @@ export const connect = api(({ client }) => {
             )?.price;
             return {
               cookies,
-              data: {
-                status: 'active',
-                lastSyncedAt: new Date().toISOString(),
-                planName: latestPlan.displayName,
-                billingCycle: (latestPlan.period === 'P1M' ? 'monthly' : 'annual') as BillingCycle,
-                nextPaymentDate: new Date(expirationTimestamp).toISOString(),
-                planPrice: Number(price) / 10,
-              },
+              data: [
+                {
+                  status: 'active',
+                  planName: latestPlan.displayName,
+                  billingCycle: (latestPlan.period === 'P1M' ? 'monthly' : 'annual') as BillingCycle,
+                  nextPaymentDate: new Date(expirationTimestamp).toISOString(),
+                  planPrice: Number(price) / 10,
+                },
+              ],
             } satisfies ActionReturn;
           }
         });

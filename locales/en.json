@@ -45,5 +45,6 @@
   "subscriptions": "Subscriptions",
   "settings": "Settings",
   "search-for-a-service": "Search for a service",
-  "dont-have-an-account": "Don't have an account?"
+  "dont-have-an-account": "Don't have an account?",
+  "unknown": "Unknown"
 }

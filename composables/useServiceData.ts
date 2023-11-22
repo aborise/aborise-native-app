@@ -1,7 +1,7 @@
+import { Service } from '~/realms/Service';
+import { getRealm } from '~/realms/realm';
 import { AllServices } from '~/shared/allServices';
 import { useLargeUnsafeStorage, useStorage } from './useStorage';
-import CookieManager from '@react-native-cookies/cookies';
-import { getUserId } from '~/shared/ensureDataLoaded';
 
 export const getConnectedServiceIds = () => {
   const storage = useStorage('local');
@@ -9,49 +9,24 @@ export const getConnectedServiceIds = () => {
 };
 
 export const addConnectedService = (serviceId: keyof AllServices) => {
-  // Always use local storage for this
-  // We dont need to sync this
-  const storage = useStorage('local');
-  return storage.get<Array<keyof AllServices>>('connectedServices', []).then((connect) => {
-    if (!connect.includes(serviceId)) {
-      return storage.set('connectedServices', [...connect, serviceId]);
-    }
+  return getRealm().write(() => {
+    Service.create({
+      id: serviceId,
+    });
   });
 };
 
 export const deleteConnectedService = (serviceId: keyof AllServices) => {
-  const storage = useStorage('local');
-  const syncedStorage = useStorage('synced', getUserId());
   const largeStorage = useLargeUnsafeStorage();
-  return storage
-    .get<Array<keyof AllServices>>('connectedServices', [])
-    .then((connect) => {
-      if (connect.includes(serviceId)) {
-        return storage.set(
-          'connectedServices',
-          connect.filter((id) => id !== serviceId),
-        );
-      }
-    })
-    .then(() => syncedStorage.delete(`services/${serviceId}/data`))
-    .then(() => largeStorage.delete(`services/${serviceId}/cookies`));
-};
 
-export const clearConnectedServices = () => {
-  const storage = useStorage('local');
-  const syncedStorage = useStorage('synced', getUserId());
-  const largeStorage = useLargeUnsafeStorage();
-  return storage
-    .get('connectedServices', [])
-    .then((connect) => {
-      return Promise.all(
-        connect.map(async (serviceId) => {
-          await syncedStorage.delete(`services/${serviceId}/data`);
-          await largeStorage.delete(`services/${serviceId}/cookies`);
-        }),
-      );
-    })
-    .then(() => {
-      return storage.delete('connectedServices');
-    });
+  const service = getRealm().objectForPrimaryKey(Service, serviceId);
+
+  getRealm().write(() => {
+    service?.remove();
+  });
+
+  return Promise.all([
+    largeStorage.delete(`services/${serviceId}/cookies`),
+    largeStorage.delete(`services/${serviceId}/api`),
+  ]);
 };

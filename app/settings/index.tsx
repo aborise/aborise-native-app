@@ -1,17 +1,18 @@
 import CookieManager from '@react-native-cookies/cookies';
+import { useRealm } from '@realm/react';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import React, { useState } from 'react';
-import { Alert, Button, Switch, Text, View } from 'react-native';
+import { Alert } from 'react-native';
 import { SizableText, YStack } from 'tamagui';
 import { getCookies } from '~/automations/api/helpers/cookie';
 import { useI18n } from '~/composables/useI18n';
-import { useServicesQuery } from '~/queries/useServicesQuery';
+import { Service } from '~/realms/Service';
 
 const { t } = useI18n();
 
 const Settings = () => {
-  const { clearServicesMutation } = useServicesQuery();
-  const { mutate: clearServices } = clearServicesMutation();
+  const realm = useRealm();
+
   const [notificationsEnabled, setNotificationsEnabled] = useState(false);
 
   const handleClearStorage = () => {
@@ -22,7 +23,7 @@ const Settings = () => {
       },
       {
         text: t('ok'),
-        onPress: () => clearServices(),
+        onPress: () => realm.delete(realm.objects(Service)),
       },
     ]);
   };

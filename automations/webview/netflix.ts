@@ -43,43 +43,39 @@ const dataConverter = (data: {
   }
 
   const cookies = data.cookies.split(';').map((c) => strToCookie(c, { domain: '.netflix.com', path: '/' }));
-  let ActionReturn: ActionReturn['data'];
+  let actionReturn: ActionReturn['data'];
 
   if (data.userInfo.status === 'CURRENT_MEMBER') {
     if (data.signupContext.flow.fields.nextBillingDate) {
-      ActionReturn = {
-        status: 'active',
-        billingCycle: 'monthly',
-        planName: data.signupContext.flow.fields.currentPlan.fields.localizedPlanName.value,
-        nextPaymentDate: extractDate(data.signupContext.flow.fields.nextBillingDate.value)!,
-        planPrice: extractAmount(data.signupContext.flow.fields.currentPlan.fields.planPrice.value)!,
-        lastSyncedAt: new Date().toISOString(),
-      };
+      actionReturn = [
+        {
+          status: 'active',
+          billingCycle: 'monthly',
+          planName: data.signupContext.flow.fields.currentPlan.fields.localizedPlanName.value,
+          nextPaymentDate: extractDate(data.signupContext.flow.fields.nextBillingDate.value)!,
+          planPrice: extractAmount(data.signupContext.flow.fields.currentPlan.fields.planPrice.value)!,
+        },
+      ];
     } else {
-      ActionReturn = {
-        status: 'canceled',
-        expiresAt: extractDate(data.signupContext.flow.fields.periodEndDate.value),
-        lastSyncedAt: new Date().toISOString(),
-        planPrice: extractAmount(data.signupContext.flow.fields.currentPlan.fields.planPrice.value),
-        billingCycle: 'monthly',
-        planName: data.signupContext.flow.fields.currentPlan.fields.localizedPlanName.value,
-      };
+      actionReturn = [
+        {
+          status: 'canceled',
+          expiresAt: extractDate(data.signupContext.flow.fields.periodEndDate.value),
+          planPrice: extractAmount(data.signupContext.flow.fields.currentPlan.fields.planPrice.value),
+          billingCycle: 'monthly',
+          planName: data.signupContext.flow.fields.currentPlan.fields.localizedPlanName.value,
+        },
+      ];
     }
   } else if (data.userInfo.status === 'NEVER_MEMBER') {
-    ActionReturn = {
-      status: 'preactive',
-      lastSyncedAt: new Date().toISOString(),
-    };
+    actionReturn = [];
   } else {
-    ActionReturn = {
-      status: 'inactive',
-      lastSyncedAt: new Date().toISOString(),
-    };
+    actionReturn = [];
   }
 
   return Ok({
     cookies,
-    data: ActionReturn,
+    data: actionReturn,
   });
 };
 

@@ -3,28 +3,29 @@ import { SizableText, YStack } from 'tamagui';
 import { ActionResultCanceled } from '~/automations/helpers/helpers';
 import { capitalize } from '~/automations/helpers/strings';
 import { useDayJs, useI18n } from '~/composables/useI18n';
+import { Subscription } from '~/realms/Subscription';
 import { billingCycle } from '~/shared/translationMapping';
 
 type Props = {
-  serviceData: ActionResultCanceled;
+  subscription: Subscription;
 };
 
 const { t } = useI18n();
 const dayjs = useDayJs();
 
-const CanceledAbo: React.FC<Props> = ({ serviceData }) => {
+const CanceledAbo: React.FC<Props> = ({ subscription }) => {
   return (
     <YStack>
       <View>
         <SizableText>
-          {t('plan')}: {capitalize(serviceData.planName) ?? 'Basic'}
+          {t('plan')}: {capitalize(subscription.planName) ?? 'Basic'}
         </SizableText>
       </View>
       <SizableText>
-        EUR {((serviceData.planPrice ?? 0) / 100).toFixed(2)} / {billingCycle[serviceData.billingCycle ?? 'monthly']}
+        EUR {((subscription.planPrice ?? 0) / 100).toFixed(2)} / {billingCycle[subscription.billingCycle ?? 'monthly']}
       </SizableText>
       <SizableText>
-        {t('canceled')} - {t('expires')} {dayjs(serviceData.expiresAt ?? 0).fromNow()}
+        {t('canceled')} - {t('expires')} {dayjs(subscription.expiresAt ?? 0).fromNow()}
       </SizableText>
     </YStack>
   );

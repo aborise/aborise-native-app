@@ -152,14 +152,16 @@ const ensurCorrectstatus = <T extends { fields: { errorCode?: { value: string } 
 
 export const resume = api(({ client }) => {
   return cancelOrResume<NetflixResumeResponse>('resume', client).map((json) => ({
-    data: {
-      billingCycle: 'monthly',
-      status: 'active',
-      planName: json.currentPlan.fields.localizedPlanName.value,
-      nextPaymentDate: extractDate(json.periodEndDate?.value, 1)!,
-      planPrice: extractAmount(json.currentPlan.fields.planPrice.value)!,
-      lastSyncedAt: new Date().toISOString(),
-    },
+    data: [
+      {
+        billingCycle: 'monthly',
+        status: 'active',
+        planName: json.currentPlan.fields.localizedPlanName.value,
+        nextPaymentDate: extractDate(json.periodEndDate?.value, 1)!,
+        planPrice: extractAmount(json.currentPlan.fields.planPrice.value)!,
+        lastSyncedAt: new Date().toISOString(),
+      },
+    ],
   }));
 });
 
@@ -348,7 +350,7 @@ export const connect = api(({ auth, client }) => {
         .map((document) => ({ cookies, data: extractReactContext(document) }));
     })
     .andThen(({ data, cookies }): Result<ActionReturn, ApiError> => {
-      const status = data?.models?.userInfo?.data.status;
+      const status = data?.models?.userInfo?.data.membershipStatus;
 
       if (status === 'ANONYMOUS') {
         return Err({
@@ -369,20 +371,14 @@ export const connect = api(({ auth, client }) => {
       if (status === 'FORMER_MEMBER') {
         return Ok({
           cookies,
-          data: {
-            status: 'inactive' as const,
-            lastSyncedAt: new Date().toISOString(),
-          },
+          data: [],
         });
       }
 
       if (status === 'NEVER_MEMBER') {
         return Ok({
           cookies,
-          data: {
-            status: 'preactive' as const,
-            lastSyncedAt: new Date().toISOString(),
-          },
+          data: [],
         });
       }
 
@@ -390,23 +386,21 @@ export const connect = api(({ auth, client }) => {
         ? {
             status: 'canceled',
             expiresAt: extractDate(periodEndDate),
-            lastSyncedAt: new Date().toISOString(),
-            planName: planName,
+            planName: planName ?? 'basic',
             billingCycle: 'monthly',
             planPrice: extractAmount(planPrice),
           }
         : {
             status: 'active',
-            planName: planName,
+            planName: planName ?? 'basic',
             billingCycle: 'monthly',
             planPrice: extractAmount(planPrice)!,
             nextPaymentDate: extractDate(nextBillingDate)!,
-            lastSyncedAt: new Date().toISOString(),
           };
 
       return Ok({
         cookies,
-        data: flowResult,
+        data: [flowResult],
       });
     });
 });
