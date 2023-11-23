@@ -12,7 +12,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { SizableText } from 'tamagui';
+import { Input, SizableText, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import { useI18n } from '~/composables/useI18n';
 import { useServiceLogin } from '~/composables/useServiceLogin';
@@ -97,34 +97,34 @@ const Connect: React.FC = () => {
         }}
       />
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <Image source={getLogo(service.id)} style={styles.image} className="rounded-3xl" />
-        <View style={styles.inputContainer}>
-          <TextInput style={styles.input} placeholder="Email" value={email} onChangeText={(val) => setEmail(val)} />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            secureTextEntry={true}
-            value={password}
-            onChangeText={(val) => setPassword(val)}
-          />
-        </View>
-        <Button title={t('connect')} onPress={doConnect} />
-
-        {hasRegisterApi && (
-          <>
-            <SizableText mt="$4">{t('dont-have-an-account')}</SizableText>
-            <Button
-              title={t('register')}
-              onPress={() =>
-                CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`))
-              }
+        <YStack alignItems="center" mt="$16" flex={1} space={10}>
+          <Image source={getLogo(service.id)} style={styles.image} className="rounded-3xl" />
+          <YStack width="$20" space={8} mb="$2">
+            <Input placeholder="Email" value={email} onChangeText={(val) => setEmail(val)} />
+            <Input
+              placeholder="Password"
+              secureTextEntry={true}
+              value={password}
+              onChangeText={(val) => setPassword(val)}
             />
-          </>
-        )}
-
-        <View>
-          <Text>{error}</Text>
-        </View>
+          </YStack>
+          <Button title={t('connect')} onPress={doConnect} />
+          {hasRegisterApi && (
+            <>
+              <SizableText mt="$4">{t('dont-have-an-account')}</SizableText>
+              <Button
+                title={t('register')}
+                onPress={() =>
+                  CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`))
+                }
+              />
+            </>
+          )}
+          {/* TODO: change view to xystack */}
+          <View>
+            <Text>{error}</Text>
+          </View>
+        </YStack>
       </KeyboardAvoidingView>
       {loading && (
         <View style={styles.overlay}>
@@ -134,6 +134,7 @@ const Connect: React.FC = () => {
     </>
   );
 };
+// TODO: remove stlyes
 
 const styles = StyleSheet.create({
   container: {

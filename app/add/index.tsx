@@ -2,28 +2,35 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Pressable, Text, TextInput, View } from 'react-native';
+import { Input, ScrollView, SizableText, Square, XStack, YStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
 import { Service, services } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
 
 const { t } = useI18n();
 
+const image = require('../../assets/no-results.png');
+
 const Item: React.FC<{ item: Service }> = ({ item }) => {
   return (
-    <View className="w-1/2 aspect-square p-2 ">
-      <Link
-        v-for="logo in filteredLogos"
-        href={`/add/${item.id}`}
-        key={item.id}
-        className="bg-white w-full h-full rounded-lg shadow border border-gray-300 active:bg-gray-100 cursor-pointer justify-center items-center"
-        asChild
-      >
-        <Pressable className="flex flex-col w-full h-full">
-          <Image source={getLogo(item.id)} className="w-24 h-24 rounded-3xl" />
-          <Text className="text-center mt-2">{item.title}</Text>
-        </Pressable>
-      </Link>
-    </View>
+    <ScrollView flex={1} padding="$2">
+      <XStack>
+        <Link
+          v-for="logo in filteredLogos"
+          href={`/add/${item.id}`}
+          key={item.id}
+          className="bg-white w-full h-full rounded-lg shadow border border-gray-300 active:bg-gray-100 cursor-pointer justify-center items-center"
+          asChild
+        >
+          <Pressable>
+            <Square size="$14" space={4}>
+              <Image source={getLogo(item.id)} className="w-24 h-24 rounded-3xl" />
+              <SizableText size="$4">{item.title}</SizableText>
+            </Square>
+          </Pressable>
+        </Link>
+      </XStack>
+    </ScrollView>
   );
 };
 
@@ -36,8 +43,8 @@ const Add = () => {
 
   return (
     <KeyboardAvoidingView className="h-full">
-      <View className="w-full flex flex-row p-4  bg-white relative z-10" style={{ elevation: 10 }}>
-        <TextInput
+      <XStack padding="$2" margin="$2" space>
+        <Input
           value={search}
           onChangeText={(value) => {
             setSearch(value);
@@ -49,12 +56,12 @@ const Add = () => {
           className="grow"
           // autoFocus
         />
-      </View>
+      </XStack>
 
       {selectedService.length === 0 && (
-        <View className="flex flex-col grow items-center justify-center">
-          <Image source={require('../../assets/no-results.png')} className="w-full aspect-square" />
-        </View>
+        <XStack padding="$2">
+          <Image source={image} className="w-full aspect-square" />
+        </XStack>
       )}
 
       {selectedService.length > 0 && (
