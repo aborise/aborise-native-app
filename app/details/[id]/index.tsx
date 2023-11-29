@@ -16,7 +16,7 @@ import { getLogo } from '~/shared/logos';
 
 import { useServiceRefresh } from '~/composables/useServiceRefresh';
 import { Service } from '~/realms/Service';
-import { useObject } from '~/realms/realm';
+import { useObject, useQuery } from '~/realms/realm';
 import { getAction } from '~/shared/apis';
 
 import * as apis from '~/automations/api/index';
@@ -51,7 +51,10 @@ const Details: React.FC = () => {
   const { t } = useI18n();
 
   const queryClient = useQueryClient();
-  const serviceData = useObject(Service, local.id!);
+  // const serviceData = useObject(Service, local.id!);
+
+  const serviceData: Service | null = useQuery(Service).filtered('id == $0', local.id)[0];
+
   const { data: login } = useServiceLogin(service.id);
   const [menuVisible, setMenuVisible] = useState(false);
   const height = useHeaderHeight();

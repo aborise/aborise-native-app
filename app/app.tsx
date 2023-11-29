@@ -41,7 +41,7 @@ const factors: Record<ActionResultActive['billingCycle'], number> = {
 };
 
 const App = () => {
-  const connectedServices = useQuery(Service);
+  const connectedServices = useQuery(Service).sorted('id');
 
   const price = useMemo(() => {
     return connectedServices.reduce((acc, curr) => {
