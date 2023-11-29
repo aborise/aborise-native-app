@@ -67,6 +67,15 @@ const App = () => {
 
         {/* {isLoading && <ActivityIndicator />} */}
 
+        <XStack space>
+          <SizableText size="$4">{t('you-got-feedback')}</SizableText>
+          <Link href="/feedback" asChild>
+            <SizableText color="$blue10" size="$4">
+              {t('send-it')}
+            </SizableText>
+          </Link>
+        </XStack>
+
         {connectedServices && Object.keys(connectedServices).length ? (
           <YStack space="$2" flex={1}>
             <SizableText size="$6">{t('subscriptions')}</SizableText>

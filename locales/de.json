@@ -45,5 +45,10 @@
   "connect": "Verbinden",
   "settings": "Einstellungen",
   "search-for-a-service": "Suche ein Abo",
-  "dont-have-an-account": "Sie haben noch kein Konto?"
+  "dont-have-an-account": "Sie haben noch kein Konto?",
+  "feedback": "Feedback",
+  "send": "Abschicken",
+  "feedback-sent": "Feedback gesendet",
+  "send-it": "Los gehts!",
+  "you-got-feedback": "Hast du Feedback?"
 }

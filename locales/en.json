@@ -46,5 +46,10 @@
   "settings": "Settings",
   "search-for-a-service": "Search for a service",
   "dont-have-an-account": "Don't have an account?",
-  "unknown": "Unknown"
+  "unknown": "Unknown",
+  "feedback": "Feedback",
+  "send": "Send",
+  "feedback-sent": "Feedback sent",
+  "send-it": "Send it!",
+  "you-got-feedback": "You got feedback?"
 }
