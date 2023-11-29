@@ -22,6 +22,8 @@ import { getAction } from '~/shared/apis';
 import * as apis from '~/automations/api/index';
 import { Service as ServiceDefinition } from '~/shared/validators';
 
+import Analytics from 'expo-firebase-analytics';
+
 const { t } = useI18n();
 const dayjs = useDayJs();
 
@@ -66,6 +68,7 @@ const Details: React.FC = () => {
   const { onRefresh: onRefreshBase } = useServiceRefresh();
 
   const onRefresh = useCallback(() => {
+    Analytics.logEvent('refreshing', { service: local.id });
     setRefreshing(true);
     onRefreshBase(service)
       .then((res) => {
@@ -85,12 +88,15 @@ const Details: React.FC = () => {
 
   const deleteSubscription = () => {
     confirmDelete(service.title, () => {
+      Analytics.logEvent('button:delete', { service: local.id });
       serviceData?.$remove();
       router.push('/');
     });
   };
 
   const reactivate = async () => {
+    Analytics.logEvent('button:reactivate', { service: local.id });
+
     const action = service.actions.find((a) => a.name === 'reactivate') as ServiceDefinition['actions'][number];
 
     if (action.type === 'api') return;

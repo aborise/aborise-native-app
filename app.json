@@ -21,7 +21,8 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "buildNumber": "1.0.5"
+      "buildNumber": "1.0.5",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
@@ -29,7 +30,8 @@
         "backgroundColor": "#ffffff"
       },
       "permissions": ["android.permission.INTERNET"],
-      "package": "com.aborise.app"
+      "package": "com.aborise.app",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -40,7 +42,19 @@
       }
     },
     "owner": "aborise",
-    "plugins": ["expo-router", "expo-localization"],
+    "plugins": [
+      "expo-router",
+      "expo-localization",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ],
+      "@react-native-firebase/app"
+    ],
     "scheme": "abo",
     "runtimeVersion": {
       "policy": "appVersion"

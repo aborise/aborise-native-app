@@ -88,6 +88,7 @@ const App = () => {
             </Link>
           </YStack>
         ) : null}
+
         <Link href="/add" asChild>
           <XStack
             position="absolute"

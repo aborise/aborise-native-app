@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "866730628932",
+    "firebase_url": "https://aborise-mvp-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "aborise-mvp",
+    "storage_bucket": "aborise-mvp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:866730628932:android:9f99d76e79c28ca9206911",
+        "android_client_info": {
+          "package_name": "com.aborise.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVUpIA_2UuyyVUo9QPQBNpNg8oRgVozyA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

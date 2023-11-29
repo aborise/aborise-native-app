@@ -16,6 +16,7 @@ import CanceledAbo from './CanceledAbo';
 import InactiveAbo from './InactiveAbo';
 import PreactiveAbo from './PreActiveAbo';
 import { XStack } from 'tamagui';
+import Analytics from 'expo-firebase-analytics';
 
 type Props = {
   subscription: Subscription;
@@ -57,6 +58,8 @@ const AboDetails: React.FC<Props> = ({ subscription }) => {
 
   const handleAction = (serviceId: keyof AllServices, action: Service['actions'][number]) => {
     confirmAction(service.title, action.name, async () => {
+      Analytics.logEvent('action:' + action.name, { service: local.id, action: action.name });
+
       if (action.type === 'api') return;
 
       if (action.webView) {

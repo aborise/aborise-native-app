@@ -17,6 +17,8 @@ import { Subscription } from '~/realms/Subscription';
 import { ensureDataLoaded } from '~/shared/ensureDataLoaded';
 import { ParseResult, setParse } from '~/shared/parser';
 import config from '~/tamagui.config';
+import { useGlobalSearchParams, usePathname } from 'expo-router';
+import Analytics from 'expo-firebase-analytics';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -54,6 +56,14 @@ export default function Layout() {
       });
     });
   }, []);
+
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+
+  // Track the location in your analytics provider here.
+  useEffect(() => {
+    Analytics.logEvent('screen', { pathname, params });
+  }, [pathname, params]);
 
   const handleMessage = useCallback((event: { nativeEvent: { data: string } }) => {
     const data = JSON.parse(event.nativeEvent.data) as

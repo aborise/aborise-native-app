@@ -1,24 +1,15 @@
 import CookieManager from '@react-native-cookies/cookies';
+import Analytics from 'expo-firebase-analytics';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
-import {
-  ActivityIndicator,
-  Button,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Button, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import { Input, SizableText, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import { useI18n } from '~/composables/useI18n';
 import { useServiceLogin } from '~/composables/useServiceLogin';
 import { AllServices, services } from '~/shared/allServices';
 import { getAction } from '~/shared/apis';
-import { getUserId } from '~/shared/ensureDataLoaded';
 import { getActionDefinition } from '~/shared/helpers';
 import { getLogo } from '~/shared/logos';
 
@@ -50,6 +41,12 @@ const Connect: React.FC = () => {
   }, [loadingLoginData]);
 
   const doConnect = async () => {
+    Analytics.logEvent('add:connect', {
+      filledCredentials: !!email && !!password,
+      partiallyFilledCredentials: !!email || !!password,
+      service: service.id,
+    });
+
     const actionDev = getActionDefinition(service, 'connect');
 
     if (actionDev.type === 'api') throw new Error('not implemented');
@@ -83,8 +80,20 @@ const Connect: React.FC = () => {
 
     if (res.ok) {
       console.log(res.val.data);
+      Analytics.logEvent('add:connect:success', {
+        filledCredentials: !!email && !!password,
+        partiallyFilledCredentials: !!email || !!password,
+        service: service.id,
+        serviceData: res.val.data,
+      });
       router.push(`/`);
     } else {
+      Analytics.logEvent('add:connect:error', {
+        filledCredentials: !!email && !!password,
+        partiallyFilledCredentials: !!email || !!password,
+        service: service.id,
+        error: res.val.message,
+      });
       setError(res.val.message);
     }
   };
@@ -114,9 +123,12 @@ const Connect: React.FC = () => {
               <SizableText mt="$4">{t('dont-have-an-account')}</SizableText>
               <Button
                 title={t('register')}
-                onPress={() =>
-                  CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`))
-                }
+                onPress={() => {
+                  Analytics.logEvent('add:register', {
+                    service: service.id,
+                  });
+                  CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`));
+                }}
               />
             </>
           )}
