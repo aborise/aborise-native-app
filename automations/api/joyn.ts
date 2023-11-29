@@ -95,6 +95,9 @@ const fetchSubscriptions = (client: Session, config: TokenConfig) => {
 
 const handleSubscriptionResult = (client: Session, apiAuth: TokenConfig): AsyncResult<ApiResult, ApiError> => {
   return fetchSubscriptions(client, apiAuth).map(({ data: subscriptions }) => {
+    console.log(subscriptions);
+    subscriptions = subscriptions.filter((sub) => sub.state.state !== 'expired');
+
     if (subscriptions.length === 0) {
       return {
         token: apiAuth,

@@ -69,7 +69,7 @@ const joynSubscriptionsSchema = z.array(
       agreeterms: z.boolean(),
     }),
     state: z.object({
-      state: z.string(),
+      state: z.string(), // active / expired / cancelled
       started: z.string(),
       expiresOn: z.string(),
       renewOn: z.string(),

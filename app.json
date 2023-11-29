@@ -52,8 +52,7 @@
             "useFrameworks": "static"
           }
         }
-      ],
-      "@react-native-firebase/app"
+      ]
     ],
     "scheme": "abo",
     "runtimeVersion": {

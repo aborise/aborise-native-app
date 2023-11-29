@@ -1,5 +1,5 @@
 import CookieManager from '@react-native-cookies/cookies';
-import Analytics from 'expo-firebase-analytics';
+import analytics from '@react-native-firebase/analytics';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
@@ -41,7 +41,7 @@ const Connect: React.FC = () => {
   }, [loadingLoginData]);
 
   const doConnect = async () => {
-    Analytics.logEvent('add:connect', {
+    analytics().logEvent('connect', {
       filledCredentials: !!email && !!password,
       partiallyFilledCredentials: !!email || !!password,
       service: service.id,
@@ -80,7 +80,7 @@ const Connect: React.FC = () => {
 
     if (res.ok) {
       console.log(res.val.data);
-      Analytics.logEvent('add:connect:success', {
+      analytics().logEvent('connect_success', {
         filledCredentials: !!email && !!password,
         partiallyFilledCredentials: !!email || !!password,
         service: service.id,
@@ -88,7 +88,7 @@ const Connect: React.FC = () => {
       });
       router.push(`/`);
     } else {
-      Analytics.logEvent('add:connect:error', {
+      analytics().logEvent('connect_error', {
         filledCredentials: !!email && !!password,
         partiallyFilledCredentials: !!email || !!password,
         service: service.id,
@@ -124,7 +124,7 @@ const Connect: React.FC = () => {
               <Button
                 title={t('register')}
                 onPress={() => {
-                  Analytics.logEvent('add:register', {
+                  analytics().logEvent('register', {
                     service: service.id,
                   });
                   CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`));

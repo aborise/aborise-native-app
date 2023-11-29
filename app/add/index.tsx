@@ -6,7 +6,7 @@ import { Input, ScrollView, SizableText, Square, XStack, YStack } from 'tamagui'
 import { useI18n } from '~/composables/useI18n';
 import { Service, services } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
-import Analytics from 'expo-firebase-analytics';
+import analytics from '@react-native-firebase/analytics';
 
 const { t } = useI18n();
 
@@ -49,7 +49,7 @@ const Add = () => {
           value={search}
           onChangeText={(value) => {
             setSearch(value);
-            Analytics.logEvent('add:search', { value });
+            analytics().logEvent('search', { value });
           }}
           placeholder={t('search-for-a-service')}
           returnKeyType="done"

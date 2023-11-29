@@ -1,6 +1,7 @@
-import '~/realms/realmImpl';
+import analytics from '@react-native-firebase/analytics';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
+import { useGlobalSearchParams, usePathname } from 'expo-router';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from 'react';
@@ -12,13 +13,10 @@ import { TamaguiProvider } from 'tamagui';
 import { javascript } from '~/automations/webview/webview.helpers';
 import { useAsyncStateReadonly } from '~/composables/useAsyncState';
 import { useI18n } from '~/composables/useI18n';
-import { Service } from '~/realms/Service';
-import { Subscription } from '~/realms/Subscription';
+import '~/realms/realmImpl';
 import { ensureDataLoaded } from '~/shared/ensureDataLoaded';
 import { ParseResult, setParse } from '~/shared/parser';
 import config from '~/tamagui.config';
-import { useGlobalSearchParams, usePathname } from 'expo-router';
-import Analytics from 'expo-firebase-analytics';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -62,7 +60,7 @@ export default function Layout() {
 
   // Track the location in your analytics provider here.
   useEffect(() => {
-    Analytics.logEvent('screen', { pathname, params });
+    analytics().logEvent('screen', { pathname, params });
   }, [pathname, params]);
 
   const handleMessage = useCallback((event: { nativeEvent: { data: string } }) => {
