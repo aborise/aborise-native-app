@@ -1,5 +1,4 @@
 import CookieManager from '@react-native-cookies/cookies';
-import { useRealm } from '@realm/react';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import React, { useState } from 'react';
 import { Alert } from 'react-native';
@@ -7,6 +6,7 @@ import { SizableText, YStack } from 'tamagui';
 import { getCookies } from '~/automations/api/helpers/cookie';
 import { useI18n } from '~/composables/useI18n';
 import { Service } from '~/realms/Service';
+import { useRealm } from '~/realms/realm';
 
 const { t } = useI18n();
 
