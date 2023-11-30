@@ -69,7 +69,7 @@ const Details: React.FC = () => {
   const { onRefresh: onRefreshBase } = useServiceRefresh();
 
   const onRefresh = useCallback(() => {
-    analytics().logEvent('refreshing', { service: local.id });
+    analytics().logEvent('refresh', { service: local.id });
     setRefreshing(true);
     onRefreshBase(service)
       .then((res) => {
