@@ -10,6 +10,7 @@ import { filterHeaders } from './headers';
 import { Storage } from '~/composables/useStorage';
 import CookieManager from '@react-native-cookies/cookies';
 import { parse } from 'cookie';
+import { useI18n } from '~/composables/useI18n';
 
 const axiosInterceptor = (config: InternalAxiosRequestConfig) => {
   // consola.info(`Starting ${config.method} Request to`, config.url);
@@ -78,6 +79,8 @@ type RequestSummary = {
   cookies: any;
 } | null;
 
+const { t } = useI18n();
+
 const getRequestSummary = (request?: InternalAxiosRequestConfig): RequestSummary => {
   if (!request) return null;
   return {
@@ -143,6 +146,7 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
           ...headers,
           Cookie,
         },
+        timeout: 5000,
         ...axiosOptions,
       }),
     );
@@ -172,10 +176,23 @@ export const aboFetch = <T extends string | JSON | object = string | JSON>(
 
     const error = result.val as AxiosError;
 
+    if (error.code === 'ECONNABORTED') {
+      const err: AboFetchResult<T> = Err({
+        statusCode: 500,
+        message: t('the-request-timed-out-are-you-connected-to-the-internet'),
+        request: getRequestSummary(error.config),
+        stack: error.stack,
+        errorMessage: error.message,
+        custom: 'The request to the external API timed out.',
+        userFriendly: true,
+      });
+
+      return err;
+    }
+
     if (error.response) {
       const cookies = error.response.headers['set-cookie']?.map((a) => strToCookie(a)) ?? [];
       const headers = filterHeaders(error.response.headers as any, ['set-cookie']);
-
       // console.log('The following cookies were set:', cookies.map((cookie) => cookie.name).join(', ') || 'none');
 
       const err: AboFetchResult<T> = Err({

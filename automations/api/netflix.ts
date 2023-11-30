@@ -15,6 +15,9 @@ import { NetflixCancelResponse, NetflixResumeResponse, ReactContext, UserContext
 import { ActionReturn } from '../helpers/helpers';
 import { ERROR_CODES } from '~/shared/errors';
 import { getUserId } from '~/shared/ensureDataLoaded';
+import { useI18n } from '~/composables/useI18n';
+
+const { t } = useI18n();
 
 const failOnNotLoggedIn = (context: ReactContext) => {
   const isLoggedIn = !!context?.models?.memberContext?.data?.userInfo?.authURL;
@@ -24,8 +27,9 @@ const failOnNotLoggedIn = (context: ReactContext) => {
   return Err({
     custom: 'User is not logged in',
     errorMessage: 'User is not logged in',
-    message: 'Unauthorized',
+    message: t('your-session-has-expired-please-reconnect-this-service'),
     statusCode: 401,
+    userFriendly: true,
   });
 };
 
@@ -127,7 +131,10 @@ const ensurCorrectstatus = <T extends { fields: { errorCode?: { value: string } 
   const moneyball = getMoneyballValue(context);
 
   if (moneyball.userContext.status === 'FORMER_MEMBER') {
-    const msg = `Your account cant be ${endpoint}ed because it is inactive`;
+    const msg =
+      endpoint === 'cancel'
+        ? t('your-subscription-cant-be-canceled-because-it-is-inactive')
+        : t('your-subscription-cant-be-resumed-because-it-is-inactive');
     return Err({
       message: msg,
       custom: msg,
@@ -163,101 +170,6 @@ export const resume = api(({ client }) => {
       },
     ],
   }));
-});
-
-const PAGE_ITEM_ERROR_CODE = (json: any) => json?.models?.flow?.data?.fields?.errorCode?.value;
-
-// const validateLogin = (data: ReactContext) => {
-//   if (PAGE_ITEM_ERROR_CODE(data)) {
-//     throw new Error('Invalid credentials');
-//   }
-// };
-
-export const connectNotWorking = api(({ auth, client }) => {
-  return getReactContextWithCookies(client, getUserId())
-    .andThen(({ cookies, data: reactContext }) => {
-      return getApiData(reactContext).then((apiData) =>
-        getLoginPayload({ email: auth.email, password: auth.password }, apiData.authUrl, reactContext).then(
-          async (loginPayload) => {
-            // const apiData = await getApiData(reactContext);
-            // const loginPayload = await getLoginPayload(
-            //   { email: auth.email, password: auth.password },
-            //   apiData.authUrl,
-            //   reactContext,
-            // );
-
-            // const agent = new https.Agent({
-            //   rejectUnauthorized: false,
-            // });
-
-            // const param = `{ "flow": "appleSignUp", "mode": "login", "action": "loginAction", "verb":"POST", "fields": { "email": "${auth.email}", "password": "${auth.password}", "rememberMe": "true" } }`;
-
-            return client.fetch<string>(
-              {
-                url: 'https://api-global.netflix.com/account/auth',
-                // url: 'https://api-global.netflix.com/iosui/user/9.0',
-                body: loginPayload,
-                // body: {
-                //   email: auth.email,
-                //   // password: auth.password,
-                //   param,
-                //   ...loginPayload,
-                // },
-                params: {
-                  authURL: loginPayload.authURL,
-                  falcor_server: '0.1.0',
-                  method: 'call',
-                  callPath: '["aui", "moneyball", "next"]',
-                  // callPath: '["moneyball","appleSignUp","next"]',
-                },
-                method: 'POST',
-                // cookies: [...(await getCookies(item.user, 'netflix')), ...cookies],
-                cookies,
-                // cookieKeys: ['nfvdid', 'flwssn', 'SecureNetflixId', 'NetflixId'],
-                // service: 'netflix',
-                // user: item.user,
-                headers: {
-                  'Accept-Language': 'de,en-US;q=0.7,en;q=0.3',
-                  // Accept: 'text/html,application/xhtml+xml,application/xml',
-                  Host: 'www.netflix.com',
-                  Origin: 'https://www.netflix.com',
-                  Referer: 'https://www.netflix.com/de/login',
-                  'Sec-Fetch-User': '?1',
-                  'Sec-Fetch-Site': 'same-origin',
-                  'Sec-Fetch-Mode': 'navigate',
-                  'Sec-Fetch-Dest': 'document',
-                  'Upgrade-Insecure-Requests': '1',
-                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/117.0',
-                  'Content-Type': 'application/x-www-form-urlencoded',
-                  // 'x-netflix.request.routing':
-                  //   '{"path":"/nq/aui/endpoint/%5E1.0.0-web/pathEvaluator","control_tag":"auinqweb"}',
-                },
-              },
-              // { httpsAgent: agent },
-            );
-          },
-        ),
-      );
-    })
-    .map(({ data }) => stringToDocument(data))
-    .map((document) => extractReactContext(document))
-    .andThen((data) => {
-      console.log(data);
-      console.log(PAGE_ITEM_ERROR_CODE(data));
-      console.log(data?.models?.memberContext?.data?.userInfo?.authURL);
-      return Err({
-        custom: 'User is not logged in',
-        errorMessage: 'User is not logged in',
-        message: 'Unauthorized',
-        statusCode: 401,
-      });
-    });
-
-  // const data = extractReactContext(await stringToDocument(loginResponse.response as string));
-
-  // validateLogin(data);
-
-  // return loginResponse;
 });
 
 type LoginResponse = {
@@ -321,8 +233,9 @@ export const connect = api(({ auth, client }) => {
         return Err({
           custom: data.value.moneyball.appleSignUp.login.fields.errorCode.value,
           errorMessage: 'Login failed',
-          message: 'Unauthorized',
+          message: t('your-session-has-expired-please-reconnect-this-service'),
           statusCode: 401,
+          userFriendly: true,
         });
       } else {
         return Ok({
@@ -356,7 +269,7 @@ export const connect = api(({ auth, client }) => {
         return Err({
           custom: 'You are not connected anymore. Please reconnect',
           errorMessage: 'User is not logged in',
-          message: 'Unauthorized',
+          message: t('your-session-has-expired-please-reconnect-this-service'),
           statusCode: 401,
           userFriendly: true,
           code: ERROR_CODES.NOT_LOGGED_IN,

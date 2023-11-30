@@ -5,11 +5,14 @@ import { ActionReturn } from '../helpers/helpers';
 import { ApiError, Session } from './helpers/client';
 import { api } from './helpers/setup';
 import { DaznLogin, DaznSubscription } from './validators/dazn-validator';
+import { useI18n } from '~/composables/useI18n';
 
 type Token = {
   access_token: string;
   expires: string;
 };
+
+const { t } = useI18n();
 
 const getSubscriptions = (client: Session, token: Token) => {
   return client
@@ -93,7 +96,7 @@ export const connect = api(({ client, auth }) => {
         return {
           ...err,
           custom: 'The user used wrong credentials',
-          message: 'Your login credentials are wrong. Please check them and try again.',
+          message: t('your-login-credentials-are-wrong-please-check-them-and-try-again'),
           userFriendly: true,
         } satisfies ApiError;
       }

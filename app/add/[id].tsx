@@ -4,9 +4,11 @@ import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, Button, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import Toast from 'react-native-root-toast';
 import { Input, SizableText, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import { useI18n } from '~/composables/useI18n';
+import { useOnline } from '~/composables/useOnline';
 import { useServiceLogin } from '~/composables/useServiceLogin';
 import { AllServices, services } from '~/shared/allServices';
 import { getAction } from '~/shared/apis';
@@ -31,6 +33,7 @@ const Connect: React.FC = () => {
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
+  const isOnline = useOnline();
 
   const hasRegisterApi = useMemo(() => !!getActionDefinition(service, 'register'), [service]);
 
@@ -41,6 +44,10 @@ const Connect: React.FC = () => {
   }, [loadingLoginData]);
 
   const doConnect = async () => {
+    if (!isOnline) {
+      return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
+    }
+
     analytics().logEvent('connect', {
       filledCredentials: !!email && !!password,
       partiallyFilledCredentials: !!email || !!password,
@@ -124,6 +131,10 @@ const Connect: React.FC = () => {
               <Button
                 title={t('register')}
                 onPress={() => {
+                  if (!isOnline) {
+                    return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
+                  }
+
                   analytics().logEvent('register', {
                     service: service.id,
                   });

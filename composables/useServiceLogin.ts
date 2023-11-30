@@ -5,10 +5,13 @@ import { AllServices, Service, services } from '~/shared/allServices';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { ERROR_CODES } from '~/shared/errors';
 import { Storage, useStorage } from './useStorage';
+import { useI18n } from './useI18n';
 
 const dataIsValid = (data: any, service: Service): data is ArrayToRecord<(typeof service)['auth']> => {
   return data && typeof data === 'object' && service.auth.every((key) => data[key] !== '');
 };
+
+const { t } = useI18n();
 
 type ArrayToRecord<T extends string[]> = { [K in T[number]]: string };
 
@@ -31,7 +34,7 @@ export const getServiceLogin = <T extends keyof AllServices>(
           errorMessage: 'No login found',
           code: ERROR_CODES.NO_LOGIN_DATA,
           userFriendly: true,
-          message: 'No login was found for this service. Please reconnect the service.',
+          message: t('no-login-credentials-were-found-for-this-service-please-add-them-by-reconnecting-the-service'),
           statusCode: 400,
         } satisfies ApiError);
       })
@@ -41,7 +44,7 @@ export const getServiceLogin = <T extends keyof AllServices>(
           errorMessage: err.message,
           code: ERROR_CODES.LOAD_LOGIN_DATA_ERROR,
           userFriendly: true,
-          message: 'There was an error loading your login data. Please try again.',
+          message: t('there-was-an-error-loading-your-login-credentials-please-try-again'),
           statusCode: 500,
           stack: err.stack,
         } satisfies ApiError);

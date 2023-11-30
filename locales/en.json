@@ -51,5 +51,18 @@
   "send": "Send",
   "feedback-sent": "Feedback sent",
   "send-it": "Send it!",
-  "you-got-feedback": "You got feedback?"
+  "you-got-feedback": "You got feedback?",
+  "your-session-has-expired-please-reconnect-this-service": "Your session has expired. Please reconnect this service.",
+  "your-login-credentials-are-wrong-please-check-them-and-try-again": "Your login credentials are wrong. Please check them and try again.",
+  "there-was-an-error-refreshing-the-data-please-reconnect-this-service": "There was an error refreshing the data. Please reconnect this service.",
+  "there-was-an-error-canceling-your-service-please-reconnect-this-service": "There was an error canceling your service. Please reconnect this service.",
+  "there-was-an-error-resuming-your-service-please-reconnect-this-service": "There was an error resuming your service. Please reconnect this service.",
+  "your-subscription-cant-be-canceled-because-it-is-inactive": "Your subscription can't be canceled because it is inactive",
+  "your-subscription-cant-be-resumed-because-it-is-inactive": "Your subscription can't be resumed because it is inactive",
+  "no-login-credentials-were-found-for-this-service-please-add-them-by-reconnecting-the-service": "No login credentials were found for this service. Please add them by reconnecting the service.",
+  "there-was-an-error-loading-your-login-credentials-please-try-again": "There was an error loading your login credentials. Please try again.",
+  "the-action-failed-because-your-subscription-is-inactive": "The action failed because your subscription is inactive",
+  "the-request-timed-out-are-you-connected-to-the-internet": "The request timed out. Are you connected to the internet?",
+  "you-are-offline": "You are offline",
+  "there-was-an-error-loading-the-page-please-try-again": "There was an error loading the page. Please try again!"
 }

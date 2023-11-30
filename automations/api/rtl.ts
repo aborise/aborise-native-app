@@ -5,6 +5,7 @@ import { ApiError, Session } from './helpers/client';
 import { RTLSubscriptions } from './validators/rtl-validator';
 import { timeZoneToUtc } from '../helpers/strings';
 import { ActionReturn, ApiResult } from '../helpers/helpers';
+import { useI18n } from '~/composables/useI18n';
 
 type TokenConfig = {
   access_token: string;
@@ -19,11 +20,13 @@ type TokenConfigWithTime = Omit<TokenConfig, 'expires | refresh_expires'> & {
   refresh_expires_in: number;
 };
 
+const { t } = useI18n();
+
 const refreshToken = (client: Session, config: TokenConfig): AsyncResult<TokenConfig, ApiError> => {
   if (config.refresh_expires < Date.now()) {
     return AsyncResult.err({
       custom: 'The refresh token has expired.',
-      message: 'Your login has expired. Please reconnect this service.',
+      message: t('your-session-has-expired-please-reconnect-this-service'),
       errorMessage: 'Refresh token expired',
       userFriendly: true,
       statusCode: 500,
@@ -59,7 +62,7 @@ const ensureValidToken = (client: Session) => {
       return Err({
         custom: 'There was no token in the storage. That should never happen',
         errorMessage: 'No Token',
-        message: 'There was an error refreshing the data. Please reconnect this service.',
+        message: t('there-was-an-error-refreshing-the-data-please-reconnect-this-service'),
         userFriendly: true,
         statusCode: 500,
       } satisfies ApiError);
@@ -71,7 +74,7 @@ const ensureValidToken = (client: Session) => {
         return Err({
           ...result.val,
           custom: 'Refreshing the token failed.',
-          message: 'There was an error refreshing the data. Please reconnect this service.',
+          message: t('there-was-an-error-refreshing-the-data-please-reconnect-this-service'),
           userFriendly: true,
           statusCode: 500,
         } satisfies ApiError);
@@ -96,7 +99,7 @@ const fetchSubscriptions = (client: Session, config: TokenConfig) => {
       return {
         ...err,
         custom: 'Fetching the subscriptions failed.',
-        message: 'There was an error refreshing the data. Please reconnect this service.',
+        message: t('there-was-an-error-refreshing-the-data-please-reconnect-this-service'),
         userFriendly: true,
         statusCode: 500,
       } satisfies ApiError;
@@ -170,7 +173,7 @@ export const cancel = api(({ client, auth }) => {
         return {
           ...err,
           custom: 'The subscription deletion request failed.',
-          message: 'There was an error canceling your service. Please reconnect this service.',
+          message: t('there-was-an-error-canceling-your-service-please-reconnect-this-service'),
           userFriendly: true,
           statusCode: 500,
         } satisfies ApiError;
@@ -195,7 +198,7 @@ export const resume = api(({ client }) => {
             return {
               ...err,
               custom: 'The subscription reactivation request failed.',
-              message: 'There was an error resuming your service. Please reconnect this service.',
+              message: t('there-was-an-error-resuming-your-service-please-reconnect-this-service'),
               userFriendly: true,
               statusCode: 500,
             } satisfies ApiError;

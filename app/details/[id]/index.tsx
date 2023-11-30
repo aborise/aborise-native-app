@@ -24,6 +24,7 @@ import { Service as ServiceDefinition } from '~/shared/validators';
 
 import analytics from '@react-native-firebase/analytics';
 import Feedback from '~/components/Feedback';
+import { useOnline } from '~/composables/useOnline';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
@@ -61,6 +62,7 @@ const Details: React.FC = () => {
   const { data: login } = useServiceLogin(service.id);
   const [menuVisible, setMenuVisible] = useState(false);
   const height = useHeaderHeight();
+  const isOnline = useOnline();
 
   const lastSyncDate = useMemo(() => toDisplayDate(serviceData?.lastSyncedAt), [serviceData?.lastSyncedAt]);
 
@@ -69,6 +71,10 @@ const Details: React.FC = () => {
   const { onRefresh: onRefreshBase } = useServiceRefresh();
 
   const onRefresh = useCallback(() => {
+    if (!isOnline) {
+      return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
+    }
+
     analytics().logEvent('refresh', { service: local.id });
     setRefreshing(true);
     onRefreshBase(service)
@@ -88,6 +94,10 @@ const Details: React.FC = () => {
   }, []);
 
   const deleteSubscription = () => {
+    if (!isOnline) {
+      return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
+    }
+
     confirmDelete(service.title, () => {
       analytics().logEvent('delete', { service: local.id });
       serviceData?.$remove();
@@ -96,6 +106,10 @@ const Details: React.FC = () => {
   };
 
   const reactivate = async () => {
+    if (!isOnline) {
+      return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
+    }
+
     analytics().logEvent('reactivate', { service: local.id });
 
     const action = service.actions.find((a) => a.name === 'reactivate') as ServiceDefinition['actions'][number];

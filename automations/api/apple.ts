@@ -4,6 +4,7 @@ import { ApiError } from './helpers/client';
 import { getCookies } from './helpers/cookie';
 import { api } from './helpers/setup';
 import { AppleSubscription } from './validators/apple-validator';
+import { useI18n } from '~/composables/useI18n';
 
 const genericApiError: ApiError = {
   custom: 'Something went wrong.',
@@ -11,6 +12,8 @@ const genericApiError: ApiError = {
   message: 'Something went wrong.',
   statusCode: 500,
 };
+
+const { t } = useI18n();
 
 export const connect = api(({ client }) => {
   return fromPromise(getCookies('apple'))
@@ -27,7 +30,7 @@ export const connect = api(({ client }) => {
           return {
             custom: 'Request to apple api failed',
             statusCode: err.statusCode,
-            message: 'Your session has expired. Please connect this service again.',
+            message: t('your-session-has-expired-please-reconnect-this-service'),
             userFriendly: true,
             errorMessage: err.message,
           } satisfies ApiError;

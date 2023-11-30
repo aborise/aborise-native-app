@@ -83,7 +83,8 @@
     "realm": "^12.3.0",
     "tamagui": "^1.76.0",
     "ts-results": "^3.3.0",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "@react-native-community/netinfo": "9.3.10"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

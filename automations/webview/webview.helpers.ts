@@ -30,7 +30,7 @@ ${str}
     console.error(e);
     window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'error', data: e.message }));
   }
-  return true;
 })();
+true;
 `;
 };

@@ -17,6 +17,7 @@ import InactiveAbo from './InactiveAbo';
 import PreactiveAbo from './PreActiveAbo';
 import { XStack } from 'tamagui';
 import analytics from '@react-native-firebase/analytics';
+import { useOnline } from '~/composables/useOnline';
 
 type Props = {
   subscription: Subscription;
@@ -43,6 +44,8 @@ const AboDetails: React.FC<Props> = ({ subscription }) => {
     return services[local.id!];
   }, [local.id]);
 
+  const isOnline = useOnline();
+
   const actions = useMemo(
     () =>
       (service?.actions as Action[]).filter(
@@ -57,6 +60,10 @@ const AboDetails: React.FC<Props> = ({ subscription }) => {
   };
 
   const handleAction = (serviceId: keyof AllServices, action: Service['actions'][number]) => {
+    if (!isOnline) {
+      return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
+    }
+
     confirmAction(service.title, action.name, async () => {
       analytics().logEvent(action.name, { service: local.id, action: action.name });
 

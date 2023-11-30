@@ -3,21 +3,17 @@ import { type AxiosProxyConfig } from 'axios';
 // import fs from "node:fs";
 // import { useFirebaseAdmin } from '~/server/useFirebaseAdmin';
 import dayjs from 'dayjs';
-import { get, getDatabase, ref, set, type DatabaseReference } from 'firebase/database';
-import { useFirebaseApp } from '~/composables/useFirebase';
+import { useI18n } from '~/composables/useI18n';
+import { useLargeUnsafeStorage } from '~/composables/useStorage';
 import { Err, Ok, wrapAsync, type AsyncResult, type Result } from '~/shared/Result';
+import { getUserId } from '~/shared/ensureDataLoaded';
 import { BillingCycle, type ActionResult } from '../helpers/helpers';
 import { Session, type ApiError } from './helpers/client';
 import { api } from './helpers/setup';
-import { numberToDecimal } from './helpers/strings';
-import { useLargeUnsafeStorage } from '~/composables/useStorage';
-import { getUserId } from '~/shared/ensureDataLoaded';
 
 // type SubscriberStatus = 'Churned'
 
-const app = useFirebaseApp();
-
-const dirname = '/tmp'; //new URL('.', import.meta.url).pathname;
+const { t } = useI18n();
 
 const graphqlEndpoint = 'https://disney.api.edge.bamgrid.com/v1/public/graphql';
 const webPage = 'https://www.disneyplus.com/login';
@@ -133,12 +129,10 @@ export class DisneyAPI {
   sessionId: string | null = null;
   account: Record<string, unknown> = {};
   session: Session;
-  ref!: DatabaseReference;
   uid: string;
   email: string;
   password: string;
   forceLogin: boolean;
-  useFile: boolean;
   getApiAuth: () => Promise<TokenData | null>;
   setApiAuth: (data: TokenData) => Promise<void>;
 
@@ -148,18 +142,8 @@ export class DisneyAPI {
     this.forceLogin = options.forceLogin ?? false;
     this.uid = options.uid;
     this.session = client;
-    this.useFile = options.useFile ?? false;
     this.getApiAuth = options.getApiAuth;
     this.setApiAuth = options.setApiAuth;
-
-    // if (options.proxies) {
-    //   this.session.defaults.proxy = options.proxies;
-    // }
-
-    if (!this.useFile) {
-      // this.ref = app.database().ref(`/users/${this.uid}/services/disney/api/`);
-      this.ref = ref(getDatabase(app), `/users/${this.uid}/services/disney/api/`);
-    }
   }
 
   private getAuthHeader(token: string, headers: Record<string, string> = {}) {
@@ -253,7 +237,8 @@ export class DisneyAPI {
           const err: ApiError = {
             custom: 'Account is inactive',
             errorMessage: 'Account is inactive',
-            message: 'Account is inactive',
+            message: t('the-action-failed-because-your-subscription-is-inactive'),
+            userFriendly: true,
             statusCode: 500,
           };
           return Err(err);
@@ -390,12 +375,6 @@ export class DisneyAPI {
             ).toISOString(),
           };
 
-          if (this.useFile) {
-            // fs.writeFileSync(dirname + "/token.json", JSON.stringify(data));
-          } else {
-            await set(this.ref, data);
-          }
-
           return Ok(resJson.extensions.sdk.token.accessToken as string);
         }
       } catch (err) {
@@ -430,7 +409,8 @@ export class DisneyAPI {
             ...err,
             custom: 'Wrong email or password. Please check your credentials and try again.',
             errorMessage: 'Wrong email or password. Please check your credentials and try again.',
-            message: 'Wrong email or password. Please check your credentials and try again.',
+            message: t('your-login-credentials-are-wrong-please-check-them-and-try-again'),
+            userFriendly: true,
             statusCode: 500,
           };
           return newError;

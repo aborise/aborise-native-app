@@ -143,6 +143,12 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     }
   };
 
+  const handleWebViewError = (event: { nativeEvent: { description: string } }) => {
+    console.log('Error while loading webview', event.nativeEvent.description);
+    Toast.show(t('there-was-an-error-loading-the-page-please-try-again'), { duration: Toast.durations.SHORT });
+    router.back();
+  };
+
   let timeout: ReturnType<typeof setTimeout>;
 
   const checkNavigationState = (navState: WebViewNavigation) => {
@@ -226,6 +232,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
           ref={setWebviewRef}
           webviewDebuggingEnabled={true}
           sharedCookiesEnabled={true}
+          onError={handleWebViewError}
         />
       )}
     </>
