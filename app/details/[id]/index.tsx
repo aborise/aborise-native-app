@@ -23,6 +23,7 @@ import * as apis from '~/automations/api/index';
 import { Service as ServiceDefinition } from '~/shared/validators';
 
 import analytics from '@react-native-firebase/analytics';
+import Feedback from '~/components/Feedback';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
@@ -174,6 +175,8 @@ const Details: React.FC = () => {
             </SizableText>
           </YStack>
         </XStack>
+
+        <Feedback />
 
         <YStack space>
           {serviceData.subscriptions.map((sub) => (

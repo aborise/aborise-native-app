@@ -7,6 +7,7 @@ import { SizableText, Stack, XStack, YStack } from 'tamagui';
 import { ActionResultActive } from '~/automations/helpers/helpers';
 import AboCard from '~/components/AboCard';
 import AboItem from '~/components/AboItem';
+import Feedback from '~/components/Feedback';
 import { useI18n } from '~/composables/useI18n';
 import { Service } from '~/realms/Service';
 import { useQuery } from '~/realms/realm';
@@ -67,14 +68,7 @@ const App = () => {
 
         {/* {isLoading && <ActivityIndicator />} */}
 
-        <XStack space>
-          <SizableText size="$4">{t('you-got-feedback')}</SizableText>
-          <Link href="/feedback" asChild>
-            <SizableText color="$blue10" size="$4">
-              {t('send-it')}
-            </SizableText>
-          </Link>
-        </XStack>
+        <Feedback />
 
         {connectedServices && Object.keys(connectedServices).length ? (
           <YStack space="$2" flex={1}>
