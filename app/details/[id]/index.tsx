@@ -198,10 +198,10 @@ const Details: React.FC = () => {
           ))}
 
           {!serviceData.subscriptions.length && (
-            <>
-              <SizableText>You dont have an active subscription at {service.title}</SizableText>
+            <YStack space>
+              <Image source={require('../../../assets/no-active-sub.png')} className="w-full aspect-square" />
               {service.actions.some((a) => a.name === 'reactivate') && <Button onPress={reactivate}>Activate</Button>}
-            </>
+            </YStack>
           )}
         </YStack>
       </ScrollView>
