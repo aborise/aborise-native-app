@@ -3,7 +3,7 @@ import { Stack as ExpoStack, Link, router } from 'expo-router';
 import React, { useMemo } from 'react';
 import { FlatList, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { SizableText, Stack, XStack, YStack } from 'tamagui';
+import { SizableText, Stack, View, XStack, YStack } from 'tamagui';
 import { ActionResultActive } from '~/automations/helpers/helpers';
 import AboCard from '~/components/AboCard';
 import AboItem from '~/components/AboItem';
@@ -78,6 +78,7 @@ const App = () => {
               data={connectedServices}
               keyExtractor={({ id }) => id}
               renderItem={({ item }) => <AboItem data={item} title={services[item.id].title} id={item.id} />}
+              ListFooterComponent={<View marginVertical={50} />}
             />
           </YStack>
         ) : null}

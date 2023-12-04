@@ -1,12 +1,12 @@
+import analytics from '@react-native-firebase/analytics';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { FlatList, KeyboardAvoidingView, Pressable, Text, TextInput, View } from 'react-native';
-import { Input, ScrollView, SizableText, Square, XStack, YStack } from 'tamagui';
+import { FlatList, KeyboardAvoidingView, Pressable } from 'react-native';
+import { Input, ScrollView, SizableText, Square, View, XStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
 import { Service, services } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
-import analytics from '@react-native-firebase/analytics';
 
 const { t } = useI18n();
 
@@ -73,7 +73,7 @@ const Add = () => {
           renderItem={({ item }) => <Item item={item} />}
           keyExtractor={(item) => item.id}
           style={{ flex: 1, paddingHorizontal: 4, paddingTop: 2 }}
-          ListFooterComponent={<View style={{ marginVertical: 50 }} />}
+          ListFooterComponent={<View marginVertical={50} />}
         />
       )}
     </KeyboardAvoidingView>
