@@ -37,7 +37,12 @@ export let locale = getLocales()[0].languageCode;
 
 export const toDisplayDate = (date: Date | string | undefined | null) => {
   if (!date) return '';
-  return new Date(date).toLocaleDateString(locale, { timeZone: timeZone as string });
+  return new Date(date).toLocaleDateString(locale, {
+    timeZone: timeZone as string,
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
 };
 
 export const toDisplayTime = (date: Date | string | undefined | null) => {

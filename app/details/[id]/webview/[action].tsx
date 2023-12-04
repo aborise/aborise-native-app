@@ -79,6 +79,7 @@ export const ServiceWebView: React.FC = () => {
 
       <GenericWebView
         title={service.title}
+        statusBar={config.status}
         url={config.url}
         sanityCheck={config.sanityCheck}
         targetUrl={config.targetUrl}

@@ -6,6 +6,7 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import Toast from 'react-native-root-toast';
 import WebView from 'react-native-webview';
 import { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
+import { SizableText, XStack, YStack } from 'tamagui';
 import { cookiesToString } from '~/automations/api/helpers/cookie';
 import { ActionReturn } from '~/automations/helpers/helpers';
 import { useI18n } from '~/composables/useI18n';
@@ -32,6 +33,7 @@ export type Response = SanityResponse | ConditionResponse | ExtractResponse;
 type GenericWebViewProps = {
   /** The title of the page */
   title: string;
+  statusBar?: () => React.JSX.Element;
   /** The url to load in the webview */
   url: string;
   /** Check if the page is in the correct state after loading. If not, close.
@@ -71,6 +73,7 @@ const { t } = useI18n();
 
 export const GenericWebView: React.FC<GenericWebViewProps> = ({
   title,
+  statusBar: StatusBar,
   url,
   sanityCheck,
   targetUrl,
@@ -215,25 +218,32 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
         </View>
       )}
       {webviewUrl && (
-        <WebView
-          source={{
-            uri: webviewUrl,
-            headers: {
-              Cookie: cookiesToString(webviewCookies),
-              ...getHeaders?.(),
-            },
-          }}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          onMessage={handleWebViewMessage}
-          onNavigationStateChange={checkNavigationState}
-          onLoadEnd={handleWebViewLoaded}
-          style={{ opacity: loading ? 0 : 1 }}
-          ref={setWebviewRef}
-          webviewDebuggingEnabled={true}
-          sharedCookiesEnabled={true}
-          onError={handleWebViewError}
-        />
+        <YStack flex={1} position="relative">
+          {!!StatusBar && (
+            <XStack padding="$2" backgroundColor={'$yellow5'}>
+              {!!StatusBar && <StatusBar />}
+            </XStack>
+          )}
+          <WebView
+            source={{
+              uri: webviewUrl,
+              headers: {
+                Cookie: cookiesToString(webviewCookies),
+                ...getHeaders?.(),
+              },
+            }}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            onMessage={handleWebViewMessage}
+            onNavigationStateChange={checkNavigationState}
+            onLoadEnd={handleWebViewLoaded}
+            style={{ opacity: loading ? 0 : 1, flex: 1 }}
+            ref={setWebviewRef}
+            webviewDebuggingEnabled={true}
+            sharedCookiesEnabled={true}
+            onError={handleWebViewError}
+          />
+        </YStack>
       )}
     </>
   );

@@ -14,7 +14,7 @@ import { strToCookie } from '~/shared/helpers';
 import { getCookies } from '../api/helpers/cookie';
 import { ActionReturn } from '../helpers/helpers';
 import { extractAmount, extractDate } from '../helpers/strings';
-import { WebViewConfig, javascript } from './webview.helpers';
+import { WebViewConfig, javascript, standardConnectMessage } from './webview.helpers';
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`
@@ -165,6 +165,7 @@ export const connect: WebViewConfig = {
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'cross-site',
   }),
+  status: standardConnectMessage,
 };
 
 export const cancel: WebViewConfig = {

@@ -4,7 +4,7 @@ import { Ok, Result } from '~/shared/Result';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { ActionReturn } from '../helpers/helpers';
 import { JoynSubConfig, JoynSubscriptions } from './validators/joyn';
-import { WebViewConfig, javascript } from './webview.helpers';
+import { WebViewConfig, javascript, standardConnectMessage } from './webview.helpers';
 
 const LOGIN_URL = 'https://www.joyn.de/mein-account';
 
@@ -120,4 +120,5 @@ export const connect: WebViewConfig = {
     return storage.get<{ email: string; password: string }>(`services/joyn/login`);
   },
   getCookies: () => [], // getCookies('joyn'),
+  status: standardConnectMessage,
 };

@@ -12,7 +12,7 @@ import { getCookies } from '../api/helpers/cookie';
 import { ActionReturn, BillingCycle } from '../helpers/helpers';
 import { timeZoneToUtc } from '../helpers/strings';
 import { AccountData, Plan } from './validators/paramount_userData';
-import { WebViewConfig, javascript } from './webview.helpers';
+import { WebViewConfig, javascript, standardConnectMessage } from './webview.helpers';
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`
@@ -62,8 +62,17 @@ const fillInEmailAndPw = () => {
       // password.focus();
       password.value = '${data.password}';
       password.dispatchEvent(new Event('input', { bubbles: true }));
+
+      document.getElementById('onetrust-reject-all-handler')?.click()
+      document.querySelector('#sign-in-form button')?.click()
     `;
   };
+};
+
+const clickCookieBanner = () => {
+  return javascript`
+    document.getElementById('onetrust-reject-all-handler')?.click()
+  `;
 };
 
 const dataConverter = (data: {
@@ -169,7 +178,8 @@ export const connect: WebViewConfig = {
     const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
     return storage.get<{ email: string; password: string }>(`services/paramount/login`);
   },
-  getCookies: () => getCookies('paramount', ['CBS_COM']),
+  getCookies: () => [], //getCookies('paramount', ['CBS_COM']),
+  status: standardConnectMessage,
   // getCookies: async () => {
   //   const cookies = await getCookies('paramount', ['CBS_COM']);
 
@@ -199,7 +209,7 @@ export const register: WebViewConfig = {
   targetCondition: () => checkLoggedIn('condition'),
   dataExtractor,
   dataConverter,
-  otherCode: [fillInEmailAndPw()],
+  otherCode: [fillInEmailAndPw(), clickCookieBanner],
   getAuth: () => {
     const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
     return storage.get<{ email: string; password: string }>(`services/paramount/login`);
@@ -213,7 +223,7 @@ export const reactivate: WebViewConfig = {
   targetCondition: () => checkStatus('condition', ['sub']),
   dataExtractor,
   dataConverter,
-  otherCode: [fillInEmailAndPw()],
+  otherCode: [fillInEmailAndPw(), clickCookieBanner],
   getAuth: () => {
     const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
     return storage.get<{ email: string; password: string }>(`services/paramount/login`);

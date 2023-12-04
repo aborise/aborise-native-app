@@ -11,7 +11,7 @@ import { getUserId } from '~/shared/ensureDataLoaded';
 import { aboFetch } from '../api/helpers/client';
 import { deviceCookiesToCookies, getCookies } from '../api/helpers/cookie';
 import { ActionReturn } from '../helpers/helpers';
-import { WebViewConfig, javascript } from './webview.helpers';
+import { WebViewConfig, javascript, standardConnectMessage } from './webview.helpers';
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`
@@ -169,6 +169,7 @@ export const connect: WebViewConfig = {
     return storage.get<{ email: string; password: string }>(`services/apple/login`);
   },
   getCookies: () => getCookies('apple', ['media-user-token']),
+  status: standardConnectMessage,
 };
 
 // export const register: WebViewConfig = {

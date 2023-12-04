@@ -1,6 +1,6 @@
 import { Ok, Result } from '~/shared/Result';
 import { JoynSubConfig, JoynSubscriptions } from './validators/joyn';
-import { WebViewConfig, javascript } from './webview.helpers';
+import { WebViewConfig, javascript, standardConnectMessage } from './webview.helpers';
 import { ActionReturn } from '../helpers/helpers';
 import { useStorage } from '~/composables/useStorage';
 import { getUserId } from '~/shared/ensureDataLoaded';
@@ -119,4 +119,5 @@ export const connect: WebViewConfig = {
     return storage.get<{ email: string; password: string }>(`services/rtl/login`);
   },
   getCookies: () => [], // getCookies('joyn'),
+  status: standardConnectMessage,
 };

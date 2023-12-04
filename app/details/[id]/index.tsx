@@ -25,6 +25,7 @@ import { Service as ServiceDefinition } from '~/shared/validators';
 import analytics from '@react-native-firebase/analytics';
 import Feedback from '~/components/Feedback';
 import { useOnline } from '~/composables/useOnline';
+import InactiveAbo from '~/components/details/InactiveAbo';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
@@ -194,14 +195,17 @@ const Details: React.FC = () => {
 
         <YStack space>
           {serviceData.subscriptions.map((sub) => (
-            <AboDetails subscription={sub} key={sub.id} />
+            <AboDetails id={sub.id} key={sub.id} />
           ))}
 
           {!serviceData.subscriptions.length && (
-            <YStack space>
-              <Image source={require('../../../assets/no-active-sub.png')} className="w-full aspect-square" />
-              {service.actions.some((a) => a.name === 'reactivate') && <Button onPress={reactivate}>Activate</Button>}
+            <YStack p="$4" bg="white" borderRadius="$4" backgroundColor="$gray3">
+              <InactiveAbo />
             </YStack>
+            // <YStack space>
+            //   <Image source={require('../../../assets/no-active-sub.png')} className="w-full aspect-square" />
+            //   {service.actions.some((a) => a.name === 'reactivate') && <Button onPress={reactivate}>Activate</Button>}
+            // </YStack>
           )}
         </YStack>
       </ScrollView>

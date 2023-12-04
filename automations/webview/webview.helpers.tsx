@@ -2,9 +2,12 @@ import { Cookie } from 'playwright-core';
 import { Result } from '~/shared/Result';
 import { Awaitable } from '~/shared/typeHelpers';
 import { ActionReturn } from '../helpers/helpers';
+import React from 'react';
+import { SizableText } from 'tamagui';
 
 export type WebViewConfig = {
   url: string;
+  status?: () => React.JSX.Element;
   sanityCheck: () => string;
   targetUrl?: string;
   targetCondition?: () => string;
@@ -34,3 +37,10 @@ ${str}
 true;
 `;
 };
+
+export const standardConnectMessage = () => (
+  <SizableText size="$4" fontWeight={'bold'}>
+    We're trying to log you in automatically. If this takes longer than expected, please continue the login process
+    manually.
+  </SizableText>
+);

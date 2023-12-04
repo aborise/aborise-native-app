@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/src/hooks';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, View } from 'react-native';
+import { ActivityIndicator, Alert, View, StyleSheet } from 'react-native';
 import Toast from 'react-native-root-toast';
 import { Button, SizableText, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
@@ -18,9 +18,10 @@ import PreactiveAbo from './PreActiveAbo';
 import { XStack } from 'tamagui';
 import analytics from '@react-native-firebase/analytics';
 import { useOnline } from '~/composables/useOnline';
+import { useObject, useQuery } from '~/realms/realm';
 
 type Props = {
-  subscription: Subscription;
+  id: string;
 };
 
 type Action = ServiceSchema['actions'][number];
@@ -36,7 +37,9 @@ const confirmAction = (serviceTitle: string, action: string, cb: () => void) =>
     { text: t('confirm'), onPress: cb },
   ]);
 
-const AboDetails: React.FC<Props> = ({ subscription }) => {
+const AboDetails: React.FC<Props> = ({ id }) => {
+  const subscription: Subscription = useQuery(Subscription).filtered('id == $0', id)[0];
+
   const [executing, setExecuting] = useState(false);
 
   const local = useLocalSearchParams<{ id: keyof AllServices }>();
@@ -114,11 +117,11 @@ const AboDetails: React.FC<Props> = ({ subscription }) => {
   };
 
   const getAboComponent = () => {
-    switch (subscription.status) {
+    switch (subscription!.status) {
       case 'active':
         return <ActiveAbo subscription={subscription} />;
       case 'inactive':
-        return <InactiveAbo subscription={subscription} />;
+        return <InactiveAbo />;
       case 'canceled':
         return <CanceledAbo subscription={subscription} />;
       case 'preactive':
