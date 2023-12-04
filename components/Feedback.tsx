@@ -9,11 +9,11 @@ const Feedback: React.FC = () => {
   return (
     <XStack space>
       <SizableText size="$4" fontWeight={'bold'}>
-        {t('you-got-feedback')}
+        {t('got-feedback')}
       </SizableText>
       <Link href="/feedback" asChild>
         <SizableText color="$blue10" size="$4">
-          {t('send-it')}
+          {t('hit-us')}
         </SizableText>
       </Link>
     </XStack>

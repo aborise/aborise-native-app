@@ -49,8 +49,6 @@
   "feedback": "Feedback",
   "send": "Abschicken",
   "feedback-sent": "Feedback gesendet",
-  "send-it": "Los gehts!",
-  "you-got-feedback": "Hast du Feedback?",
   "no-login-credentials-were-found-for-this-service-please-add-them-by-reconnecting-the-service": "Für diesen Service wurden keine Anmeldeinformationen gefunden. \nBitte füge sie hinzu, indem Du den Dienst erneut verbindest.",
   "the-action-failed-because-your-subscription-is-inactive": "Die Aktion ist fehlgeschlagen, weil das Abo inaktiv ist",
   "the-request-timed-out-are-you-connected-to-the-internet": "Bei der Anfrage ist eine Zeitüberschreitung aufgetreten. \nBist du mit dem Internet verbunden?",
@@ -67,5 +65,7 @@
   "your-session-has-expired-please-reconnect-this-service": "Deine Sitzung ist abgelaufen. \nBitte verbinde diesen Service erneut.",
   "open-app": "App öffnen",
   "you-dont-have-any-active-subscriptions": "Du hast keine aktiven Abos",
-  "this-feature-is-not-enabled-for-this-service-yet-stay-tuned": "Diese Funktion ist für diesen Dienst noch nicht aktiviert. \n\nStay tuned!"
+  "this-feature-is-not-enabled-for-this-service-yet-stay-tuned": "Diese Funktion ist für diesen Dienst noch nicht aktiviert. \n\nStay tuned!",
+  "got-feedback": "Hast du Feedback?",
+  "hit-us": "Her damit!"
 }

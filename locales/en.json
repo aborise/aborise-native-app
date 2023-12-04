@@ -50,8 +50,6 @@
   "feedback": "Feedback",
   "send": "Send",
   "feedback-sent": "Feedback sent",
-  "send-it": "Send it!",
-  "you-got-feedback": "You got feedback?",
   "your-session-has-expired-please-reconnect-this-service": "Your session has expired. Please reconnect this service.",
   "your-login-credentials-are-wrong-please-check-them-and-try-again": "Your login credentials are wrong. Please check them and try again.",
   "there-was-an-error-refreshing-the-data-please-reconnect-this-service": "There was an error refreshing the data. Please reconnect this service.",
@@ -67,5 +65,7 @@
   "there-was-an-error-loading-the-page-please-try-again": "There was an error loading the page. Please try again!",
   "open-app": "Open App",
   "you-dont-have-any-active-subscriptions": "You don't have any active subscriptions",
-  "this-feature-is-not-enabled-for-this-service-yet-stay-tuned": "This feature is not enabled for this service yet. \n\nStay tuned!"
+  "this-feature-is-not-enabled-for-this-service-yet-stay-tuned": "This feature is not enabled for this service yet. \n\nStay tuned!",
+  "got-feedback": "Got feedback?",
+  "hit-us": "Hit us!"
 }
