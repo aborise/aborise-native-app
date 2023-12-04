@@ -64,5 +64,8 @@
   "the-action-failed-because-your-subscription-is-inactive": "The action failed because your subscription is inactive",
   "the-request-timed-out-are-you-connected-to-the-internet": "The request timed out. Are you connected to the internet?",
   "you-are-offline": "You are offline",
-  "there-was-an-error-loading-the-page-please-try-again": "There was an error loading the page. Please try again!"
+  "there-was-an-error-loading-the-page-please-try-again": "There was an error loading the page. Please try again!",
+  "open-app": "Open App",
+  "you-dont-have-any-active-subscriptions": "You don't have any active subscriptions",
+  "this-feature-is-not-enabled-for-this-service-yet-stay-tuned": "This feature is not enabled for this service yet. \n\nStay tuned!"
 }

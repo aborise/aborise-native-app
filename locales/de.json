@@ -64,5 +64,8 @@
   "your-subscription-cant-be-canceled-because-it-is-inactive": "Ihr Abo kann nicht gekündigt werden, weil es inaktiv ist",
   "your-subscription-cant-be-resumed-because-it-is-inactive": "Ihr Abo kann nicht fortgesetzt werden, weil es inaktiv ist",
   "your-login-credentials-are-wrong-please-check-them-and-try-again": "Deine Anmeldedaten sind falsch. \nBitte überprüfen sie und versuche es noch einmal.",
-  "your-session-has-expired-please-reconnect-this-service": "Deine Sitzung ist abgelaufen. \nBitte verbinde diesen Service erneut."
+  "your-session-has-expired-please-reconnect-this-service": "Deine Sitzung ist abgelaufen. \nBitte verbinde diesen Service erneut.",
+  "open-app": "App öffnen",
+  "you-dont-have-any-active-subscriptions": "Du hast keine aktiven Abos",
+  "this-feature-is-not-enabled-for-this-service-yet-stay-tuned": "Diese Funktion ist für diesen Dienst noch nicht aktiviert. \n\nStay tuned!"
 }

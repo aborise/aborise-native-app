@@ -1,12 +1,15 @@
+import analytics from '@react-native-firebase/analytics';
 import { router } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/src/hooks';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Alert, View, StyleSheet } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Platform, StyleSheet, View } from 'react-native';
 import Toast from 'react-native-root-toast';
-import { Button, SizableText, YStack } from 'tamagui';
+import { Button, SizableText, XStack, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import { useI18n } from '~/composables/useI18n';
+import { useOnline } from '~/composables/useOnline';
 import { Subscription } from '~/realms/Subscription';
+import { useQuery } from '~/realms/realm';
 import { AllServices, services } from '~/shared/allServices';
 import { getAction } from '~/shared/apis';
 import { ERROR_CODES } from '~/shared/errors';
@@ -15,10 +18,7 @@ import ActiveAbo from './ActiveAbo';
 import CanceledAbo from './CanceledAbo';
 import InactiveAbo from './InactiveAbo';
 import PreactiveAbo from './PreActiveAbo';
-import { XStack } from 'tamagui';
-import analytics from '@react-native-firebase/analytics';
-import { useOnline } from '~/composables/useOnline';
-import { useObject, useQuery } from '~/realms/realm';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 type Props = {
   id: string;
@@ -116,6 +116,18 @@ const AboDetails: React.FC<Props> = ({ id }) => {
     });
   };
 
+  const openAppStore = () => {
+    // is ios device
+    if (Platform.OS === 'ios') {
+      Linking.openURL(`itms-apps://itunes.apple.com/app/id${service.appleId}`);
+    }
+
+    // is android device
+    if (Platform.OS === 'android') {
+      Linking.openURL(`https://play.google.com/store/apps/details?id=${service.googleId}`);
+    }
+  };
+
   const getAboComponent = () => {
     switch (subscription!.status) {
       case 'active':
@@ -133,12 +145,18 @@ const AboDetails: React.FC<Props> = ({ id }) => {
     <YStack p="$4" bg="white" borderRadius="$4" backgroundColor="$gray3">
       {getAboComponent()}
 
-      <XStack space="$1" marginTop="$2">
+      <XStack space="$2" marginTop="$2">
         {actions.map((action, index) => (
           <Button key={index} size="$4" onPress={() => handleAction(service.id, action)} bg="$green7">
             <SizableText>{t(action.name)}</SizableText>
           </Button>
         ))}
+        <Button size="$4" onPress={() => openAppStore()} bg="$blue7">
+          <XStack space="$2" alignItems="center">
+            <SizableText>{t('open-app')}</SizableText>
+            <Icon name="external-link" size={12} color="#000000" style={{ marginTop: 4 }} />
+          </XStack>
+        </Button>
       </XStack>
 
       {executing && (

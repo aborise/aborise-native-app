@@ -8,7 +8,7 @@ const { t } = useI18n();
 const InactiveAbo: React.FC = () => {
   return (
     <XStack>
-      <SizableText>{t('inactive')}</SizableText>
+      <SizableText>{t('you-dont-have-any-active-subscriptions')}</SizableText>
     </XStack>
   );
 };

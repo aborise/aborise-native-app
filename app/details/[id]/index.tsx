@@ -3,7 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Image } from 'expo-image';
 import { Stack as ExpoStack, router, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useMemo, useState } from 'react';
-import { Alert, Modal, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Linking, Modal, Platform, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
 import Toast from 'react-native-root-toast';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { Button, ScrollView, SizableText, Stack, XStack, YStack } from 'tamagui';
@@ -115,6 +115,10 @@ const Details: React.FC = () => {
 
     const action = service.actions.find((a) => a.name === 'reactivate') as ServiceDefinition['actions'][number];
 
+    if (!action) {
+      return Alert.alert('Oops, you got us!', t('this-feature-is-not-enabled-for-this-service-yet-stay-tuned'));
+    }
+
     if (action.type === 'api') return;
 
     if (action.webView) {
@@ -127,6 +131,18 @@ const Details: React.FC = () => {
       'reactivate' as import('~/shared/allServices').Service['actions'][number]['name'],
     );
     actionHandler?.(service.id);
+  };
+
+  const openAppStore = () => {
+    // is ios device
+    if (Platform.OS === 'ios') {
+      Linking.openURL(`itms-apps://itunes.apple.com/app/id${service.appleId}`);
+    }
+
+    // is android device
+    if (Platform.OS === 'android') {
+      Linking.openURL(`https://play.google.com/store/apps/details?id=${service.googleId}`);
+    }
   };
 
   if (!service || !serviceData) {
@@ -201,10 +217,23 @@ const Details: React.FC = () => {
           {!serviceData.subscriptions.length && (
             <YStack p="$4" bg="white" borderRadius="$4" backgroundColor="$gray3">
               <InactiveAbo />
+              <XStack space="$2" marginTop="$2">
+                {
+                  /* service.actions.some((a) => a.name === 'reactivate') && */
+                  <Button onPress={reactivate} bg="$orange6">
+                    Activate
+                  </Button>
+                }
+                <Button size="$4" onPress={() => openAppStore()} bg="$blue7">
+                  <XStack space="$2" alignItems="center">
+                    <SizableText>{t('open-app')}</SizableText>
+                    <Icon name="external-link" size={12} color="#000000" style={{ marginTop: 4 }} />
+                  </XStack>
+                </Button>
+              </XStack>
             </YStack>
             // <YStack space>
             //   <Image source={require('../../../assets/no-active-sub.png')} className="w-full aspect-square" />
-            //   {service.actions.some((a) => a.name === 'reactivate') && <Button onPress={reactivate}>Activate</Button>}
             // </YStack>
           )}
         </YStack>
