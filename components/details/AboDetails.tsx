@@ -141,13 +141,15 @@ const AboDetails: React.FC<Props> = ({ id }) => {
     }
   };
 
+  const bgMap = { cancel: '$red8', resume: '$green8' };
+
   return (
     <YStack p="$4" bg="white" borderRadius="$4" backgroundColor="$gray3">
       {getAboComponent()}
 
       <XStack space="$2" marginTop="$2">
         {actions.map((action, index) => (
-          <Button key={index} size="$4" onPress={() => handleAction(service.id, action)} bg="$green7">
+          <Button key={index} size="$4" onPress={() => handleAction(service.id, action)} bg={bgMap[action.name]}>
             <SizableText>{t(action.name)}</SizableText>
           </Button>
         ))}

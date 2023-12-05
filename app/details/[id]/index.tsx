@@ -191,8 +191,8 @@ const Details: React.FC = () => {
             <Image source={getLogo(service.id)} style={styles.logo} className="rounded-3xl"></Image>
           </YStack>
           <YStack ai="flex-start" gap="$1" jc="center">
-            <Stack bg="$green8" px="$2" br="$1">
-              <SizableText size="$6">{t('connected')}</SizableText>
+            <Stack bg="$purple5" px="$2" br="$1">
+              <SizableText size="$4">{t('connected')}</SizableText>
             </Stack>
 
             {login?.email ? (
@@ -220,7 +220,7 @@ const Details: React.FC = () => {
               <XStack space="$2" marginTop="$2">
                 {
                   /* service.actions.some((a) => a.name === 'reactivate') && */
-                  <Button onPress={reactivate} bg="$orange6">
+                  <Button onPress={reactivate} bg="$orange7">
                     Activate
                   </Button>
                 }
