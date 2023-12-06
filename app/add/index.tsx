@@ -1,9 +1,9 @@
-import analytics from '@react-native-firebase/analytics';
 import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Pressable } from 'react-native';
-import { Input, ScrollView, SizableText, Square, View, XStack } from 'tamagui';
+import RNUxcam from 'react-native-ux-cam';
+import { Input, SizableText, Square, View, XStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
 import { Service, services } from '~/shared/allServices';
 import { getLogo } from '~/shared/logos';
@@ -47,7 +47,7 @@ const Add = () => {
           value={search}
           onChangeText={(value) => {
             setSearch(value);
-            analytics().logEvent('search', { value });
+            RNUxcam.logEvent('search', { value });
           }}
           placeholder={t('search-for-a-service')}
           returnKeyType="done"

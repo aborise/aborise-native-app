@@ -42,19 +42,7 @@
       }
     },
     "owner": "aborise",
-    "plugins": [
-      "expo-router",
-      "expo-localization",
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
-          }
-        }
-      ],
-      "@react-native-firebase/app"
-    ],
+    "plugins": ["expo-router", "expo-localization"],
     "scheme": "abo",
     "runtimeVersion": {
       "policy": "appVersion"

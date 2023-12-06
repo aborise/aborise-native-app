@@ -1,10 +1,10 @@
 import CookieManager from '@react-native-cookies/cookies';
-import analytics from '@react-native-firebase/analytics';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
 import { ActivityIndicator, Button, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
 import Toast from 'react-native-root-toast';
+import RNUxcam from 'react-native-ux-cam';
 import { Input, SizableText, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import { useI18n } from '~/composables/useI18n';
@@ -48,7 +48,7 @@ const Connect: React.FC = () => {
       return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
     }
 
-    analytics().logEvent('connect', {
+    RNUxcam.logEvent('connect', {
       filledCredentials: !!email && !!password,
       partiallyFilledCredentials: !!email || !!password,
       service: service.id,
@@ -87,15 +87,15 @@ const Connect: React.FC = () => {
 
     if (res.ok) {
       console.log(res.val.data);
-      analytics().logEvent('connect_success', {
+      RNUxcam.logEvent('connect_success', {
         filledCredentials: !!email && !!password,
         partiallyFilledCredentials: !!email || !!password,
         service: service.id,
-        serviceData: res.val.data,
+        serviceData: JSON.stringify(res.val.data),
       });
       router.push(`/`);
     } else {
-      analytics().logEvent('connect_error', {
+      RNUxcam.logEvent('connect_error', {
         filledCredentials: !!email && !!password,
         partiallyFilledCredentials: !!email || !!password,
         service: service.id,
@@ -135,7 +135,7 @@ const Connect: React.FC = () => {
                     return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
                   }
 
-                  analytics().logEvent('register', {
+                  RNUxcam.logEvent('register', {
                     service: service.id,
                   });
                   CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`));

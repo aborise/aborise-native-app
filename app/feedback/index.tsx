@@ -1,8 +1,7 @@
-import analytics from '@react-native-firebase/analytics';
-import { useRealm } from '@realm/react';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import React, { useCallback, useState } from 'react';
 import Toast from 'react-native-root-toast';
+import RNUxcam from 'react-native-ux-cam';
 import { Button, Input, SizableText, YStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
 
@@ -11,7 +10,7 @@ const { t } = useI18n();
 const Feedback = () => {
   const [feedback, setFeedback] = useState('');
   const addFeedback = useCallback(async () => {
-    await analytics().logEvent('feedback', {
+    RNUxcam.logEvent('feedback', {
       feedback,
     });
     setFeedback('');

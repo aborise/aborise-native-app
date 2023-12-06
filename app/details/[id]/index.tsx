@@ -22,7 +22,7 @@ import { getAction } from '~/shared/apis';
 import * as apis from '~/automations/api/index';
 import { Service as ServiceDefinition } from '~/shared/validators';
 
-import analytics from '@react-native-firebase/analytics';
+import RNUxcam from 'react-native-ux-cam';
 import Feedback from '~/components/Feedback';
 import { useOnline } from '~/composables/useOnline';
 import InactiveAbo from '~/components/details/InactiveAbo';
@@ -76,7 +76,7 @@ const Details: React.FC = () => {
       return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
     }
 
-    analytics().logEvent('refresh', { service: local.id });
+    RNUxcam.logEvent('refresh', { service: local.id });
     setRefreshing(true);
     onRefreshBase(service)
       .then((res) => {
@@ -100,7 +100,7 @@ const Details: React.FC = () => {
     }
 
     confirmDelete(service.title, () => {
-      analytics().logEvent('delete', { service: local.id });
+      RNUxcam.logEvent('delete', { service: local.id });
       serviceData?.$remove();
       router.push('/');
     });
@@ -111,7 +111,7 @@ const Details: React.FC = () => {
       return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
     }
 
-    analytics().logEvent('reactivate', { service: local.id });
+    RNUxcam.logEvent('reactivate', { service: local.id });
 
     const action = service.actions.find((a) => a.name === 'reactivate') as ServiceDefinition['actions'][number];
 
@@ -211,7 +211,7 @@ const Details: React.FC = () => {
 
         <YStack space>
           {serviceData.subscriptions.map((sub) => (
-            <AboDetails id={sub.id} key={sub.id} />
+            <AboDetails subscription={sub} key={sub.id} />
           ))}
 
           {!serviceData.subscriptions.length && (

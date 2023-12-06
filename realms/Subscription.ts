@@ -14,7 +14,8 @@ export class Subscription extends Realm.Object<Subscription> {
 
   static schema: Realm.ObjectSchema = {
     name: 'Subscription',
-    primaryKey: 'id',
+    // primaryKey: 'id',
+    embedded: true,
     properties: {
       id: 'string',
       status: 'string',

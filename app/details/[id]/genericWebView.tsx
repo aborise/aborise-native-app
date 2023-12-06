@@ -9,9 +9,11 @@ import { WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
 import { SizableText, XStack, YStack } from 'tamagui';
 import { cookiesToString } from '~/automations/api/helpers/cookie';
 import { ActionReturn } from '~/automations/helpers/helpers';
+import { javascript } from '~/automations/webview/webview.helpers';
 import { useI18n } from '~/composables/useI18n';
 import { Result } from '~/shared/Result';
 import { Awaitable } from '~/shared/typeHelpers';
+import RNUxcam from 'react-native-ux-cam';
 
 type SanityResponse = {
   type: 'sanity';
@@ -28,7 +30,12 @@ type ExtractResponse = {
   data: any;
 };
 
-export type Response = SanityResponse | ConditionResponse | ExtractResponse;
+type TagResponse = {
+  type: 'tag';
+  data: string;
+};
+
+export type Response = SanityResponse | ConditionResponse | ExtractResponse | TagResponse;
 
 type GenericWebViewProps = {
   /** The title of the page */
@@ -144,6 +151,10 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
         router.push('/');
       });
     }
+
+    if (response.type === 'tag') {
+      RNUxcam.tagScreenName(response.data);
+    }
   };
 
   const handleWebViewError = (event: { nativeEvent: { description: string } }) => {
@@ -188,6 +199,10 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
         webviewRef!.injectJavaScript(otherCodeString);
       }, 1000);
     }
+
+    webviewRef!.injectJavaScript(
+      javascript`window.ReactNativeWebView.postMessage(JSON.stringify({ type: "tag", document.title }))`,
+    );
   };
 
   const handleWebViewLoaded = () => {

@@ -1,15 +1,16 @@
-import analytics from '@react-native-firebase/analytics';
 import { router } from 'expo-router';
 import { useLocalSearchParams } from 'expo-router/src/hooks';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Alert, Linking, Platform, StyleSheet, View } from 'react-native';
 import Toast from 'react-native-root-toast';
+import RNUxcam from 'react-native-ux-cam';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import { openApp } from 'rn-openapp';
 import { Button, SizableText, XStack, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import { useI18n } from '~/composables/useI18n';
 import { useOnline } from '~/composables/useOnline';
 import { Subscription } from '~/realms/Subscription';
-import { useQuery } from '~/realms/realm';
 import { AllServices, services } from '~/shared/allServices';
 import { getAction } from '~/shared/apis';
 import { ERROR_CODES } from '~/shared/errors';
@@ -18,11 +19,9 @@ import ActiveAbo from './ActiveAbo';
 import CanceledAbo from './CanceledAbo';
 import InactiveAbo from './InactiveAbo';
 import PreactiveAbo from './PreActiveAbo';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { openApp } from 'rn-openapp';
 
 type Props = {
-  id: string;
+  subscription: Subscription;
 };
 
 type Action = ServiceSchema['actions'][number];
@@ -38,8 +37,8 @@ const confirmAction = (serviceTitle: string, action: string, cb: () => void) =>
     { text: t('confirm'), onPress: cb },
   ]);
 
-const AboDetails: React.FC<Props> = ({ id }) => {
-  const subscription: Subscription = useQuery(Subscription).filtered('id == $0', id)[0];
+const AboDetails: React.FC<Props> = ({ subscription }) => {
+  // const subscription: Subscription = useQuery(Subscription).filtered('id == $0', id)[0];
 
   const [executing, setExecuting] = useState(false);
 
@@ -69,7 +68,7 @@ const AboDetails: React.FC<Props> = ({ id }) => {
     }
 
     confirmAction(service.title, action.name, async () => {
-      analytics().logEvent(action.name, { service: local.id, action: action.name });
+      RNUxcam.logEvent(action.name, { service: local.id, action: action.name });
 
       if (action.type === 'api') return;
 

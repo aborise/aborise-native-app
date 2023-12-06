@@ -1,20 +1,20 @@
-import analytics from '@react-native-firebase/analytics';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { useGlobalSearchParams, usePathname } from 'expo-router';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import { useCallback, useEffect, useState } from 'react';
-import { View } from 'react-native';
+import { Platform, View } from 'react-native';
 import 'react-native-get-random-values';
 import { RootSiblingParent } from 'react-native-root-siblings';
+import RNUxcam, { UXCamConfiguration } from 'react-native-ux-cam';
 import WebView from 'react-native-webview';
 import { TamaguiProvider } from 'tamagui';
 import { javascript } from '~/automations/webview/webview.helpers';
 import { useAsyncStateReadonly } from '~/composables/useAsyncState';
 import { useI18n } from '~/composables/useI18n';
 import '~/realms/realmImpl';
-import { ensureDataLoaded } from '~/shared/ensureDataLoaded';
+import { ensureDataLoaded, getUserId } from '~/shared/ensureDataLoaded';
 import { ParseResult, setParse } from '~/shared/parser';
 import config from '~/tamagui.config';
 
@@ -23,6 +23,25 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 let resolve: (value: ParseResult<any>) => void;
+
+RNUxcam.optIntoSchematicRecordings(); // Add this line to enable iOS screen recordings
+const configuration: UXCamConfiguration = {
+  userAppKey: '0jafriiqm6d04rt',
+  enableAutomaticScreenNameTagging: false,
+  // @ts-expect-error
+  enableImprovedScreenCapture: true,
+  enableAdvancedGestureRecognition: true,
+  enableNetworkLogging: true,
+};
+
+if (Platform.OS === 'android') {
+  // only supported on android
+  RNUxcam.allowShortBreakForAnotherApp(1000 * 60);
+} else {
+  RNUxcam.allowShortBreakForAnotherApp(false);
+}
+
+RNUxcam.startWithConfiguration(configuration);
 
 export default function Layout() {
   const { t } = useI18n();
@@ -60,7 +79,8 @@ export default function Layout() {
 
   // Track the location in your analytics provider here.
   useEffect(() => {
-    analytics().logEvent('screen', { pathname, params });
+    // RNUxcam.logEvent('screen', { pathname, params: JSON.stringify(params) });
+    RNUxcam.tagScreenName(pathname + new URLSearchParams(params as Record<string, string>).toString());
   }, [pathname, params]);
 
   const handleMessage = useCallback((event: { nativeEvent: { data: string } }) => {
@@ -74,6 +94,7 @@ export default function Layout() {
   const onLayoutRootView = useCallback(async () => {
     if (!loading && loaded) {
       await SplashScreen.hideAsync();
+      RNUxcam.setUserIdentity(getUserId());
     }
   }, [loading, loaded]);
 
