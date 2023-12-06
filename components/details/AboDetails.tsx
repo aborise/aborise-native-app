@@ -19,9 +19,10 @@ import ActiveAbo from './ActiveAbo';
 import CanceledAbo from './CanceledAbo';
 import InactiveAbo from './InactiveAbo';
 import PreactiveAbo from './PreActiveAbo';
+import { InstanceToPlain } from '~/shared/typeHelpers';
 
 type Props = {
-  subscription: Subscription;
+  subscription: InstanceToPlain<Subscription>;
 };
 
 type Action = ServiceSchema['actions'][number];

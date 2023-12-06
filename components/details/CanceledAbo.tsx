@@ -5,9 +5,10 @@ import { capitalize } from '~/automations/helpers/strings';
 import { useDayJs, useI18n } from '~/composables/useI18n';
 import { Subscription } from '~/realms/Subscription';
 import { billingCycle } from '~/shared/translationMapping';
+import { InstanceToPlain } from '~/shared/typeHelpers';
 
 type Props = {
-  subscription: Subscription;
+  subscription: InstanceToPlain<Subscription>;
 };
 
 const { t } = useI18n();

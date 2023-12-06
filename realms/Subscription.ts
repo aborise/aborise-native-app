@@ -81,6 +81,19 @@ export class Subscription extends Realm.Object<Subscription> {
     return getRealm().write(() => getRealm().delete(this));
   }
 
+  toObject() {
+    return {
+      id: this.id,
+      status: this.status,
+      expiresAt: this.expiresAt ?? null,
+      billingCycle: this.billingCycle,
+      planName: this.planName,
+      planPrice: this.planPrice,
+      nextPaymentDate: this.nextPaymentDate,
+      productId: this.productId ?? null,
+    };
+  }
+
   // toTyped(): FlowResult {
   //   return {
   //     status: this.status,

@@ -211,7 +211,7 @@ const Details: React.FC = () => {
 
         <YStack space>
           {serviceData.subscriptions.map((sub) => (
-            <AboDetails subscription={sub} key={sub.id} />
+            <AboDetails subscription={sub.toObject()} key={sub.id} />
           ))}
 
           {!serviceData.subscriptions.length && (

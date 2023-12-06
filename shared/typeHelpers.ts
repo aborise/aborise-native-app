@@ -1,4 +1,5 @@
 export type Awaitable<T> = T | Promise<T>;
+export type InstanceToPlain<T> = T extends { toObject: () => infer U } ? U : T;
 
 export const objectKeys = <T extends object>(obj: T) => Object.keys(obj) as (keyof T)[];
 export const objectValues = <T extends object>(obj: T) => Object.values(obj) as T[keyof T][];
