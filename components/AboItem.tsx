@@ -47,8 +47,8 @@ const AboItem: React.FC<AboItemProps> = ({ title, data, id }) => {
 
         {data.hasSubscriptions() && !data.hasOnlyInactive() && (
           <YStack alignItems="flex-end">
-            <SizableText lineHeight="$2">EUR {(data.getSubscriptionPrice() / 100).toFixed(2)}</SizableText>
-            <SizableText lineHeight="$2" theme="alt2" size="$1">
+            <SizableText>EUR {(data.getSubscriptionPrice() / 100).toFixed(2)}</SizableText>
+            <SizableText theme="alt2" size="$1">
               {' '}
               / {t('month')}
             </SizableText>
