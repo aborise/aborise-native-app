@@ -223,39 +223,39 @@ type Paramount = typeof _paramount;
 export const paramount = _paramount as DeepWriteable<Paramount> satisfies Service;
 
 // apple tv+
-const _apple = {
-  id: 'apple',
-  title: 'Apple TV+',
-  appleId: '1174078549',
-  googleId: 'com.apple.atve.androidtv.appletv',
-  schema: null,
-  description: 'Watch movies and series',
-  auth: ['email', 'password'],
-  optionalDataKeys: [],
-  optional: [],
-  actions: [
-    {
-      name: 'connect',
-      type: 'manual',
-      states: [],
-      webView: true,
-    },
-    // {
-    //   name: 'cancel',
-    //   type: 'manual',
-    //   states: ['active'],
-    // },
-    // {
-    //   name: 'resume',
-    //   type: 'manual',
-    //   states: ['canceled', 'inactive'],
-    // },
-  ],
-} as const;
+// const _apple = {
+//   id: 'apple',
+//   title: 'Apple TV+',
+//   appleId: '1174078549',
+//   googleId: 'com.apple.atve.androidtv.appletv',
+//   schema: null,
+//   description: 'Watch movies and series',
+//   auth: ['email', 'password'],
+//   optionalDataKeys: [],
+//   optional: [],
+//   actions: [
+//     {
+//       name: 'connect',
+//       type: 'manual',
+//       states: [],
+//       webView: true,
+//     },
+//     // {
+//     //   name: 'cancel',
+//     //   type: 'manual',
+//     //   states: ['active'],
+//     // },
+//     // {
+//     //   name: 'resume',
+//     //   type: 'manual',
+//     //   states: ['canceled', 'inactive'],
+//     // },
+//   ],
+// } as const;
 
-type Apple = typeof _apple;
+// type Apple = typeof _apple;
 
-export const apple = _apple as DeepWriteable<Apple> satisfies Service;
+// export const apple = _apple as DeepWriteable<Apple> satisfies Service;
 
 const _dazn = {
   id: 'dazn',
