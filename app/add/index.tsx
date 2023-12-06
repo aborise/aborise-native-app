@@ -14,24 +14,22 @@ const image = require('../../assets/no-results.png');
 
 const Item: React.FC<{ item: Service }> = ({ item }) => {
   return (
-    <ScrollView flex={1} padding="$2">
-      <XStack>
-        <Link
-          v-for="logo in filteredLogos"
-          href={`/add/${item.id}`}
-          key={item.id}
-          className="bg-white w-full h-full rounded-lg shadow border border-gray-300 active:bg-gray-100 cursor-pointer justify-center items-center"
-          asChild
-        >
-          <Pressable>
-            <Square size="$14" space={4}>
-              <Image source={getLogo(item.id)} className="w-24 h-24 rounded-3xl" />
-              <SizableText size="$4">{item.title}</SizableText>
-            </Square>
-          </Pressable>
-        </Link>
-      </XStack>
-    </ScrollView>
+    <XStack padding="$2" width="50%" aspectRatio={1}>
+      <Link
+        v-for="logo in filteredLogos"
+        href={`/add/${item.id}`}
+        key={item.id}
+        className="bg-white w-full h-full rounded-lg shadow border border-gray-300 active:bg-gray-100 cursor-pointer justify-center items-center"
+        asChild
+      >
+        <Pressable>
+          <Square size="$14" space={4}>
+            <Image source={getLogo(item.id)} className="w-24 h-24 rounded-3xl" />
+            <SizableText size="$4">{item.title}</SizableText>
+          </Square>
+        </Pressable>
+      </Link>
+    </XStack>
   );
 };
 
