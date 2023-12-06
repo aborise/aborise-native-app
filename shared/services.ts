@@ -1,18 +1,12 @@
 import { DeepWriteable } from './plumbing';
 import { Service } from './validators';
 
-// SPOTIFY = 324684580
-// DISNEY+ = 1446075923
-// PARAMOUNT+ = 1340650234
-// AMAZON PRIME VIDEO = 545519333
-// DAZN = 1129523589
-// RTL+ = 1057991212
-
 const _netflix = {
   id: 'netflix',
   title: 'Netflix',
   appleId: '363590051',
   googleId: 'com.netflix.mediaclient',
+  schema: 'nflx://app',
   description: 'Watch movies and series',
   auth: ['email', 'password'],
   optionalDataKeys: ['creditcard'],
@@ -70,6 +64,7 @@ const _amazon = {
   title: 'Amazon Prime',
   appleId: '545519333',
   googleId: 'com.amazon.avod.thirdpartyclient',
+  schema: 'aiv://app',
   description: 'Watch movies and series',
   auth: ['email', 'password'],
   optionalDataKeys: [],
@@ -105,6 +100,7 @@ const _disney = {
   title: 'Disney+',
   appleId: '1446075923',
   googleId: 'com.disney.disneyplus',
+  schema: 'disneyplus://app',
   description: 'Watch movies and series',
   auth: ['email', 'password'],
   optionalDataKeys: [],
@@ -185,6 +181,7 @@ const _paramount = {
   title: 'Paramount',
   appleId: '1340650234',
   googleId: 'com.cbs.ca',
+  schema: 'pplusintl://app',
   description: 'Listen to music',
   auth: ['email', 'password'], // , 'name'
   optionalDataKeys: [],
@@ -231,6 +228,7 @@ const _apple = {
   title: 'Apple TV+',
   appleId: '1174078549',
   googleId: 'com.apple.atve.androidtv.appletv',
+  schema: null,
   description: 'Watch movies and series',
   auth: ['email', 'password'],
   optionalDataKeys: [],
@@ -264,6 +262,7 @@ const _dazn = {
   title: 'DAZN',
   appleId: '1129523589',
   googleId: 'com.dazn',
+  schema: 'dazn://',
   description: 'Watch sports',
   auth: ['email', 'password'],
   optionalDataKeys: [],
@@ -298,6 +297,7 @@ const _rtl = {
   title: 'RTL+',
   appleId: '1057991212',
   googleId: 'de.rtli.tvnow',
+  schema: 'rtlplus://',
   description: 'Watch TV',
   auth: ['email', 'password'],
   optionalDataKeys: [],
@@ -436,6 +436,7 @@ const _joyn = {
   title: 'Joyn',
   appleId: '826510222',
   googleId: 'de.prosiebensat1digital.seventv',
+  schema: 'joyn://app',
   description: 'Watch TV',
   auth: ['email', 'password'],
   optionalDataKeys: [],

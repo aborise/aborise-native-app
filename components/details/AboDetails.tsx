@@ -19,6 +19,7 @@ import CanceledAbo from './CanceledAbo';
 import InactiveAbo from './InactiveAbo';
 import PreactiveAbo from './PreActiveAbo';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import { openApp } from 'rn-openapp';
 
 type Props = {
   id: string;
@@ -119,12 +120,19 @@ const AboDetails: React.FC<Props> = ({ id }) => {
   const openAppStore = () => {
     // is ios device
     if (Platform.OS === 'ios') {
-      Linking.openURL(`itms-apps://itunes.apple.com/app/id${service.appleId}`);
+      try {
+        if (!service.schema) throw new Error('No schema found');
+        Linking.openURL(service.schema);
+      } catch (e) {
+        Linking.openURL(`itms-apps://itunes.apple.com/app/id${service.appleId}`);
+      }
     }
 
     // is android device
     if (Platform.OS === 'android') {
-      Linking.openURL(`https://play.google.com/store/apps/details?id=${service.googleId}`);
+      openApp(service.googleId).catch(() => {
+        Linking.openURL(`https://play.google.com/store/apps/details?id=${service.googleId}`);
+      });
     }
   };
 

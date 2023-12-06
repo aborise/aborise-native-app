@@ -42,6 +42,8 @@ export const ServiceSchema = z.object({
   id: z.string(), // unique id
   title: z.string(),
   appleId: z.string(),
+  googleId: z.string(),
+  schema: z.string().nullable(),
   description: z.string(),
   auth: z.string().array(),
   optionalDataKeys: z.array(z.string()),
