@@ -116,7 +116,7 @@ const Details: React.FC = () => {
     const action = service.actions.find((a) => a.name === 'reactivate') as ServiceDefinition['actions'][number];
 
     if (!action) {
-      return Alert.alert('Oops, you got us!', t('this-feature-is-not-enabled-for-this-service-yet-stay-tuned'));
+      return Alert.alert(t('oops-you-got-us'), t('this-feature-is-not-enabled-for-this-service-yet-stay-tuned'));
     }
 
     if (action.type === 'api') return;
