@@ -12,7 +12,7 @@ const Feedback: React.FC = () => {
         {t('got-feedback')}
       </SizableText>
       <Link href="/feedback" asChild>
-        <SizableText color="$blue10" size="$4">
+        <SizableText color="$blue10" size="$4" lineHeight="$3">
           {t('hit-us')}
         </SizableText>
       </Link>
