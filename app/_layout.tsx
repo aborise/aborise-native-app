@@ -79,8 +79,7 @@ export default function Layout() {
 
   // Track the location in your analytics provider here.
   useEffect(() => {
-    // RNUxcam.logEvent('screen', { pathname, params: JSON.stringify(params) });
-    RNUxcam.tagScreenName(pathname + new URLSearchParams(params as Record<string, string>).toString());
+    RNUxcam.tagScreenName(pathname);
   }, [pathname, params]);
 
   const handleMessage = useCallback((event: { nativeEvent: { data: string } }) => {
