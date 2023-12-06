@@ -1,20 +1,29 @@
-// for react-native only: @tamagui/config/v2-native
-import { config } from '@tamagui/config/v2-native';
-// import { Text, View } from 'react-native';
-// import { shorthands } from '@tamagui/shorthands';
-// import { themes, tokens } from '@tamagui/themes';
+import { config as base } from '@tamagui/config/v2-native';
+import { createMedia } from '@tamagui/react-native-media-driver';
+import { createFont, createTamagui, createTokens } from 'tamagui'; // or '@tamagui/core'
+const bodyFont = createFont({
+  ...base.fonts.body,
+  family: 'Roboto, Inter, Helvetica, Arial, sans-serif',
+});
 
-import { createTamagui } from 'tamagui'; // or '@tamagui/core'
+const headingFont = createFont({
+  ...base.fonts.heading,
+  family: 'Roboto, Inter, Helvetica, Arial, sans-serif',
+});
 
-const appConfig = createTamagui(config);
-
-export type AppConfig = typeof appConfig;
-
+const config = createTamagui({
+  ...base,
+  fonts: {
+    body: bodyFont,
+    heading: headingFont,
+    mono: bodyFont,
+    silkscreen: bodyFont,
+  },
+});
+type AppConfig = typeof config;
+// this will give you types for your components
+// note - if using your own design system, put the package name here instead of tamagui
 declare module 'tamagui' {
-  // or '@tamagui/core'
-  // overrides TamaguiCustomConfig so your custom types
-  // work everywhere you import `tamagui`
   interface TamaguiCustomConfig extends AppConfig {}
 }
-
-export default appConfig;
+export default config;
