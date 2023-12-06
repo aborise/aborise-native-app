@@ -157,7 +157,12 @@ const AboDetails: React.FC<Props> = ({ id }) => {
 
       <XStack space="$2" marginTop="$2">
         {actions.map((action, index) => (
-          <Button key={index} size="$4" onPress={() => handleAction(service.id, action)} bg={bgMap[action.name]}>
+          <Button
+            key={index}
+            size="$4"
+            onPress={() => handleAction(service.id, action)}
+            bg={bgMap[action.name as keyof typeof bgMap]}
+          >
             <SizableText>{t(action.name)}</SizableText>
           </Button>
         ))}
