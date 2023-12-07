@@ -38,7 +38,7 @@ if (Platform.OS === 'android') {
   // only supported on android
   RNUxcam.allowShortBreakForAnotherApp(1000 * 60);
 } else {
-  RNUxcam.allowShortBreakForAnotherApp(false);
+  RNUxcam.allowShortBreakForAnotherApp(true);
 }
 
 RNUxcam.startWithConfiguration(configuration);
