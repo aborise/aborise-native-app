@@ -26,6 +26,7 @@ import RNUxcam from 'react-native-ux-cam';
 import Feedback from '~/components/Feedback';
 import { useOnline } from '~/composables/useOnline';
 import InactiveAbo from '~/components/details/InactiveAbo';
+import { openApp } from 'rn-openapp';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
@@ -136,12 +137,19 @@ const Details: React.FC = () => {
   const openAppStore = () => {
     // is ios device
     if (Platform.OS === 'ios') {
-      Linking.openURL(`itms-apps://itunes.apple.com/app/id${service.appleId}`);
+      try {
+        if (!service.schema) throw new Error('No schema found');
+        Linking.openURL(service.schema);
+      } catch (e) {
+        Linking.openURL(`itms-apps://itunes.apple.com/app/id${service.appleId}`);
+      }
     }
 
     // is android device
     if (Platform.OS === 'android') {
-      Linking.openURL(`https://play.google.com/store/apps/details?id=${service.googleId}`);
+      openApp(service.googleId).catch(() => {
+        Linking.openURL(`https://play.google.com/store/apps/details?id=${service.googleId}`);
+      });
     }
   };
 
