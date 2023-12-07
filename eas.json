@@ -13,7 +13,13 @@
       "channel": "preview"
     },
     "production": {
-      "channel": "production"
+      "channel": "production",
+      "android": {
+        "serviceAccountKeyPath": "./aborise-serviceAccount.json"
+      },
+      "ios": {
+        "appleId": "leo@aborise.com"
+      }
     },
     "development-simulator": {
       "developmentClient": true,
