@@ -4,6 +4,7 @@ import { Awaitable } from '~/shared/typeHelpers';
 import { ActionReturn } from '../helpers/helpers';
 import React from 'react';
 import { SizableText } from 'tamagui';
+import { AutomationScript } from '~/shared/Page';
 
 export type WebViewConfig = {
   url: string;
@@ -17,6 +18,14 @@ export type WebViewConfig = {
   getAuth?: () => Awaitable<{ email: string; password: string } | null>;
   getHeaders?: () => Awaitable<Record<string, string>>;
   otherCode?: Array<(data: Record<string, unknown>) => string | undefined>;
+};
+
+export type WebViewConfig2 = {
+  url: string;
+  status?: () => React.JSX.Element;
+  getCookies: () => Awaitable<Cookie[]>;
+  getHeaders?: () => Awaitable<Record<string, string>>;
+  script: AutomationScript;
 };
 
 export const javascript = (strings: TemplateStringsArray, ...values: any[]) => {

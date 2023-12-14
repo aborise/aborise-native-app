@@ -74,7 +74,7 @@ const _amazon = {
       name: 'connect',
       type: 'manual',
       states: [],
-      webView: true,
+      webView: 'v2',
     },
     {
       name: 'cancel',

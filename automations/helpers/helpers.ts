@@ -8,6 +8,12 @@ export type ActionReturn = {
   token?: any;
 };
 
+export type ActionError = {
+  message: string;
+  data?: any;
+  critical?: boolean;
+};
+
 export type ApiResult = {
   history?: Array<ApiResponse<any> | ApiError>;
   data?: ActionReturn['data'];

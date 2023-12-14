@@ -14,6 +14,7 @@ import { useI18n } from '~/composables/useI18n';
 import { Result } from '~/shared/Result';
 import { Awaitable } from '~/shared/typeHelpers';
 import RNUxcam from 'react-native-ux-cam';
+import { tagScreen } from '~/shared/helpers';
 
 type SanityResponse = {
   type: 'sanity';
@@ -153,7 +154,7 @@ export const GenericWebView: React.FC<GenericWebViewProps> = ({
     }
 
     if (response.type === 'tag') {
-      RNUxcam.tagScreenName(response.data);
+      tagScreen(response.data);
     }
   };
 

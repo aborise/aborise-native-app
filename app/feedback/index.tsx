@@ -4,13 +4,14 @@ import Toast from 'react-native-root-toast';
 import RNUxcam from 'react-native-ux-cam';
 import { Button, Input, SizableText, YStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
+import { logEvent } from '~/shared/helpers';
 
 const { t } = useI18n();
 
 const Feedback = () => {
   const [feedback, setFeedback] = useState('');
   const addFeedback = useCallback(async () => {
-    RNUxcam.logEvent('feedback', {
+    logEvent('feedback', {
       feedback,
     });
     setFeedback('');

@@ -20,6 +20,7 @@ import CanceledAbo from './CanceledAbo';
 import InactiveAbo from './InactiveAbo';
 import PreactiveAbo from './PreActiveAbo';
 import { InstanceToPlain } from '~/shared/typeHelpers';
+import { logEvent } from '~/shared/helpers';
 
 type Props = {
   subscription: InstanceToPlain<Subscription>;
@@ -69,7 +70,7 @@ const AboDetails: React.FC<Props> = ({ subscription }) => {
     }
 
     confirmAction(service.title, action.name, async () => {
-      RNUxcam.logEvent(action.name, { service: local.id, action: action.name });
+      logEvent(action.name, { service: local.id, action: action.name });
 
       if (action.type === 'api') return;
 

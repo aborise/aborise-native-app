@@ -15,6 +15,7 @@ import { useAsyncStateReadonly } from '~/composables/useAsyncState';
 import { useI18n } from '~/composables/useI18n';
 import '~/realms/realmImpl';
 import { ensureDataLoaded, getUserId } from '~/shared/ensureDataLoaded';
+import { shouldLog, tagScreen } from '~/shared/helpers';
 import { ParseResult, setParse } from '~/shared/parser';
 import config from '~/tamagui.config';
 
@@ -24,24 +25,26 @@ const queryClient = new QueryClient();
 
 let resolve: (value: ParseResult<any>) => void;
 
-RNUxcam.optIntoSchematicRecordings(); // Add this line to enable iOS screen recordings
-const configuration: UXCamConfiguration = {
-  userAppKey: '0jafriiqm6d04rt',
-  enableAutomaticScreenNameTagging: false,
-  // @ts-expect-error
-  enableImprovedScreenCapture: true,
-  enableAdvancedGestureRecognition: true,
-  enableNetworkLogging: true,
-};
+if (shouldLog()) {
+  RNUxcam.optIntoSchematicRecordings(); // Add this line to enable iOS screen recordings
+  const configuration: UXCamConfiguration = {
+    userAppKey: '0jafriiqm6d04rt',
+    enableAutomaticScreenNameTagging: false,
+    // @ts-expect-error
+    enableImprovedScreenCapture: true,
+    enableAdvancedGestureRecognition: true,
+    enableNetworkLogging: true,
+  };
 
-if (Platform.OS === 'android') {
-  // only supported on android
-  RNUxcam.allowShortBreakForAnotherApp(1000 * 60);
-} else {
-  RNUxcam.allowShortBreakForAnotherApp(true);
+  if (Platform.OS === 'android') {
+    // only supported on android
+    RNUxcam.allowShortBreakForAnotherApp(1000 * 60);
+  } else {
+    RNUxcam.allowShortBreakForAnotherApp(true);
+  }
+
+  RNUxcam.startWithConfiguration(configuration);
 }
-
-RNUxcam.startWithConfiguration(configuration);
 
 export default function Layout() {
   const { t } = useI18n();
@@ -79,7 +82,7 @@ export default function Layout() {
 
   // Track the location in your analytics provider here.
   useEffect(() => {
-    RNUxcam.tagScreenName(pathname);
+    tagScreen(pathname);
   }, [pathname, params]);
 
   const handleMessage = useCallback((event: { nativeEvent: { data: string } }) => {

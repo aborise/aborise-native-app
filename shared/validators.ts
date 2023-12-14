@@ -73,7 +73,7 @@ export const ServiceSchema = z.object({
       z.object({
         name: z.enum(actions),
         type: z.literal('manual'),
-        webView: z.boolean().optional(),
+        webView: z.boolean().or(z.literal('v2')).optional(),
         states: z.enum(states).array(),
       }),
     ]),

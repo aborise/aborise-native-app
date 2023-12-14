@@ -6,6 +6,7 @@ import RNUxcam from 'react-native-ux-cam';
 import { Input, SizableText, Square, View, XStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
 import { Service, services } from '~/shared/allServices';
+import { logEvent } from '~/shared/helpers';
 import { getLogo } from '~/shared/logos';
 
 const { t } = useI18n();
@@ -47,7 +48,7 @@ const Add = () => {
           value={search}
           onChangeText={(value) => {
             setSearch(value);
-            RNUxcam.logEvent('search', { value });
+            logEvent('search', { value });
           }}
           placeholder={t('search-for-a-service')}
           returnKeyType="done"

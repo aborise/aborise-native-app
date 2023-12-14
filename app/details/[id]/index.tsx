@@ -27,6 +27,7 @@ import Feedback from '~/components/Feedback';
 import { useOnline } from '~/composables/useOnline';
 import InactiveAbo from '~/components/details/InactiveAbo';
 import { openApp } from 'rn-openapp';
+import { logEvent } from '~/shared/helpers';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
@@ -77,7 +78,7 @@ const Details: React.FC = () => {
       return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
     }
 
-    RNUxcam.logEvent('refresh', { service: local.id });
+    logEvent('refresh', { service: local.id });
     setRefreshing(true);
     onRefreshBase(service)
       .then((res) => {
@@ -101,7 +102,7 @@ const Details: React.FC = () => {
     }
 
     confirmDelete(service.title, () => {
-      RNUxcam.logEvent('delete', { service: local.id });
+      logEvent('delete', { service: local.id });
       serviceData?.$remove();
       router.push('/');
     });
@@ -112,7 +113,7 @@ const Details: React.FC = () => {
       return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
     }
 
-    RNUxcam.logEvent('reactivate', { service: local.id });
+    logEvent('reactivate', { service: local.id });
 
     const action = service.actions.find((a) => a.name === 'reactivate') as ServiceDefinition['actions'][number];
 
@@ -123,7 +124,8 @@ const Details: React.FC = () => {
     if (action.type === 'api') return;
 
     if (action.webView) {
-      return router.push(`/details/${local.id}/webview/${action.name}`);
+      const v2 = action.webView === 'v2';
+      return router.push(`/details/${local.id}/webview${v2 ? '2' : ''}/${action.name}`);
     }
 
     const api = apis[service.id];

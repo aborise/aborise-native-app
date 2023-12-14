@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import type { Cookie } from 'playwright-core';
 import alluuid from 'react-native-uuid';
 import { Service } from './validators';
+import UXCam from 'react-native-ux-cam';
 
 export const getStorageKey = (service: string, key: string) => {
   return `${service}-${key}`;
@@ -46,4 +47,20 @@ export const uuid = () => alluuid.v4() as string;
 
 export const getActionDefinition = (service: Service, action: string) => {
   return service.actions.find((a) => a.name === action)!;
+};
+
+export const shouldLog = () => {
+  return process.env.EXPO_PUBLIC_DISABLE_LOGGING !== 'true';
+};
+
+export const logEvent = (event: string, data: any) => {
+  if (shouldLog()) {
+    UXCam.logEvent(event, data);
+  }
+};
+
+export const tagScreen = (screen: string) => {
+  if (shouldLog()) {
+    UXCam.tagScreenName(screen);
+  }
 };

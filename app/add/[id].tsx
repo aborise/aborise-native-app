@@ -12,7 +12,7 @@ import { useOnline } from '~/composables/useOnline';
 import { useServiceLogin } from '~/composables/useServiceLogin';
 import { AllServices, services } from '~/shared/allServices';
 import { getAction } from '~/shared/apis';
-import { getActionDefinition } from '~/shared/helpers';
+import { getActionDefinition, logEvent } from '~/shared/helpers';
 import { getLogo } from '~/shared/logos';
 
 const { t } = useI18n();
@@ -48,7 +48,7 @@ const Connect: React.FC = () => {
       return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
     }
 
-    RNUxcam.logEvent('connect', {
+    logEvent('connect', {
       filledCredentials: !!email && !!password,
       partiallyFilledCredentials: !!email || !!password,
       service: service.id,
@@ -59,13 +59,14 @@ const Connect: React.FC = () => {
     if (actionDev.type === 'api') throw new Error('not implemented');
 
     if (actionDev.webView) {
+      const v2 = actionDev.webView === 'v2';
       setLoading(true);
       await setData({
         email,
         password,
       });
       setLoading(false);
-      return router.push(`/details/${service.id}/webview/connect`);
+      return router.push(`/details/${service.id}/webview${v2 ? '2' : ''}/connect`);
     }
 
     const connect = getAction(apis[local.id!], 'connect');
@@ -87,7 +88,7 @@ const Connect: React.FC = () => {
 
     if (res.ok) {
       console.log(res.val.data);
-      RNUxcam.logEvent('connect_success', {
+      logEvent('connect_success', {
         filledCredentials: !!email && !!password,
         partiallyFilledCredentials: !!email || !!password,
         service: service.id,
@@ -95,7 +96,7 @@ const Connect: React.FC = () => {
       });
       router.push(`/`);
     } else {
-      RNUxcam.logEvent('connect_error', {
+      logEvent('connect_error', {
         filledCredentials: !!email && !!password,
         partiallyFilledCredentials: !!email || !!password,
         service: service.id,
@@ -135,10 +136,17 @@ const Connect: React.FC = () => {
                     return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
                   }
 
-                  RNUxcam.logEvent('register', {
+                  const def = getActionDefinition(service, 'register');
+                  if (def.type === 'api') return;
+
+                  const v2 = def.webView === 'v2';
+
+                  logEvent('register', {
                     service: service.id,
                   });
-                  CookieManager.clearAll().then(() => router.push(`/details/${service.id}/webview/register`));
+                  CookieManager.clearAll().then(() =>
+                    router.push(`/details/${service.id}/webview${v2 ? '2' : ''}/register`),
+                  );
                 }}
               />
             </>
