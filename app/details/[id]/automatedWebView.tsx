@@ -126,6 +126,8 @@ export const AutomatedWebView: React.FC<AutomatedWebViewProps> = ({
 
   const onLoadEnd = () => {};
 
+  const invisibleOpacity = __DEV__ ? 0.5 : 0;
+
   return (
     <>
       <Stack.Screen
@@ -158,7 +160,7 @@ export const AutomatedWebView: React.FC<AutomatedWebViewProps> = ({
             onMessage={onMessage}
             onNavigationStateChange={onNavigationStateChange}
             onLoadEnd={onLoadEnd}
-            style={{ opacity: !visible ? 0.5 : 1, flex: 1 }}
+            style={{ opacity: !visible ? invisibleOpacity : 1, flex: 1 }}
             ref={webviewRef}
             webviewDebuggingEnabled={true}
             sharedCookiesEnabled={true}
