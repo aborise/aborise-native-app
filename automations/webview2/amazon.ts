@@ -50,6 +50,28 @@ const connectScript: AutomationScript = async (page) => {
     await wait;
   }
 
+  while (await page.locator('#auth-mfa-otpcode').exists(500)) {
+    const text = 'Please enter your One Time Password (OTP)';
+    const alerts = await page
+      .locator('#auth-error-message-box')
+      .textContent(0)
+      .catch(() => '');
+
+    const otp = await page.prompt({ text: `${alerts}${alerts ? '\n' : ''}${text}`, title: 'Enter OTP' });
+
+    if (otp === null) {
+      console.log('OTP not provided');
+      return Err({ message: 'OTP not provided' });
+    }
+
+    await page.locator('#auth-mfa-otpcode').fill(otp);
+    const wait = page.waitForNavigation();
+    await page.locator('#auth-signin-button input[type="submit"]').click();
+    await wait;
+  }
+
+  // await new Promise((resolve) => {});
+
   if (page.url.includes('https://www.amazon.de/ap/forgotpassword/reverification')) {
     page.statusMessage('Please verify your password');
     page.reveal();

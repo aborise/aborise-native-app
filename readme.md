@@ -15,3 +15,5 @@ Once you have completed these steps, you can use the following scripts to run th
 - `npm run build:simulator`: Builds the ios app on the server.
 - `npm run run`: Pulls the latest server build and runs it.
 - `npm run emulator`: Starts ulimas android emulator :D.
+
+- `eas build:run -p ios`: Installs build on ios simulator.
