@@ -14,11 +14,16 @@ interface AboriseWebViewApi {
   result<T = void>(id: string, data?: T): T;
   log(...args: any[]): void;
   error(...args: any[]): void;
-  fill(id: string, selector: string, value: string): Promise<void>;
+  fill(id: string, selector: string, value: string, timeout?: number): Promise<void>;
   waitForElement(id: string, selector: string, timeout?: number): Promise<void>;
   click(id: string, selector: string, timeout?: number): Promise<void>;
   exists(id: string, selector: string, timeout?: number): Promise<boolean>;
-  elementProxy<T extends HTMLInputElement, P extends keyof T>(id: string, selector: string, prop: P): Promise<T[P]>;
+  elementProxy<T extends HTMLInputElement, P extends keyof T>(
+    id: string,
+    selector: string,
+    prop: P,
+    timeout?: number,
+  ): Promise<T[P]>;
 }
 
 type ElementsWithValue = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -55,7 +60,8 @@ const initAborise = (window: EnhancedWindow, document: Document) => {
 
       setTimeout(() => {
         clearInterval(interval);
-        resolve(null);
+        const element = document.querySelector(selector) as T;
+        resolve(element ?? null);
       }, timeout);
     });
   };
@@ -85,8 +91,8 @@ const initAborise = (window: EnhancedWindow, document: Document) => {
       this.send({ type: 'error', data: args });
     },
 
-    async fill(id, selector, value) {
-      const element = await ensureElement<ElementsWithValue>(selector);
+    async fill(id, selector, value, timeout = 3000) {
+      const element = await ensureElement<ElementsWithValue>(selector, timeout);
       assertDefined(id, element, 'Element not found after timeout');
       if (element instanceof HTMLInputElement) {
         nativeInputSetter.call(element, value);
@@ -121,8 +127,9 @@ const initAborise = (window: EnhancedWindow, document: Document) => {
       id: string,
       selector: string,
       prop: P,
+      timeout = 3000,
     ): Promise<T[P]> {
-      const element = await ensureElement<T>(selector);
+      const element = await ensureElement<T>(selector, timeout);
       assertDefined(id, element, 'Element not found after timeout');
 
       return this.result(id, element[prop]);
@@ -173,6 +180,7 @@ export class Page {
   private navTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
   private paused = true;
   private navigationResolver: () => void = () => {};
+  private promptResolver: (value: string | null) => void = () => {};
   url = '';
 
   private pageReady = false;
@@ -335,13 +343,47 @@ export class Page {
     this.wv.current!.injectJavaScript(script);
     return promise;
   }
+
+  waitForCondition<T, const O extends Record<string, any> = never>(
+    fn: EvaluatedScript<T, O>,
+    options?: O,
+    timeout = 3000,
+  ): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const interval = setInterval(async () => {
+        const result = await this.evaluate(fn, options);
+        if (result) {
+          clearInterval(interval);
+          resolve(result);
+        }
+      }, 100);
+
+      setTimeout(async () => {
+        clearInterval(interval);
+        const result = await this.evaluate(fn, options);
+        resolve(result);
+      }, timeout);
+    });
+  }
+
+  prompt(options: { title?: string; text: string; defaultValue?: string }) {
+    return new Promise<string | null>((resolve) => {
+      this.promptResolver = resolve;
+      this._showPrompt(options);
+    });
+  }
+
+  _showPrompt(options: { title?: string; text: string; defaultValue?: string }) {}
+  _resolvePrompt(value: string | null) {
+    this.promptResolver(value);
+  }
 }
 
 class ElementHandle {
   constructor(readonly page: Page, readonly selector: string) {}
 
-  async fill(value: string): Promise<void> {
-    await this.page.callApi('fill', this.selector, value);
+  async fill(value: string, timeout = 3000): Promise<void> {
+    await this.page.callApi('fill', this.selector, value, timeout);
   }
 
   async click(timeout = 3000): Promise<void> {
@@ -356,19 +398,19 @@ class ElementHandle {
     return await this.page.callApi('exists', this.selector, timeout);
   }
 
-  async textContent() {
-    return await this.page.callApi('elementProxy', this.selector, 'textContent');
+  async textContent(timeout = 3000) {
+    return (await this.page.callApi('elementProxy', this.selector, 'textContent', timeout)) as string;
   }
 
-  async value() {
-    return await this.page.callApi('elementProxy', this.selector, 'value');
+  async value(timeout = 3000) {
+    return (await this.page.callApi('elementProxy', this.selector, 'value', timeout)) as string;
   }
 
-  async checked() {
-    return await this.page.callApi('elementProxy', this.selector, 'checked');
+  async checked(timeout = 3000) {
+    return (await this.page.callApi('elementProxy', this.selector, 'checked', timeout)) as boolean;
   }
 
   async innerHTML() {
-    return await this.page.callApi('elementProxy', this.selector, 'innerHTML');
+    return (await this.page.callApi('elementProxy', this.selector, 'innerHTML')) as string;
   }
 }

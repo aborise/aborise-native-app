@@ -13,6 +13,7 @@ import { TamaguiProvider } from 'tamagui';
 import { javascript } from '~/automations/webview/webview.helpers';
 import { useAsyncStateReadonly } from '~/composables/useAsyncState';
 import { useI18n } from '~/composables/useI18n';
+import { OnlineProvider } from '~/composables/useOnline';
 import '~/realms/realmImpl';
 import { ensureDataLoaded, getUserId } from '~/shared/ensureDataLoaded';
 import { shouldLog, tagScreen } from '~/shared/helpers';
@@ -105,37 +106,39 @@ export default function Layout() {
       <QueryClientProvider client={queryClient}>
         <RootSiblingParent>
           <TamaguiProvider config={config}>
-            <ExpoStack
-              screenOptions={{
-                headerStyle: {
-                  backgroundColor: '#fff',
-                },
-                headerTintColor: '#000',
-                headerShadowVisible: false,
-                headerTitleStyle: {
-                  fontWeight: 'bold',
-                },
-                contentStyle: {
-                  backgroundColor: '#fff',
-                },
-              }}
-            >
-              <ExpoStack.Screen
-                name="add/index"
-                options={{
-                  title: t('add-subscription'),
-                  // presentation: 'modal',
+            <OnlineProvider>
+              <ExpoStack
+                screenOptions={{
+                  headerStyle: {
+                    backgroundColor: '#fff',
+                  },
+                  headerTintColor: '#000',
+                  headerShadowVisible: false,
+                  headerTitleStyle: {
+                    fontWeight: 'bold',
+                  },
+                  contentStyle: {
+                    backgroundColor: '#fff',
+                  },
                 }}
-              />
-              <ExpoStack.Screen
-                name="add/[id]"
-                options={
-                  {
+              >
+                <ExpoStack.Screen
+                  name="add/index"
+                  options={{
+                    title: t('add-subscription'),
                     // presentation: 'modal',
+                  }}
+                />
+                <ExpoStack.Screen
+                  name="add/[id]"
+                  options={
+                    {
+                      // presentation: 'modal',
+                    }
                   }
-                }
-              />
-            </ExpoStack>
+                />
+              </ExpoStack>
+            </OnlineProvider>
           </TamaguiProvider>
         </RootSiblingParent>
       </QueryClientProvider>

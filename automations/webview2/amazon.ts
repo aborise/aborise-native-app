@@ -12,6 +12,7 @@ import { ActionReturn } from '../helpers/helpers';
 import { WebViewConfig2, standardConnectMessage } from '../webview/webview.helpers';
 import { Err, Ok } from '~/shared/Result';
 import { extractAmount, extractDate } from '../helpers/strings';
+import { Alert } from 'react-native';
 
 const planRegex = /(\w+) (\w+) (\d+\.\d+)/;
 const renewalDateRegex = /(\d+) (\w+) (\d{4})/;
@@ -29,6 +30,26 @@ const connectScript: AutomationScript = async (page) => {
   await page.locator('#signInSubmit').click();
 
   await wait;
+
+  while (await page.locator('#otp_submit_form').exists(500)) {
+    const text = await page.locator('#channelDetailsForOtp').textContent(0);
+    const alerts = await page
+      .locator('#verifyAlerts')
+      .textContent(0)
+      .catch(() => '');
+
+    const otp = await page.prompt({ text: `${alerts}${alerts ? '\n' : ''}${text}`, title: 'Enter OTP' });
+
+    if (otp === null) {
+      console.log('OTP not provided');
+      return Err({ message: 'OTP not provided' });
+    }
+
+    await page.locator('#input-box-otp').fill(otp);
+    const wait = page.waitForNavigation();
+    await page.locator('#cvf-submit-otp-button input[type="submit"]').click();
+    await wait;
+  }
 
   if (page.url.includes('https://www.amazon.de/ap/forgotpassword/reverification')) {
     page.statusMessage('Please verify your password');
