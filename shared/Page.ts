@@ -399,7 +399,7 @@ class ElementHandle {
   }
 
   async textContent(timeout = 3000) {
-    return (await this.page.callApi('elementProxy', this.selector, 'textContent', timeout)) as string;
+    return ((await this.page.callApi('elementProxy', this.selector, 'textContent', timeout)) as string).trim();
   }
 
   async value(timeout = 3000) {

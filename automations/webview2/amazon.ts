@@ -8,11 +8,10 @@ export const primeRenewalDateSelector =
 
 import { useStorage } from '~/composables/useStorage';
 import { AutomationScript } from '~/shared/Page';
-import { ActionReturn } from '../helpers/helpers';
-import { WebViewConfig2, standardConnectMessage } from '../webview/webview.helpers';
 import { Err, Ok } from '~/shared/Result';
+import { ActionReturn } from '../helpers/helpers';
 import { extractAmount, extractDate } from '../helpers/strings';
-import { Alert } from 'react-native';
+import { WebViewConfig2, standardConnectMessage } from '../webview/webview.helpers';
 
 const planRegex = /(\w+) (\w+) (\d+\.\d+)/;
 const renewalDateRegex = /(\d+) (\w+) (\d{4})/;
