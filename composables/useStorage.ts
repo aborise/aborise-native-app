@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export interface Storage {
   set(key: string, value: any): Promise<void>;
 
+  get<T extends `services/${string}/login`>(key: T): Promise<{ email: string; password: string }>;
   get<T>(key: string): Promise<T | null>;
   get<T>(key: string, defaultValue: T): Promise<T>;
   get<T>(key: string, defaultValue?: T): Promise<T | null>;

@@ -56,11 +56,12 @@ const App = () => {
         options={{
           title: 'Home',
           headerTitle: () => <LogoTitle />,
-          headerRight: () => (
-            <TouchableOpacity onPress={() => router.push('/settings')}>
-              <Icon name="navicon" size={24} color="#000000" />
-            </TouchableOpacity>
-          ),
+          headerRight: () =>
+            __DEV__ ? (
+              <TouchableOpacity onPress={() => router.push('/settings')}>
+                <Icon name="navicon" size={24} color="#000000" />
+              </TouchableOpacity>
+            ) : null,
         }}
       />
       <YStack padding="$3" paddingBottom="$0" space fullscreen>

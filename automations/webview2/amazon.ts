@@ -17,7 +17,7 @@ const planRegex = /(\w+) (\w+) (\d+\.\d+)/;
 const renewalDateRegex = /(\d+) (\w+) (\d{4})/;
 const connectScript: AutomationScript = async (page) => {
   const storage = useStorage('local');
-  const auth = await storage.get<{ email: string; password: string }>(`services/amazon/login`);
+  const auth = await storage.get(`services/amazon/login`);
 
   await Promise.all([
     page.locator('input[name="email"]').fill(auth!.email),

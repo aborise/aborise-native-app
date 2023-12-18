@@ -28,6 +28,7 @@ import { useOnline } from '~/composables/useOnline';
 import InactiveAbo from '~/components/details/InactiveAbo';
 import { openApp } from 'rn-openapp';
 import { logEvent } from '~/shared/helpers';
+import { deleteConnectedService } from '~/composables/useServiceData';
 
 const { t } = useI18n();
 const dayjs = useDayJs();
@@ -96,14 +97,14 @@ const Details: React.FC = () => {
       });
   }, []);
 
-  const deleteSubscription = () => {
+  const deleteService = () => {
     if (!isOnline) {
       return Toast.show(t('you-are-offline'), { duration: Toast.durations.SHORT });
     }
 
     confirmDelete(service.title, () => {
       logEvent('delete', { service: local.id });
-      serviceData?.$remove();
+      deleteConnectedService(service.id);
       router.push('/');
     });
   };
@@ -189,7 +190,7 @@ const Details: React.FC = () => {
               <TouchableOpacity onPress={() => (onRefresh(), setMenuVisible(false))}>
                 <SizableText style={styles.menuItem}>Refresh</SizableText>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => (deleteSubscription(), setMenuVisible(false))}>
+              <TouchableOpacity onPress={() => (deleteService(), setMenuVisible(false))}>
                 <SizableText style={styles.menuItem}>Delete</SizableText>
               </TouchableOpacity>
             </YStack>

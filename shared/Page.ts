@@ -16,7 +16,7 @@ interface AboriseWebViewApi {
   error(...args: any[]): void;
   fill(id: string, selector: string, value: string, timeout?: number): Promise<void>;
   waitForElement(id: string, selector: string, timeout?: number): Promise<void>;
-  click(id: string, selector: string, timeout?: number): Promise<void>;
+  click(id: string | null, selector: string, timeout?: number): Promise<void>;
   exists(id: string, selector: string, timeout?: number): Promise<boolean>;
   elementProxy<T extends HTMLInputElement, P extends keyof T>(
     id: string,
@@ -27,11 +27,16 @@ interface AboriseWebViewApi {
 }
 
 type ElementsWithValue = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
-type EnhancedWindow = Window & { __aborise__: AboriseWebViewApi; ReactNativeWebView: WebView };
+type EnhancedWindow = Window & {
+  __aborise__: AboriseWebViewApi;
+  ReactNativeWebView: WebView;
+  __aborise__ensure__: Function;
+};
 type OmitFirstArg<T> = T extends [arg: any, ...rest: infer U] ? U : never;
 
 const initAborise = (window: EnhancedWindow, document: Document) => {
   'use webview';
+  // localStorage.clear();
   const nativeInputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
 
   const mouseClickEvents = ['mousedown', 'click', 'mouseup'];
@@ -66,7 +71,7 @@ const initAborise = (window: EnhancedWindow, document: Document) => {
     });
   };
 
-  function assertDefined(id: string, toAssert: any, error: string): asserts toAssert {
+  function assertDefined(id: string | null, toAssert: any, error: string): asserts toAssert {
     if (!toAssert) {
       api.send({ type: 'reject', data: { id, error } });
       throw new Error(error);
@@ -115,6 +120,7 @@ const initAborise = (window: EnhancedWindow, document: Document) => {
       const element = await ensureElement(selector, timeout);
       assertDefined(id, element, 'Element not found after timeout');
       simulateMouseClick(element);
+      if (!id) return;
       return this.result(id);
     },
 
@@ -156,9 +162,26 @@ const initAborise = (window: EnhancedWindow, document: Document) => {
   window.__aborise__ = api;
 };
 
-export const initAboriseScript = javascript`(${initAborise.toString()})(window, document)`;
+export const getInitAboriseScript = () => javascript`(${initAborise.toString()})(window, document)`;
 
-export const getInitAboriseScript = () => initAboriseScript;
+const minimalApi = (window: EnhancedWindow, document: Document) => {
+  'use webview';
+
+  window.__aborise__ensure__ = (fn: Function) => {
+    if (!window.__aborise__) {
+      const interval = setInterval(() => {
+        if (window.__aborise__) {
+          clearInterval(interval);
+          fn();
+        }
+      }, 100);
+    } else {
+      fn();
+    }
+  };
+};
+
+export const minimalApiScript = javascript`(${minimalApi.toString()})(window, document)`;
 
 const dataValidator = z.object({
   type: z.enum(['result', 'log', 'error', 'ready', 'reject']),
@@ -215,7 +238,7 @@ export class Page {
     const result = dataValidator.safeParse(JSON.parse(event.nativeEvent.data));
 
     if (!result.success) {
-      console.error(result.error);
+      console.log("Couldn't parse message", String(event.nativeEvent.data).slice(0, 100));
       return;
     }
 
@@ -227,7 +250,7 @@ export class Page {
       case 'result': {
         const cb = this.resolvers.get(data.id);
         if (!cb) {
-          console.error(`No callback found for id ${data.id}`);
+          console.log(`No callback found for id ${data.id}`);
           return;
         }
         this.resolvers.delete(data.id);
@@ -243,6 +266,7 @@ export class Page {
         this.url = data;
         tagScreen(data);
         console.log('webview', data);
+        clearTimeout(this.navTimeout!);
         this.navigationResolver();
 
         // only start the automation script once
@@ -290,7 +314,7 @@ export class Page {
     return new Promise((resolve, reject) => {
       this.resolvers.set(id, resolve);
       this.rejecters.set(id, reject);
-      this.wv.current!.injectJavaScript(script);
+      this.wv.current?.injectJavaScript(minimalApiScript + script);
     });
   }
 
@@ -300,7 +324,7 @@ export class Page {
   ): ReturnType<AboriseWebViewApi[T]> {
     const id = uuid();
     const stringifiedArgs = args.map((arg) => JSON.stringify(arg)).join(', ');
-    const script = javascript`window.__aborise__.${method}('${id}', ${stringifiedArgs})`;
+    const script = javascript`window.__aborise__ensure__(async () => window.__aborise__.${method}('${id}', ${stringifiedArgs}))`;
     // @ts-expect-error
     return this.runScript(script, id);
   }
@@ -309,8 +333,9 @@ export class Page {
     const id = uuid();
     const stringifiedOptions = JSON.stringify(options ?? {});
     const script = javascript`
-      console.log('evaluate ${id}');
-      window.__aborise__.result('${id}', await (${fn.toString()})(window, document, ${stringifiedOptions}))
+      console.log('evaluate ${id}', ${fn.toString()});
+      const fn = async () => window.__aborise__.result('${id}', await (${fn.toString()})(window, document, ${stringifiedOptions}));
+      window.__aborise__ensure__(fn);
     `;
     return this.runScript(script, id);
   }
@@ -324,15 +349,20 @@ export class Page {
     const stringifiedOptions = JSON.stringify(options ?? {});
     const script = javascript`
       console.log('fetch ${id}');
-      const doc = await fetch('${url}', {
-        credentials: 'include',
-        method: 'GET'
-      })
-        .then((res) => res.text())
-        .then((text) => new DOMParser().parseFromString(text, 'text/html'))
 
-      const result = await (${cb.toString()})(doc, ${stringifiedOptions})
-      window.__aborise__.result('${id}', result)
+      const fn = async () => {
+        const doc = await fetch('${url}', {
+          credentials: 'include',
+          method: 'GET'
+        })
+          .then((res) => res.text())
+          .then((text) => new DOMParser().parseFromString(text, 'text/html'))
+  
+        const result = await (${cb.toString()})(doc, ${stringifiedOptions})
+        window.__aborise__.result('${id}', result)
+      }
+
+      window.__aborise__ensure__(fn);
     `;
     return this.runScript(script, id);
   }
@@ -340,7 +370,7 @@ export class Page {
   navigate(url: string) {
     const promise = this.waitForNavigation();
     const script = javascript`document.location.href = '${url}'`;
-    this.wv.current!.injectJavaScript(script);
+    this.wv.current?.injectJavaScript(script);
     return promise;
   }
 
@@ -356,7 +386,7 @@ export class Page {
           clearInterval(interval);
           resolve(result);
         }
-      }, 100);
+      }, 500);
 
       setTimeout(async () => {
         clearInterval(interval);

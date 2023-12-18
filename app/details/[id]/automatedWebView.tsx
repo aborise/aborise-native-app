@@ -2,22 +2,17 @@ import CookieManager, { Cookies } from '@react-native-cookies/cookies';
 import { Stack, router } from 'expo-router';
 import { Cookie } from 'playwright-core';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet } from 'react-native';
 import Toast from 'react-native-root-toast';
 import WebView from 'react-native-webview';
 import { WebViewMessageEvent, WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
-import { Unspaced } from 'tamagui';
-import { Button } from 'tamagui';
-import { Input, TooltipSimple } from 'tamagui';
-import { Paragraph } from 'tamagui';
-import { Adapt, Dialog, Fieldset, Label, Sheet, SizableText, XStack, YStack } from 'tamagui';
+import { Button, Fieldset, Input, SizableText, XStack, YStack } from 'tamagui';
 import { cookiesToString } from '~/automations/api/helpers/cookie';
 import { ActionReturn } from '~/automations/helpers/helpers';
 import { useI18n } from '~/composables/useI18n';
-import { AutomationScript, Page, getInitAboriseScript, initAboriseScript } from '~/shared/Page';
+import { AutomationScript, Page, getInitAboriseScript } from '~/shared/Page';
 import { Result } from '~/shared/Result';
 import { Awaitable } from '~/shared/typeHelpers';
-import { X } from '@tamagui/lucide-icons';
 
 type SanityResponse = {
   type: 'sanity';
