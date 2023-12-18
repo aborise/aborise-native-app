@@ -5,9 +5,9 @@ import { services } from '~/shared/allServices';
 import gplay from 'google-play-scraper';
 const service = services.joyn;
 // Object.entries(services).forEach(([id, service]) => {
-console.log('asda');
+
 gplay
-  .app({ appId: 'asid.mediathek' })
+  .app({ appId: 'de.sky.online' })
   .then((data) => {
     console.log('sadas');
     const artworkUrl = data.icon;

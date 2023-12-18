@@ -67,9 +67,7 @@ export const AutomatedWebView: React.FC<AutomatedWebViewProps> = ({
   const webviewRef = useRef<WebView>(null);
   const pageRef = useRef(new Page(webviewRef, script, onSuccess));
   const [loadingText, setLoadingText] = useState<string>();
-  const [statusText, setStatusText] = useState<string>(
-    "We're trying to log you in automatically. If this takes longer than expected, please continue the login process manually.",
-  );
+  const [statusText, setStatusText] = useState<string>("We're trying to log you in automatically.");
   const [promptOpen, setPromptOpen] = useState(false);
   const [modalComponent, setModalComponent] = useState<React.ReactNode>(null);
   const [promptText, setPromptText] = useState('');

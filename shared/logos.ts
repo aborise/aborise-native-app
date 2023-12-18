@@ -8,6 +8,7 @@ import apple from '../assets/icons/apple.png';
 import joyn from '../assets/icons/joyn.png';
 import rtl from '../assets/icons/rtl.png';
 import dazn from '../assets/icons/dazn.png';
+import wow from '../assets/icons/wow.png';
 import { objectKeys } from './typeHelpers';
 
 const logos = {
@@ -20,6 +21,7 @@ const logos = {
   joyn,
   rtl,
   dazn,
+  wow,
 };
 
 let cache: { [key: string]: ImageResolvedAssetSource } = {};

@@ -119,6 +119,5 @@ const rtlConnectScript: AutomationScript = async (page) => {
 export const connect: WebViewConfig2 = {
   url: LOGIN_URL,
   getCookies: () => [],
-  status: standardConnectMessage,
   script: rtlConnectScript,
 };

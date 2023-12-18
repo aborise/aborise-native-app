@@ -7,3 +7,4 @@ export * as apple from './apple';
 export * as joyn from './joyn';
 export * as rtl from './rtl';
 export * as dazn from './dazn';
+export * as wow from './wow';

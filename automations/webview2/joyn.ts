@@ -122,6 +122,5 @@ const joinConnectScript: AutomationScript = async (page) => {
 export const connect: WebViewConfig2 = {
   url: LOGIN_URL,
   getCookies: () => [], // getCookies('joyn'),
-  status: standardConnectMessage,
   script: joinConnectScript,
 };

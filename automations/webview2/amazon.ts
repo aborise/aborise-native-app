@@ -141,6 +141,5 @@ export const connect: WebViewConfig2 = {
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'cross-site',
   }),
-  status: standardConnectMessage,
   script: connectScript,
 };

@@ -150,6 +150,5 @@ const paramountConnectScript: AutomationScript = async (page) => {
 export const connect: WebViewConfig2 = {
   url: LOGIN_URL,
   getCookies: () => [], //getCookies('paramount', ['CBS_COM']),
-  status: standardConnectMessage,
   script: paramountConnectScript,
 };
