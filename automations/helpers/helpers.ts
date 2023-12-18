@@ -6,6 +6,7 @@ export type ActionReturn = {
   cookies?: Cookie[];
   data?: ActionResult[];
   token?: any;
+  message?: string;
 };
 
 export type ActionError = {

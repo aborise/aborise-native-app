@@ -98,7 +98,7 @@ const paramountConnectScript: AutomationScript = async (page) => {
 
   await page.locator('#sign-in-form button').click();
 
-  await page.waitForCondition((window, document) => {
+  const isLoggedIn = await page.waitForCondition((window, document) => {
     'use webview';
     const app = document.getElementById('app') as unknown as VueAppHostElement;
 
@@ -116,6 +116,10 @@ const paramountConnectScript: AutomationScript = async (page) => {
     // @ts-expect-error
     return accountData?.user?.isLoggedIn;
   });
+
+  if (!isLoggedIn) {
+    return Err({ message: 'Login failed. Check your credentials.' });
+  }
 
   const result = await page.evaluate((window, document) => {
     'use webview';

@@ -189,7 +189,7 @@ const dataValidator = z.object({
 });
 
 export type AutomationScript = (page: Page) => Promise<Result<ActionReturn, ActionError>>;
-export type EvaluatedScript<T, O extends Record<string, any>> = (
+export type EvaluatedScript<T, O extends Record<string, any> = never> = (
   window: EnhancedWindow,
   document: Document,
   options: O,
@@ -211,7 +211,7 @@ export class Page {
   constructor(
     readonly wv: MutableRefObject<WebView | null>,
     readonly automationScript: AutomationScript,
-    readonly onSuccess: (data: Result<ActionReturn, any>, deviceCookies: Cookies) => Awaitable<void>,
+    readonly onSuccess: (data: Result<ActionReturn, ActionError>, deviceCookies: Cookies) => Awaitable<void>,
   ) {}
 
   // injectInitScript() {
@@ -273,9 +273,9 @@ export class Page {
         if (this.pageReady) return;
 
         this.pageReady = true;
-        return this.automationScript(this)
-          .then(async (result) => this.onSuccess(result, await CookieManager.get(this.url, true)))
-          .then(() => this.close());
+        return this.automationScript(this).then(async (result) =>
+          this.onSuccess(result, await CookieManager.get(this.url, true)),
+        );
       case 'reject': {
         const cb = this.rejecters.get(data.id);
         if (!cb) {

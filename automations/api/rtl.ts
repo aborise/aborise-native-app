@@ -110,11 +110,11 @@ const handleSubscriptionResult = (client: Session, apiAuth: TokenConfig): AsyncR
   return fetchSubscriptions(client, apiAuth).map(({ data }) => {
     const sub = data.productSubscriptions[0];
     const planPrice = data.nextBillingPreviewAmount.totalGross * 100;
-    const planName = sub.productName;
+    const planName = sub?.productName;
     const billingCycle = data.billingPeriod.unit === 'YEAR' ? 'annual' : 'monthly';
     const lastSyncedAt = new Date().toISOString();
 
-    if (planName === 'Free') {
+    if (planName === 'Free' || !sub) {
       return {
         token: apiAuth,
         data: [],

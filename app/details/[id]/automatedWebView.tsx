@@ -8,7 +8,7 @@ import WebView from 'react-native-webview';
 import { WebViewMessageEvent, WebViewNavigation } from 'react-native-webview/lib/WebViewTypes';
 import { Button, Fieldset, Input, SizableText, XStack, YStack } from 'tamagui';
 import { cookiesToString } from '~/automations/api/helpers/cookie';
-import { ActionReturn } from '~/automations/helpers/helpers';
+import { ActionError, ActionReturn } from '~/automations/helpers/helpers';
 import { useI18n } from '~/composables/useI18n';
 import { AutomationScript, Page, getInitAboriseScript } from '~/shared/Page';
 import { Result } from '~/shared/Result';
@@ -43,7 +43,7 @@ type AutomatedWebViewProps = {
   /** The url to load in the webview */
   url: string;
   /** The function that gets called when the data is extracted */
-  onSuccess: (data: Result<ActionReturn, any>, deviceCookies: Cookies) => Awaitable<void>;
+  onSuccess: (data: Result<ActionReturn, ActionError>, deviceCookies: Cookies) => Awaitable<void>;
   /** Pass a function that returns the cookies that should be set in the webview */
   getCookies: () => Awaitable<Cookie[]>;
   /** Pass a function that returns the headers that should be set in the webview */

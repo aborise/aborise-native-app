@@ -3,7 +3,7 @@ import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useMemo } from 'react';
 import Toast from 'react-native-root-toast';
 import { deviceCookiesToCookies, setCookies, setToken } from '~/automations/api/helpers/cookie';
-import { ActionReturn } from '~/automations/helpers/helpers';
+import { ActionError, ActionReturn } from '~/automations/helpers/helpers';
 import { WebViewConfig2 } from '~/automations/webview/webview.helpers';
 import * as webviews from '~/automations/webview2/index';
 import { useServiceRefresh } from '~/composables/useServiceRefresh';
@@ -11,9 +11,12 @@ import { Service } from '~/realms/Service';
 import { Result } from '~/shared/Result';
 import { AllServices, services } from '~/shared/allServices';
 import AutomatedWebView from '../automatedWebView';
+import { useI18n } from '~/composables/useI18n';
 
 type WebViewConfigKeys = keyof typeof webviews;
 type WebViewConfigActionNames = { [P in WebViewConfigKeys]: keyof (typeof webviews)[P] }[WebViewConfigKeys];
+
+const { t } = useI18n();
 
 export const ServiceWebView: React.FC = () => {
   const local = useLocalSearchParams<{ id: keyof AllServices; action: WebViewConfigActionNames }>();
@@ -44,9 +47,11 @@ export const ServiceWebView: React.FC = () => {
 
   const { onRefresh } = useServiceRefresh();
 
-  const saveData = async (result: Result<ActionReturn, any>, deviceCookies: Cookies) => {
+  const saveData = async (result: Result<ActionReturn, ActionError>, deviceCookies: Cookies) => {
     if (result.err) {
-      console.error(result.err);
+      Toast.show(result.val.message, { duration: Toast.durations.LONG });
+      console.log(result.val);
+      router.back();
       return;
     }
 
@@ -67,6 +72,9 @@ export const ServiceWebView: React.FC = () => {
     if (!result.val.data && result.val.token) {
       await onRefresh(service);
     }
+
+    Toast.show(result.val.message ?? t('success'), { duration: Toast.durations.LONG });
+    router.push('/');
   };
 
   return (

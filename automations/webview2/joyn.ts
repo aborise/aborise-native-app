@@ -71,6 +71,7 @@ const joinConnectScript: AutomationScript = async (page) => {
     // give the user enough time to login manually
     timeout = 1000 * 60 * 60 * 24;
   } else {
+    // TOOD: Check if email is already filled in and NO input and ensure that it is the CORRECT mail!!!
     if (await page.locator('input[name="email"]').exists(1000)) {
       await page.locator('input[name="email"]').fill(email);
       page.locator('button[type="submit"]').click();
