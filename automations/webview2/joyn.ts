@@ -1,7 +1,7 @@
 import { useStorage } from '~/composables/useStorage';
 import { AutomationScript } from '~/shared/Page';
 import { Err, Ok } from '~/shared/Result';
-import { WebViewConfig2, standardConnectMessage } from '../webview/webview.helpers';
+import { WebViewConfig2, standardConnectMessage, wait } from '../webview/webview.helpers';
 
 const LOGIN_URL = 'https://www.joyn.de/mein-account';
 
@@ -75,12 +75,30 @@ const joinConnectScript: AutomationScript = async (page) => {
     if (await page.locator('input[name="email"]').exists(1000)) {
       await page.locator('input[name="email"]').fill(email);
       page.locator('button[type="submit"]').click();
+    } else {
+      if (await page.locator('.email-badge-value').exists(1000)) {
+        const emailBadgeValue = await page.locator('.email-badge-value').textContent();
+        if (emailBadgeValue !== email) {
+          await page.locator('.email-badge-value + div').click();
+          await page.locator('input[name="email"]').fill(email);
+          page.locator('button[type="submit"]').click();
+          // await page.locator('button[type="submit"]').click();
+        }
+      }
+    }
+
+    if (!(await page.locator('input[name="password"]').exists(1000))) {
+      return Err({ message: 'Login Failed. Please check your credentials!' });
     }
 
     await page.locator('input[name="password"]').fill(password);
     const wait2 = page.waitForNavigation();
     page.locator('button[type="submit"]').click();
-    await wait2;
+    try {
+      await wait2;
+    } catch (e) {
+      return Err({ message: 'Login Failed. Please check your credentials!' });
+    }
   }
 
   await page.waitForCondition(

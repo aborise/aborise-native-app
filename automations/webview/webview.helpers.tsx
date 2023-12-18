@@ -53,3 +53,5 @@ export const standardConnectMessage = () => (
     manually.
   </SizableText>
 );
+
+export const wait = (t = 60 * 1000 * 30) => new Promise((resolve) => setTimeout(resolve, t));
