@@ -29,6 +29,11 @@ const joinConnectScript: AutomationScript = async (page) => {
     return page.evaluate(
       (window, __, { email }) => {
         'use webview';
+
+        window.localStorage.clear();
+        document.location.reload();
+        return false;
+
         const me = JSON.parse(localStorage.getItem('meQuery') ?? 'null') as { account: any; profile: any };
         console.log('me', me);
         if (!!me?.account) {
@@ -52,7 +57,7 @@ const joinConnectScript: AutomationScript = async (page) => {
   }
 
   // wait for user to be redirected to the login page.
-  // If it doesnt happen in 3s, we assume it failed and give control to the user
+  // If it doesnt happen in 5s, we assume it failed and give control to the user
   const result = await page.waitForCondition(
     (window, document) => {
       'use webview';
@@ -92,8 +97,8 @@ const joinConnectScript: AutomationScript = async (page) => {
     }
 
     await page.locator('input[name="password"]').fill(password);
-    const wait2 = page.waitForNavigation();
-    page.locator('button[type="submit"]').click();
+    const wait2 = page.waitForNavigation(5000);
+    await page.locator('button[type="submit"]').click();
     try {
       await wait2;
     } catch (e) {

@@ -36,6 +36,7 @@ type OmitFirstArg<T> = T extends [arg: any, ...rest: infer U] ? U : never;
 
 const initAborise = (window: EnhancedWindow, document: Document) => {
   'use webview';
+
   // localStorage.clear();
   const nativeInputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!;
 
@@ -142,7 +143,7 @@ const initAborise = (window: EnhancedWindow, document: Document) => {
     },
   };
 
-  if (document.readyState === 'interactive') {
+  if (document.readyState === 'interactive' || document.readyState === 'complete') {
     console.log('ready');
     api.send({ type: 'ready', data: document.location.href });
   } else {

@@ -49,8 +49,7 @@ true;
 
 export const standardConnectMessage = () => (
   <SizableText size="$4" fontWeight={'bold'}>
-    We're trying to log you in automatically. If this takes longer than expected, please continue the login process
-    manually.
+    We're trying to log you in automatically.
   </SizableText>
 );
 
