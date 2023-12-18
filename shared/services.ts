@@ -262,7 +262,7 @@ const _dazn = {
   title: 'DAZN',
   appleId: '1129523589',
   googleId: 'com.dazn',
-  schema: 'dazn://',
+  schema: 'dazn://', // 'open.dazn.com://' 'com.dazn://'
   description: 'Watch sports',
   auth: ['email', 'password'],
   optionalDataKeys: [],
@@ -325,6 +325,46 @@ const _rtl = {
 type Rtl = typeof _rtl;
 
 export const rtl = _rtl as DeepWriteable<Rtl> satisfies Service;
+
+const _wow = {
+  id: 'wow',
+  title: 'WOW',
+  appleId: '929190059',
+  googleId: 'de.sky.online',
+  schema: 'wowtv://', // 'sky-ticket://'
+  description: 'Watch TV',
+  auth: ['email', 'password'],
+  optionalDataKeys: [],
+  optional: [],
+  actions: [
+    {
+      name: 'connect',
+      type: 'manual',
+      states: [],
+      webView: 'v2',
+    },
+    // {
+    //   name: 'cancel',
+    //   type: 'manual',
+    //   states: ['active'],
+    // },
+    // {
+    //   name: 'resume',
+    //   type: 'manual',
+    //   states: ['canceled'],
+    // },
+    // {
+    //   name: 'register',
+    //   type: 'manual',
+    //   states: [],
+    //   webView: true,
+    // },
+  ],
+} as const;
+
+type Wow = typeof _wow;
+
+export const wow = _wow as DeepWriteable<Wow> satisfies Service;
 
 // const _hbo = {
 //   id: 'hbo',
