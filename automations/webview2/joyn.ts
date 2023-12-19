@@ -106,7 +106,7 @@ const joinConnectScript: AutomationScript = async (page) => {
     }
   }
 
-  await page.waitForCondition(
+  const isLoggedIn = await page.waitForCondition(
     () => {
       'use webview';
       // @ts-expect-error
@@ -115,6 +115,10 @@ const joinConnectScript: AutomationScript = async (page) => {
     {},
     timeout,
   );
+
+  if (!isLoggedIn) {
+    return Err({ message: 'Login Failed. Please try again' });
+  }
 
   return getTokenResult();
 };

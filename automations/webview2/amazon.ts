@@ -11,7 +11,7 @@ import { AutomationScript } from '~/shared/Page';
 import { Err, Ok } from '~/shared/Result';
 import { ActionReturn } from '../helpers/helpers';
 import { extractAmount, extractDate } from '../helpers/strings';
-import { WebViewConfig2, standardConnectMessage } from '../webview/webview.helpers';
+import { WebViewConfig2, standardConnectMessage, wait } from '../webview/webview.helpers';
 
 const planRegex = /(\w+) (\w+) (\d+\.\d+)/;
 const renewalDateRegex = /(\d+) (\w+) (\d{4})/;
@@ -24,12 +24,17 @@ const connectScript: AutomationScript = async (page) => {
     page.locator('input[name="password"]').fill(auth!.password),
   ]);
 
-  const wait = page.waitForNavigation();
+  const wait1 = page.waitForNavigation();
 
   await page.locator('#signInSubmit').click();
 
-  await wait;
+  await wait1;
 
+  if (await page.locator('#auth-error-message-box').exists()) {
+    return Err({ message: 'Login failed. Check your credentials.' });
+  }
+
+  // spam guard
   while (await page.locator('#otp_submit_form').exists(500)) {
     const text = await page.locator('#channelDetailsForOtp').textContent(0);
     const alerts = await page
@@ -45,29 +50,29 @@ const connectScript: AutomationScript = async (page) => {
     }
 
     await page.locator('#input-box-otp').fill(otp);
-    const wait = page.waitForNavigation();
+    const wait2 = page.waitForNavigation();
     await page.locator('#cvf-submit-otp-button input[type="submit"]').click();
-    await wait;
+    await wait2;
   }
 
+  // 2fa
   while (await page.locator('#auth-mfa-otpcode').exists(500)) {
     const text = 'Please enter your One Time Password (OTP)';
-    const alerts = await page
-      .locator('#auth-error-message-box')
-      .textContent(0)
-      .catch(() => '');
 
-    const otp = await page.prompt({ text: `${alerts}${alerts ? '\n' : ''}${text}`, title: 'Enter OTP' });
+    const otp = await page.prompt({ text: text, title: 'Enter OTP' });
 
     if (otp === null) {
-      console.log('OTP not provided');
       return Err({ message: 'OTP not provided' });
     }
 
     await page.locator('#auth-mfa-otpcode').fill(otp);
-    const wait = page.waitForNavigation();
-    await page.locator('#auth-signin-button input[type="submit"]').click();
-    await wait;
+    const wait3 = page.waitForNavigation();
+    await page.locator('#auth-signin-button').click();
+    await wait3;
+
+    if (await page.locator('#auth-error-message-box').exists(0)) {
+      return Err({ message: 'Wrong OTP' });
+    }
   }
 
   // await new Promise((resolve) => {});
