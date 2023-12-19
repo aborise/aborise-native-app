@@ -22,7 +22,7 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "buildNumber": "1.0.11",
+      "buildNumber": "1.0.12",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
