@@ -70,5 +70,6 @@
   "hit-us": "Her damit!",
   "due-this-month": "Fällig (aktueller Monat)",
   "oops-you-got-us": "Ups, du hast uns erwischt!",
-  "success": "Erledigt"
+  "success": "Erledigt",
+  "login-failed-please-check-your-credentials": "Fehler bei der Anmeldung. \nBitte überprüfen Sie Ihre Anmeldedaten!"
 }

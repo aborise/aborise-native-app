@@ -2,8 +2,10 @@ import { useStorage } from '~/composables/useStorage';
 import { AutomationScript } from '~/shared/Page';
 import { Err, Ok } from '~/shared/Result';
 import { WebViewConfig2, standardConnectMessage, wait } from '../webview/webview.helpers';
+import { useI18n } from '~/composables/useI18n';
 
 const LOGIN_URL = 'https://www.joyn.de/mein-account';
+const { t } = useI18n();
 
 const joinConnectScript: AutomationScript = async (page) => {
   const { email, password } = await useStorage('local').get('services/joyn/login');
@@ -93,7 +95,7 @@ const joinConnectScript: AutomationScript = async (page) => {
     }
 
     if (!(await page.locator('input[name="password"]').exists(1000))) {
-      return Err({ message: 'Login Failed. Please check your credentials!' });
+      return Err({ message: t('login-failed-please-check-your-credentials') });
     }
 
     await page.locator('input[name="password"]').fill(password);
@@ -102,7 +104,7 @@ const joinConnectScript: AutomationScript = async (page) => {
     try {
       await wait2;
     } catch (e) {
-      return Err({ message: 'Login Failed. Please check your credentials!' });
+      return Err({ message: t('login-failed-please-check-your-credentials') });
     }
   }
 

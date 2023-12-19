@@ -70,5 +70,6 @@
   "hit-us": "Hit us!",
   "due-this-month": "Due this month",
   "oops-you-got-us": "Oops, you got us!",
-  "success": "Success"
+  "success": "Success",
+  "login-failed-please-check-your-credentials": "Login Failed. Please check your credentials!"
 }
