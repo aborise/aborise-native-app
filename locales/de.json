@@ -52,7 +52,7 @@
   "no-login-credentials-were-found-for-this-service-please-add-them-by-reconnecting-the-service": "Für diesen Service wurden keine Anmeldeinformationen gefunden. \nBitte füge sie hinzu, indem Du den Dienst erneut verbindest.",
   "the-action-failed-because-your-subscription-is-inactive": "Die Aktion ist fehlgeschlagen, weil das Abo inaktiv ist",
   "the-request-timed-out-are-you-connected-to-the-internet": "Bei der Anfrage ist eine Zeitüberschreitung aufgetreten. \nBist du mit dem Internet verbunden?",
-  "there-was-an-error-canceling-your-service-please-reconnect-this-service": "Beim Stornieren Deinre Subscription ist ein Fehler aufgetreten. \nBitte verbinde diesen Service erneut.",
+  "there-was-an-error-canceling-your-service-please-reconnect-this-service": "Beim Kündigen Deiner Subscription ist ein Fehler aufgetreten. \nBitte verbinde diesen Service erneut.",
   "there-was-an-error-loading-the-page-please-try-again": "Beim Laden der Seite ist ein Fehler aufgetreten. \nBitte versuche es erneut!",
   "there-was-an-error-loading-your-login-credentials-please-try-again": "Beim Laden Deiner Anmeldedaten ist ein Fehler aufgetreten. \nBitte versuche es erneut.",
   "there-was-an-error-refreshing-the-data-please-reconnect-this-service": "Beim Aktualisieren der Daten ist ein Fehler aufgetreten. \nBitte verbinde diesen Service erneut.",

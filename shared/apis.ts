@@ -2,9 +2,15 @@ import { ApiError } from '~/automations/api/helpers/client';
 import { AsyncResult } from './Result';
 import { AllServices, Service } from './allServices';
 import { ApiResult } from '~/automations/helpers/helpers';
+import { Subscription } from '~/realms/Subscription';
+import { InstanceToPlain } from './typeHelpers';
 
 type toActionFns<U extends string> = {
-  [K in U]: (action: K, service: keyof AllServices) => AsyncResult<ApiResult, ApiError>;
+  [K in U]: (
+    action: K,
+    service: keyof AllServices,
+    subscription: InstanceToPlain<Subscription>,
+  ) => AsyncResult<ApiResult, ApiError>;
 }[U];
 
 type Values<T> = T[keyof T];

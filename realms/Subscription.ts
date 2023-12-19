@@ -43,6 +43,7 @@ export class Subscription extends Realm.Object<Subscription> {
           status: values.status,
           planPrice: values.planPrice,
           billingCycle: values.billingCycle,
+          productId: values.productId,
         };
       }
       case 'canceled': {
@@ -53,6 +54,7 @@ export class Subscription extends Realm.Object<Subscription> {
           status: values.status,
           planPrice: values.planPrice,
           billingCycle: values.billingCycle,
+          productId: values.productId,
         };
       }
       case 'inactive': {

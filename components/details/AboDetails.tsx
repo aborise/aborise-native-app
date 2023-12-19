@@ -89,7 +89,7 @@ const AboDetails: React.FC<Props> = ({ subscription }) => {
 
       if (!actionHandler) return;
 
-      const res = await actionHandler(serviceId);
+      const res = await actionHandler(serviceId, subscription);
 
       setExecuting(false);
 

@@ -11,6 +11,7 @@ import { Action } from '~/shared/validators';
 import { Service } from '~/realms/Service';
 import { getRealm } from '~/realms/realm';
 import { Subscription } from '~/realms/Subscription';
+import { InstanceToPlain } from '~/shared/typeHelpers';
 
 // globalThis.process = globalThis.process ?? {};
 
@@ -40,6 +41,7 @@ type ApiCallback = (options: {
   auth: Record<string, string>;
   client: Session;
   storage: Storage;
+  subscription: InstanceToPlain<Subscription>;
 }) => AsyncResult<ActionReturn, ApiError>;
 
 type ApiOptions = {
@@ -49,12 +51,16 @@ type ApiOptions = {
 export const api = (
   cb: ApiCallback,
   { storage = useStorage('local') }: ApiOptions = {},
-): ((action: Action, service: keyof AllServices) => AsyncResult<ApiResult, ApiError>) => {
-  return (action: Action, service: keyof AllServices) => {
+): ((
+  action: Action,
+  service: keyof AllServices,
+  subscription: InstanceToPlain<Subscription>,
+) => AsyncResult<ApiResult, ApiError>) => {
+  return (action: Action, service: keyof AllServices, subscription: InstanceToPlain<Subscription>) => {
     return getServiceLogin(service)
       .andThen((login) => {
         const client = new Session();
-        const result = cb({ auth: login, client, storage });
+        const result = cb({ auth: login, client, storage, subscription });
 
         return result.map(async ({ cookies, token, data }) => {
           if (cookies?.length) {

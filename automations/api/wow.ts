@@ -49,7 +49,7 @@ const refreshToken = (client: Session, config: TokenConfig) => {
         'X-SkyOTT-Proposition': 'NOWTV',
         'X-SkyOTT-Platform': 'PC',
         'X-SkyOTT-Device': 'COMPUTER',
-        'Content-MD5': hash,
+        'Content-MD5': hash.toString(),
       },
       body,
     })
@@ -124,7 +124,7 @@ const fetchSubscriptions = (client: Session, config: TokenConfig) => {
 
 const handleSubscriptionResult = (client: Session, apiAuth: TokenConfig): AsyncResult<ApiResult, ApiError> => {
   return fetchSubscriptions(client, apiAuth).map(({ data: productData }) => {
-    const subscriptions = productData.currentSubscriptions.filter((sub) => sub.state === 'ACTIVE');
+    const subscriptions = productData.currentSubscriptions; // .filter((sub) => sub.state === 'ACTIVE');
 
     if (subscriptions.length === 0) {
       return {
@@ -134,30 +134,30 @@ const handleSubscriptionResult = (client: Session, apiAuth: TokenConfig): AsyncR
     }
 
     const subs = subscriptions.map((sub) => {
-      // else if (sub.state.state === 'cancelled') {
-      //   return {
-      //     token: apiAuth,
-      //     data: [
-      //       {
-      //         status: 'canceled',
-      //         billingCycle: 'monthly',
-      //         expiresAt: sub.state.expiresOn + 'Z',
-      //         planName: sub.config.name,
-      //         planPrice: sub.config.price,
-      //       },
-      //     ],
-      //   } satisfies ActionReturn;
-      // }
-      // else {
-      const amount = sub.nextRenewalAmount.split('.');
-      const price = Number(amount[0]) * 100 + Number(amount[1]);
-      return {
-        status: 'active',
-        billingCycle: sub.product.context.subscriptionType === 'MONTHLY' ? 'monthly' : 'annual',
-        planName: sub.product.staticId,
-        nextPaymentDate: sub.nextRenewalDueDate,
-        planPrice: price,
-      } satisfies NonNullable<ActionReturn['data']>[number];
+      if (sub.state === 'USER_CANCELLED') {
+        const amount = sub.nextRenewalAmount.split('.');
+        const price = Number(amount[0]) * 100 + Number(amount[1]);
+
+        return {
+          status: 'canceled',
+          billingCycle: sub.product.context.subscriptionType === 'MONTHLY' ? 'monthly' : 'annual',
+          expiresAt: sub.cancellationEffectiveDate!,
+          planName: sub.product.staticId,
+          planPrice: price,
+          productId: sub.id,
+        } satisfies NonNullable<ActionReturn['data']>[number];
+      } else {
+        const amount = sub.nextRenewalAmount.split('.');
+        const price = Number(amount[0]) * 100 + Number(amount[1]);
+        return {
+          status: 'active',
+          billingCycle: sub.product.context.subscriptionType === 'MONTHLY' ? 'monthly' : 'annual',
+          planName: sub.product.staticId,
+          nextPaymentDate: sub.nextRenewalDueDate!,
+          planPrice: price,
+          productId: sub.id,
+        } satisfies NonNullable<ActionReturn['data']>[number];
+      }
     });
 
     return {
@@ -169,4 +169,70 @@ const handleSubscriptionResult = (client: Session, apiAuth: TokenConfig): AsyncR
 
 export const connect = api(({ client }) => {
   return ensureValidToken(client).andThen((apiAuth) => handleSubscriptionResult(client, apiAuth));
+});
+
+export const cancel = api(({ client, subscription }) => {
+  const body = { subscriptionId: subscription.productId };
+  const hash = MD5(JSON.stringify(body));
+  return ensureValidToken(client).andThen((apiAuth) => {
+    return client
+      .fetch({
+        url: 'https://ottsas.sky.com/commerce/payments-manager/cancelrenewal',
+        method: 'POST',
+        body: body,
+        headers: {
+          'Content-Type': 'application/vnd.cancelrenewal.v1+json',
+          'X-SkyOTT-UserToken': apiAuth.userToken,
+          'X-SkyOTT-Territory': 'DE',
+          'X-SkyOTT-Provider': 'NOWTV',
+          'X-SkyOTT-Proposition': 'NOWTV',
+          'X-SkyOTT-Platform': 'PC',
+          'X-SkyOTT-Device': 'COMPUTER',
+          'Content-MD5': hash.toString(),
+        },
+      })
+      .mapErr((err) => {
+        return {
+          ...err,
+          custom: 'The subscription deletion request failed.',
+          message: t('there-was-an-error-canceling-your-service-please-reconnect-this-service'),
+          userFriendly: true,
+          statusCode: 500,
+        } satisfies ApiError;
+      })
+      .andThen(() => handleSubscriptionResult(client, apiAuth));
+  });
+});
+
+export const resume = api(({ client, subscription }) => {
+  const body = { subscriptionId: subscription.productId };
+  const hash = MD5(JSON.stringify(body));
+  return ensureValidToken(client).andThen((apiAuth) => {
+    return client
+      .fetch({
+        url: 'https://ottsas.sky.com/commerce/payments-manager/reinstatesubscription',
+        method: 'POST',
+        body: body,
+        headers: {
+          'Content-Type': 'application/vnd.reinstate.v1+json',
+          'X-SkyOTT-UserToken': apiAuth.userToken,
+          'X-SkyOTT-Territory': 'DE',
+          'X-SkyOTT-Provider': 'NOWTV',
+          'X-SkyOTT-Proposition': 'NOWTV',
+          'X-SkyOTT-Platform': 'PC',
+          'X-SkyOTT-Device': 'COMPUTER',
+          'Content-MD5': hash,
+        },
+      })
+      .mapErr((err) => {
+        return {
+          ...err,
+          custom: 'The subscription reactivation request failed.',
+          message: t('there-was-an-error-resuming-your-service-please-reconnect-this-service'),
+          userFriendly: true,
+          statusCode: 500,
+        } satisfies ApiError;
+      })
+      .andThen(() => handleSubscriptionResult(client, apiAuth));
+  });
 });

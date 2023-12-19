@@ -343,16 +343,16 @@ const _wow = {
       states: [],
       webView: 'v2',
     },
-    // {
-    //   name: 'cancel',
-    //   type: 'manual',
-    //   states: ['active'],
-    // },
-    // {
-    //   name: 'resume',
-    //   type: 'manual',
-    //   states: ['canceled'],
-    // },
+    {
+      name: 'cancel',
+      type: 'manual',
+      states: ['active'],
+    },
+    {
+      name: 'resume',
+      type: 'manual',
+      states: ['canceled'],
+    },
     // {
     //   name: 'register',
     //   type: 'manual',

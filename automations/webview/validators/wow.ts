@@ -170,11 +170,12 @@ const wowSubscriptionSchema = z.object({
     z.object({
       id: z.string(),
       startDate: z.string(),
-      state: z.enum(['ACTIVE']),
-      nextRenewalDueDate: z.string(),
+      state: z.enum(['ACTIVE', 'USER_CANCELLED']),
+      nextRenewalDueDate: z.string().datetime().optional(),
       nextRenewalAmount: z.string(),
       currency: z.string(),
       lastUpdatedDate: z.string(),
+      cancellationEffectiveDate: z.string().datetime().optional(),
       product: z.object({
         id: z.string(),
         staticId: z.string(),
