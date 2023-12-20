@@ -3,6 +3,7 @@ const REGISTER_URL = 'https://www.paramountplus.com/de/account/signup/account';
 // const CONNECT_URL = 'https://www.paramountplus.com/account/';
 const REACTIVATE_URL = 'https://www.paramountplus.com/de/account/signup/plan/';
 
+import { useI18n } from '~/composables/useI18n';
 import { useStorage } from '~/composables/useStorage';
 import { AutomationScript } from '~/shared/Page';
 import { Err, Ok, Result } from '~/shared/Result';
@@ -11,8 +12,9 @@ import { strToCookie } from '~/shared/helpers';
 import { ActionError, ActionReturn } from '../helpers/helpers';
 import { timeZoneToUtc } from '../helpers/strings';
 import { AccountData, Plan } from '../webview/validators/paramount_userData';
-import { WebViewConfig2, standardConnectMessage } from '../webview/webview.helpers';
+import { WebViewConfig2 } from '../webview/webview.helpers';
 
+const { t } = useI18n();
 type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
 
 const dataConverter = (data: {
@@ -83,7 +85,7 @@ const dataConverter = (data: {
     } satisfies ActionReturn);
   }
 
-  return Err({ data: user, message: 'Login failed' });
+  return Err({ data: user, message: t('login-failed-please-try-again') });
 };
 
 type VueAppHostElement = HTMLElement & {
@@ -118,7 +120,7 @@ const paramountConnectScript: AutomationScript = async (page) => {
   });
 
   if (!isLoggedIn) {
-    return Err({ message: 'Login failed. Check your credentials.' });
+    return Err({ message: t('login-failed-please-check-your-credentials') });
   }
 
   const result = await page.evaluate((window, document) => {

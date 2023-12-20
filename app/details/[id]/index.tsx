@@ -87,7 +87,9 @@ const Details: React.FC = () => {
           Toast.show(t('updated'), { duration: Toast.durations.SHORT });
         } else {
           console.log(res.val);
-          Toast.show(t('error-while-updating') + ' / ' + res.val.message, { duration: Toast.durations.SHORT });
+          Toast.show(t('error-updating-please-try-again') + ' / ' + res.val.message, {
+            duration: Toast.durations.SHORT,
+          });
         }
       })
       .finally(async () => {
@@ -119,7 +121,7 @@ const Details: React.FC = () => {
     const action = service.actions.find((a) => a.name === 'reactivate') as ServiceDefinition['actions'][number];
 
     if (!action) {
-      return Alert.alert(t('oops-you-got-us'), t('this-feature-is-not-enabled-for-this-service-yet-stay-tuned'));
+      return Alert.alert(t('oops-you-got-us'), t('this-feature-is-not-enabled-for-x-yet-stay-tuned', [service.title]));
     }
 
     if (action.type === 'api') return;

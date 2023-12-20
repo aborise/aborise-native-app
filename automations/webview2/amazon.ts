@@ -6,12 +6,15 @@ export const primePlanSelector =
 export const primeRenewalDateSelector =
   '.widgetMCXAccountManagementWidgetSlot nav .mcx-nav__menu li:nth-child(2) .mcx-menu-item__heading';
 
+import { useI18n } from '~/composables/useI18n';
 import { useStorage } from '~/composables/useStorage';
 import { AutomationScript } from '~/shared/Page';
 import { Err, Ok } from '~/shared/Result';
 import { ActionReturn } from '../helpers/helpers';
 import { extractAmount, extractDate } from '../helpers/strings';
-import { WebViewConfig2, standardConnectMessage, wait } from '../webview/webview.helpers';
+import { WebViewConfig2 } from '../webview/webview.helpers';
+
+const { t } = useI18n();
 
 const planRegex = /(\w+) (\w+) (\d+\.\d+)/;
 const renewalDateRegex = /(\d+) (\w+) (\d{4})/;
@@ -31,7 +34,7 @@ const connectScript: AutomationScript = async (page) => {
   await wait1;
 
   if (await page.locator('#auth-error-message-box').exists()) {
-    return Err({ message: 'Login failed. Check your credentials.' });
+    return Err({ message: t('login-failed-please-check-your-credentials') });
   }
 
   // spam guard
@@ -46,7 +49,7 @@ const connectScript: AutomationScript = async (page) => {
 
     if (otp === null) {
       console.log('OTP not provided');
-      return Err({ message: 'OTP not provided' });
+      return Err({ message: t('no-otp-provided-please-try-again') });
     }
 
     await page.locator('#input-box-otp').fill(otp);
@@ -57,12 +60,12 @@ const connectScript: AutomationScript = async (page) => {
 
   // 2fa
   while (await page.locator('#auth-mfa-otpcode').exists(500)) {
-    const text = 'Please enter your One Time Password (OTP)';
+    const text = t('please-enter-your-one-time-password-otp');
 
     const otp = await page.prompt({ text: text, title: 'Enter OTP' });
 
     if (otp === null) {
-      return Err({ message: 'OTP not provided' });
+      return Err({ message: t('no-otp-provided-please-try-again') });
     }
 
     await page.locator('#auth-mfa-otpcode').fill(otp);
@@ -71,16 +74,16 @@ const connectScript: AutomationScript = async (page) => {
     await wait3;
 
     if (await page.locator('#auth-error-message-box').exists(0)) {
-      return Err({ message: 'Wrong OTP' });
+      return Err({ message: t('wrong-otp-please-try-again') });
     }
   }
 
   // await new Promise((resolve) => {});
 
   if (page.url.includes('https://www.amazon.de/ap/forgotpassword/reverification')) {
-    page.statusMessage('Please verify your password');
+    page.statusMessage('Please verify your password.');
     page.reveal();
-    return Err({ message: 'Please verify your password' });
+    return Err({ message: t('please-verify-your-password') });
   }
 
   const data = await page.fetch(
@@ -110,7 +113,7 @@ const connectScript: AutomationScript = async (page) => {
   const renewalDateMatch = data.renewalDate!.match(renewalDateRegex);
 
   if (!planMatch || !renewalDateMatch) {
-    return Err({ message: 'Could not parse plan or renewal date' });
+    return Err({ message: t('unable-to-get-plan-details-or-renewal-date-please-try-again') });
   }
 
   const plan = planMatch[1].toLowerCase() as 'monthly' | 'annual';

@@ -74,7 +74,7 @@ const joinConnectScript: AutomationScript = async (page) => {
   let timeout = 10000;
   if (!result) {
     console.log('not on signin.7pass.de');
-    page.statusMessage("We couln't log you in automatically. Please login manually.");
+    page.statusMessage(t('at-the-moment-automatic-login-is-unavailable-please-enter-your-credentials-manually'));
     page.reveal();
 
     // give the user enough time to login manually
@@ -122,7 +122,8 @@ const joinConnectScript: AutomationScript = async (page) => {
   );
 
   if (!isLoggedIn) {
-    return Err({ message: 'Login Failed. Please try again' });
+    await wait();
+    return Err({ message: t('login-failed-please-try-again') });
   }
 
   return getTokenResult();

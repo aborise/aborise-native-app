@@ -34,7 +34,7 @@ export const getServiceLogin = <T extends keyof AllServices>(
           errorMessage: 'No login found',
           code: ERROR_CODES.NO_LOGIN_DATA,
           userFriendly: true,
-          message: t('no-login-credentials-were-found-for-this-service-please-add-them-by-reconnecting-the-service'),
+          message: t('no-login-credentials-found-for-x-please-add-them-by-reconnecting-the-service', [service.title]),
           statusCode: 400,
         } satisfies ApiError);
       })

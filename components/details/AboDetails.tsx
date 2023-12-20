@@ -101,17 +101,13 @@ const AboDetails: React.FC<Props> = ({ subscription }) => {
 
       // Special handling for inactive accounts that want to resume -> let them reactivate
       if (err.code === ERROR_CODES.INVALID_MEMBERSHIP_STATUS && action.name === 'resume') {
-        return Alert.alert(
-          t('invalid-membership-status'),
-          t('it-seems-like-your-account-is-inactive-do-you-want-to-reactivate-it') + '?',
-          [
-            {
-              text: t('cancel2'),
-              style: 'cancel',
-            },
-            { text: t('confirm'), onPress: () => handleWebViewActions(serviceId, 'reactivate') },
-          ],
-        );
+        return Alert.alert(t('invalid-membership-status'), t('your-account-is-inactive-reactivate-now') + '?', [
+          {
+            text: t('cancel2'),
+            style: 'cancel',
+          },
+          { text: t('confirm'), onPress: () => handleWebViewActions(serviceId, 'reactivate') },
+        ]);
       }
 
       Toast.show(res.val.message, { duration: Toast.durations.LONG });

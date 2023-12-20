@@ -5,8 +5,10 @@ import { Err, Ok, Result } from '~/shared/Result';
 import { getUserId } from '~/shared/ensureDataLoaded';
 import { ActionError, ActionReturn } from '../helpers/helpers';
 import { WebViewConfig2, javascript, standardConnectMessage } from '../webview/webview.helpers';
+import { useI18n } from '~/composables/useI18n';
 
 const LOGIN_URL = 'https://my.plus.rtl.de/account';
+const { t } = useI18n();
 
 const checkLoggedIn = (type: Response['type'], negative = false) => {
   return javascript`
@@ -87,7 +89,7 @@ const rtlConnectScript: AutomationScript = async (page) => {
   let timeout = 3000;
   if (!ensureLoginPage) {
     timeout = 1000 * 60 * 60 * 24;
-    page.statusMessage("We couln't log you in automatically. Please login manually.");
+    page.statusMessage(t('at-the-moment-automatic-login-is-unavailable-please-enter-your-credentials-manually'));
     page.reveal();
   } else {
     await Promise.all([
@@ -107,7 +109,7 @@ const rtlConnectScript: AutomationScript = async (page) => {
     );
 
     if (!correctLogin) {
-      return Err({ message: 'Wrong login credentials' });
+      return Err({ message: t('login-failed-please-check-your-credentials') });
     }
   }
 

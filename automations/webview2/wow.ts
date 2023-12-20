@@ -7,6 +7,9 @@ import { Err, Ok } from '~/shared/Result';
 import { parseCookieString } from '../api/helpers/cookie';
 import { WebViewConfig2, standardConnectMessage, wait } from '../webview/webview.helpers';
 import { strToCookie } from '~/shared/helpers';
+import { useI18n } from '~/composables/useI18n';
+
+const { t } = useI18n();
 
 const connectScript: AutomationScript = async (page) => {
   const storage = useStorage('local');
@@ -42,7 +45,7 @@ const connectScript: AutomationScript = async (page) => {
 
   if (await page.locator('.password-field__error').exists(500)) {
     console.log('Login failed');
-    return Err({ message: 'Login failed. Please check your credentials.' });
+    return Err({ message: t('login-failed-please-check-your-credentials') });
   }
 
   const cookiesFound = await page.waitForCondition(
@@ -55,7 +58,7 @@ const connectScript: AutomationScript = async (page) => {
   );
 
   if (!cookiesFound) {
-    return Err({ message: 'Login failed. Something went wrong' });
+    return Err({ message: t('login-failed-please-try-again') });
   }
 
   const cookieStr = await page.evaluate(() => {
@@ -71,7 +74,7 @@ const connectScript: AutomationScript = async (page) => {
   const personaId = cookies.find((c) => c.name === 'personaId')!.value;
 
   if (cookies.length !== 2) {
-    return Err({ message: 'Login failed. Please check your credentials.' });
+    return Err({ message: t('login-failed-please-check-your-credentials') });
   }
 
   return Ok({ cookies, token: { expires: new Date(0).getTime(), authToken, personaId } });
