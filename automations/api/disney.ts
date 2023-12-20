@@ -7,7 +7,7 @@ import { useI18n } from '~/composables/useI18n';
 import { useLargeUnsafeStorage } from '~/composables/useStorage';
 import { Err, Ok, wrapAsync, type AsyncResult, type Result } from '~/shared/Result';
 import { getUserId } from '~/shared/ensureDataLoaded';
-import { BillingCycle, type ActionResult } from '../helpers/helpers';
+import { BillingCycle, type ActionResult, ActionReturn } from '../helpers/helpers';
 import { Session, type ApiError } from './helpers/client';
 import { api } from './helpers/setup';
 
@@ -226,25 +226,11 @@ export class DisneyAPI {
       variables: {},
     };
 
-    return this.getAuthToken()
-      .andThen((token) => {
-        return this.session.post<Response>(graphqlEndpoint, graphqlQuery, this.getAuthHeader(token)).map((res) => {
-          return res.data.data.me.identity.subscriber.subscriptions;
-        });
-      })
-      .andThen((details) => {
-        if (details.length === 0) {
-          const err: ApiError = {
-            custom: 'Account is inactive',
-            errorMessage: 'Account is inactive',
-            message: t('the-action-failed-because-your-subscription-is-inactive'),
-            userFriendly: true,
-            statusCode: 500,
-          };
-          return Err(err);
-        }
-        return Ok(details[0]);
+    return this.getAuthToken().andThen((token) => {
+      return this.session.post<Response>(graphqlEndpoint, graphqlQuery, this.getAuthHeader(token)).map((res) => {
+        return res.data.data.me.identity.subscriber.subscriptions;
       });
+    });
   }
 
   private _clientApiKey() {
@@ -544,53 +530,47 @@ export class DisneyAPI {
   //   return result.data;
   // }
 
-  public restartSub() {
-    return this.getSubscriptionDetails().andThen((subscription) => {
-      return this.getAuthToken()
-        .andThen((token) => {
-          // alternatively post 'https://disney.api.edge.bamgrid.com/v2/order/restart'
-          // return this.session.post<{ data: { success: boolean } }>(
-          //   'https://disney.api.edge.bamgrid.com/v2/order/restart',
-          //   { subscriptionId: subscription.id },
-          //   this.getAuthHeader(token),
-          // );
-          return this.session.put<{ data: { success: boolean } }>(
-            'https://disney.api.edge.bamgrid.com/execution/v1/subscription/restart',
-            { subscriptionId: subscription.id },
-            this.getAuthHeader(token),
-          );
-        })
-        .map(({ data }) => {
-          return {
-            success: data.data.success,
-            subscription,
-          };
-        });
-    });
+  public restartSub(id: string) {
+    return this.getAuthToken()
+      .andThen((token) => {
+        // alternatively post 'https://disney.api.edge.bamgrid.com/v2/order/restart'
+        // return this.session.post<{ data: { success: boolean } }>(
+        //   'https://disney.api.edge.bamgrid.com/v2/order/restart',
+        //   { subscriptionId: subscription.id },
+        //   this.getAuthHeader(token),
+        // );
+        return this.session.put<{ data: { success: boolean } }>(
+          'https://disney.api.edge.bamgrid.com/execution/v1/subscription/restart',
+          { subscriptionId: id },
+          this.getAuthHeader(token),
+        );
+      })
+      .map(({ data }) => {
+        return {
+          success: data.data.success,
+        };
+      });
   }
 
   // This api is way simpler because it only needs the subscriptionId
-  public cancelSub2() {
-    return this.getSubscriptionDetails().andThen((subscription) => {
-      return this.getAuthToken()
-        .andThen((token) => {
-          // alternatively post 'https://disney.api.edge.bamgrid.com/v2/order/restart'
-          return this.session.put<{ data: { success: boolean } }>(
-            'https://disney.api.edge.bamgrid.com/execution/v1/subscription/cancel',
-            { subscriptionId: subscription.id },
-            this.getAuthHeader(token, {
-              Accept: 'application/json; charset=utf-8',
-              'Content-Type': 'application/json; charset=utf-8',
-            }),
-          );
-        })
-        .map(({ data }) => {
-          return {
-            success: data.data.success,
-            subscription,
-          };
-        });
-    });
+  public cancelSub2(id: string) {
+    return this.getAuthToken()
+      .andThen((token) => {
+        // alternatively post 'https://disney.api.edge.bamgrid.com/v2/order/restart'
+        return this.session.put<{ data: { success: boolean } }>(
+          'https://disney.api.edge.bamgrid.com/execution/v1/subscription/cancel',
+          { subscriptionId: id },
+          this.getAuthHeader(token, {
+            Accept: 'application/json; charset=utf-8',
+            'Content-Type': 'application/json; charset=utf-8',
+          }),
+        );
+      })
+      .map(({ data }) => {
+        return {
+          success: data.data.success,
+        };
+      });
   }
 }
 
@@ -645,6 +625,7 @@ const mapSubscriptionDetails = (details: DisneySubscriptionDetails): ActionResul
       billingCycle: (details.billingFrequency === 'MONTH' ? 'monthly' : 'annual') as BillingCycle,
       planName: details.billingFrequency === 'MONTH' ? 'monthly' : 'annual',
       planPrice: details.latestTransactedInvoice.totalAmount * 100,
+      productId: details.subscription?.id,
     };
   } else {
     return {
@@ -653,8 +634,16 @@ const mapSubscriptionDetails = (details: DisneySubscriptionDetails): ActionResul
       billingCycle: (details.billingFrequency === 'MONTH' ? 'monthly' : 'annual') as BillingCycle,
       planName: details.billingFrequency === 'MONTH' ? 'monthly' : 'annual',
       planPrice: Math.floor(details.scheduledInvoice.totalAmount * 100),
+      productId: details.subscription?.id,
     };
   }
+};
+
+const getMultipleSubscriptionDetails = (subs: Subscription[], api: DisneyAPI) => {
+  return Promise.all(subs.map((sub) => api.getSubscriptionDetailsById(sub.id))).then((res) => {
+    if (res.some((r) => r.err)) return Err(res.find((r) => r.err)!.val as ApiError);
+    return Ok(res.map((r) => r.val as DisneySubscriptionDetails));
+  });
 };
 
 export const connect = api(({ auth, client }) => {
@@ -669,12 +658,12 @@ export const connect = api(({ auth, client }) => {
 
   return api
     .getSubscriptionDetails()
-    .andThen((subscription) => api.getSubscriptionDetailsById(subscription.id))
-    .map(mapSubscriptionDetails)
-    .map((res) => ({ data: [res] }));
+    .andThen((subscriptions) => getMultipleSubscriptionDetails(subscriptions, api))
+    .map((details) => details.map((d) => mapSubscriptionDetails(d)))
+    .map((res) => ({ data: res } satisfies ActionReturn));
 });
 
-export const cancel = api(({ auth, client }) => {
+export const cancel = api(({ auth, client, subscription }) => {
   const storage = useLargeUnsafeStorage();
   const getApiAuth = () => storage.get<TokenData>('services/disney/api/');
   const setApiAuth = (data: TokenData) => storage.set('services/disney/api/', data);
@@ -684,19 +673,14 @@ export const cancel = api(({ auth, client }) => {
     client,
   );
 
-  return (
-    api
-      .cancelSub2()
-      .andThen((res) => ensureSuccess(res, 'Could not cancel subscription'))
-      .map(wait(3))
-      .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
-      // .logData()
-      .map(mapSubscriptionDetails)
-      .map((res) => ({ data: [res] }))
-  );
+  return api
+    .cancelSub2(subscription!.productId!)
+    .andThen((res) => ensureSuccess(res, 'Could not cancel subscription'))
+    .map(wait(3))
+    .andThen(() => connect('connect', 'disney'));
 });
 
-export const resume = api(({ auth, client }) => {
+export const resume = api(({ auth, client, subscription }) => {
   const storage = useLargeUnsafeStorage();
   const getApiAuth = () => storage.get<TokenData>('services/disney/api/');
   const setApiAuth = (data: TokenData) => storage.set('services/disney/api/', data);
@@ -706,14 +690,9 @@ export const resume = api(({ auth, client }) => {
     client,
   );
 
-  return (
-    api
-      .restartSub()
-      .andThen((res) => ensureSuccess(res, 'Could not resume subscription'))
-      .map(wait(3))
-      .andThen((res) => api.getSubscriptionDetailsById(res.subscription.id))
-      // .logData()
-      .map(mapSubscriptionDetails)
-      .map((res) => ({ data: [res] }))
-  );
+  return api
+    .restartSub(subscription!.productId!)
+    .andThen((res) => ensureSuccess(res, 'Could not resume subscription'))
+    .map(wait(3))
+    .andThen(() => connect('connect', 'disney'));
 });
