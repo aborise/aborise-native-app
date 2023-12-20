@@ -68,10 +68,10 @@ const joinConnectScript: AutomationScript = async (page) => {
       return document.location.host === 'signin.7pass.de';
     },
     {},
-    5000,
+    10000,
   );
 
-  let timeout = 2000;
+  let timeout = 10000;
   if (!result) {
     console.log('not on signin.7pass.de');
     page.statusMessage("We couln't log you in automatically. Please login manually.");
@@ -100,7 +100,7 @@ const joinConnectScript: AutomationScript = async (page) => {
     }
 
     await page.locator('input[name="password"]').fill(password);
-    const wait2 = page.waitForNavigation(5000);
+    const wait2 = page.waitForNavigation(10000, 'complete');
     await page.locator('button[type="submit"]').click();
     try {
       await wait2;
@@ -109,6 +109,8 @@ const joinConnectScript: AutomationScript = async (page) => {
     }
   }
 
+  // TODO: After testing: 2s is not enough because sometimes the page needs longer to load
+  // try to use load event instead at wait for navigation or increase timeout
   const isLoggedIn = await page.waitForCondition(
     () => {
       'use webview';

@@ -10,7 +10,7 @@ import CookieManager, { Cookies } from '@react-native-cookies/cookies';
 import { ApiError } from '~/automations/api/helpers/client';
 
 interface AboriseWebViewApi {
-  send(data: any): void;
+  send(data: DataMessage): void;
   result<T = void>(id: string, data?: T): T;
   log(...args: any[]): void;
   error(...args: any[]): void;
@@ -143,20 +143,18 @@ const initAborise = (window: EnhancedWindow, document: Document) => {
     },
   };
 
-  if (document.readyState === 'interactive' || document.readyState === 'complete') {
-    console.log('ready');
-    api.send({ type: 'ready', data: document.location.href });
-  } else {
-    console.log('not ready');
-    document.addEventListener('DOMContentLoaded', () => {
-      console.log('ready after load');
+  const checkReadyState = () => {
+    if (document.readyState === 'interactive') {
+      console.log('ready');
       api.send({ type: 'ready', data: document.location.href });
-    });
-  }
+    } else if (document.readyState === 'complete') {
+      console.log('complete');
+      api.send({ type: 'complete', data: document.location.href });
+    }
+  };
 
-  // document.addEventListener('readystatechange', () => {
-  //   api.log('state', document.readyState);
-  // });
+  checkReadyState();
+  document.addEventListener('readystatechange', checkReadyState);
 
   console.log('aborise content script loaded');
 
@@ -185,9 +183,11 @@ const minimalApi = (window: EnhancedWindow, document: Document) => {
 export const minimalApiScript = javascript`(${minimalApi.toString()})(window, document)`;
 
 const dataValidator = z.object({
-  type: z.enum(['result', 'log', 'error', 'ready', 'reject']),
+  type: z.enum(['result', 'log', 'error', 'ready', 'reject', 'complete']),
   data: z.any().optional(),
 });
+
+type DataMessage = z.infer<typeof dataValidator>;
 
 export type AutomationScript = (page: Page) => Promise<Result<ActionReturn, ActionError>>;
 export type EvaluatedScript<T, O extends Record<string, any> = never> = (
@@ -201,9 +201,11 @@ export type EvaluatedFetchScript<T, O extends Record<string, any>> = (doc: Docum
 export class Page {
   private resolvers = new Map<string, (value: any) => void>();
   private rejecters = new Map<string, (error: any) => void>();
-  private navTimeout: ReturnType<typeof setTimeout> | undefined = undefined;
+  private navTimeoutReady: ReturnType<typeof setTimeout> | undefined = undefined;
+  private navTimeoutComplete: ReturnType<typeof setTimeout> | undefined = undefined;
   private paused = true;
-  private navigationResolver: () => void = () => {};
+  private navigationReadyResolver: () => void = () => {};
+  private navigationCompleteResolver: () => void = () => {};
   private promptResolver: (value: string | null) => void = () => {};
   url = '';
 
@@ -262,13 +264,19 @@ export class Page {
         return console.log(data);
       case 'error':
         return console.error(data);
+      case 'complete':
       case 'ready':
         // this.injectInitScript();
         this.url = data;
         tagScreen(data);
-        console.log('webview', data);
-        clearTimeout(this.navTimeout!);
-        this.navigationResolver();
+        console.log('webview', type, data);
+        if (type === 'ready') {
+          clearTimeout(this.navTimeoutReady!);
+          this.navigationReadyResolver();
+        } else {
+          clearTimeout(this.navTimeoutComplete!);
+          this.navigationCompleteResolver();
+        }
 
         // only start the automation script once
         if (this.pageReady) return;
@@ -292,12 +300,19 @@ export class Page {
     }
   }
 
-  waitForNavigation(timeout = 3000) {
+  waitForNavigation(timeout = 3000, type: 'ready' | 'complete' = 'ready') {
     return new Promise<void>((resolve, reject) => {
-      this.navigationResolver = resolve;
-      this.navTimeout = setTimeout(() => {
-        reject(new Error('Navigation timeout'));
-      }, timeout);
+      if (type === 'ready') {
+        this.navigationReadyResolver = resolve;
+        this.navTimeoutReady = setTimeout(() => {
+          reject(new Error('Navigation clear timeout'));
+        }, timeout);
+      } else {
+        this.navigationCompleteResolver = resolve;
+        this.navTimeoutComplete = setTimeout(() => {
+          reject(new Error('Navigation complete timeout'));
+        }, timeout);
+      }
     });
   }
 
