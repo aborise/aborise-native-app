@@ -58,6 +58,8 @@ const joinConnectScript: AutomationScript = async (page) => {
     return getTokenResult();
   }
 
+  await page.waitForNavigation();
+
   // wait for user to be redirected to the login page.
   // If it doesnt happen in 5s, we assume it failed and give control to the user
   const result = await page.waitForCondition(
@@ -69,7 +71,7 @@ const joinConnectScript: AutomationScript = async (page) => {
     5000,
   );
 
-  let timeout = 0;
+  let timeout = 2000;
   if (!result) {
     console.log('not on signin.7pass.de');
     page.statusMessage("We couln't log you in automatically. Please login manually.");

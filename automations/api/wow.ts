@@ -9,7 +9,7 @@ import { ActionReturn, ApiResult } from '../helpers/helpers';
 
 type TokenConfig = {
   expires: number;
-  authToken: string;
+  authToken: string; // skyId. NOT auth token
   personaId: string;
   userToken: string;
 };
@@ -78,19 +78,19 @@ const ensureValidToken = (client: Session) => {
       } satisfies ApiError);
     }
 
-    if (apiAuth.expires < Date.now()) {
-      const result = await refreshToken(client, apiAuth);
-      if (result.err) {
-        return Err({
-          ...result.val,
-          custom: 'Refreshing the token failed.',
-          message: t('there-was-an-error-refreshing-the-data-please-reconnect-this-service'),
-          userFriendly: true,
-          statusCode: 500,
-        } satisfies ApiError);
-      }
-      apiAuth = result.val;
+    // if (apiAuth.expires < Date.now()) {
+    const result = await refreshToken(client, apiAuth);
+    if (result.err) {
+      return Err({
+        ...result.val,
+        custom: 'Refreshing the token failed.',
+        message: t('there-was-an-error-refreshing-the-data-please-reconnect-this-service'),
+        userFriendly: true,
+        statusCode: 500,
+      } satisfies ApiError);
     }
+    apiAuth = result.val;
+    // }
 
     return Ok(apiAuth);
   });
@@ -112,6 +112,7 @@ const fetchSubscriptions = (client: Session, config: TokenConfig) => {
       },
     })
     .mapErr((err) => {
+      console.log(err.response?.data);
       return {
         ...err,
         custom: 'Fetching the subscriptions failed.',

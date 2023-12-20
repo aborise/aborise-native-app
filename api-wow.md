@@ -9,6 +9,9 @@ curl 'https://ottsas.sky.com/commerce/is/availableproducts?showPricing=true' --c
   -H 'X-SkyID-Token: {cookie:skyCEsidismesso01}'
 ```
 
+skyCEsidexsso01:"L0-bd487d5cb38a8b6001f9effc5623ca3eec7880b6fa348c8138206c4e4a6bb986" = authToken lange gültig
+skyCEsidismesso01:"01-bd487d5cb38a8b6001f9effc5623ca3eec7880b6fa348c8138206c4e4a6bb986" = skyId
+
 ```json
 {
   "currency": "EUR",
@@ -2597,6 +2600,18 @@ curl 'https://ottsas.sky.com/commerce/is/availableproducts?showPricing=true' --c
 ```
 
 ```bash
+curl 'https://p.sky.com/auth/tokens' -X POST \
+  -H 'X-SkyOTT-Provider: NOWTV' \
+  -H 'X-SkyOTT-Territory: DE' \
+  -H 'X-SkyOTT-Proposition: NOWTV' \
+  -H 'X-SkyOTT-Platform: PC' \
+  -H 'X-SkyOTT-Device: COMPUTER' \
+  -H 'Content-Type: application/vnd.tokens.v1+json' \
+  -H 'Content-MD5: a2d886ee54451e7dba0f31631e376a0f' \
+  --data-raw '{"auth":{"authScheme":"MESSO","authIssuer":"NOWTV","provider":"NOWTV","providerTerritory":"DE","proposition":"NOWTV","authToken":"L0-bd487d5cb38a8b6001f9effc5623ca3eec7880b6fa348c8138206c4e4a6bb986","personaId":"b73a5a15-3174-4659-9209-394de2ef7520"},"device":{"type":"COMPUTER","platform":"PC","id":"BpYgnYU9CZRowCEwVAd9","drmDeviceId":"UNKNOWN"}}'
+```
+
+```bash
 curl 'https://auth.client.ott.sky.com/auth/tokens' -X POST \
   -H 'Content-Type: application/vnd.tokens.v1+json' \
   -H 'X-SkyOTT-Territory: DE' \
@@ -2605,7 +2620,7 @@ curl 'https://auth.client.ott.sky.com/auth/tokens' -X POST \
   -H 'X-SkyOTT-Platform: PC' \
   -H 'X-SkyOTT-Device: COMPUTER' \
   -H 'Content-MD5: 4d1042b8cc3d7d77fad64e74b913c43a' \
-  --data-raw '{"auth":{"authScheme":"MESSO","authToken":"{cookie:skyCEsidismesso01}","authIssuer":"NOWTV","personaId":"{cookie:personaId}","provider":"NOWTV","providerTerritory":"DE","proposition":"NOWTV"},"device":{"type":"COMPUTER","platform":"PC"}}'
+  --data-raw '{"auth":{"authScheme":"MESSO","authToken":"{cookie:skyCEsidexsso01}","authIssuer":"NOWTV","personaId":"{cookie:personaId}","provider":"NOWTV","providerTerritory":"DE","proposition":"NOWTV"},"device":{"type":"COMPUTER","platform":"PC"}}'
 ```
 
 ```json
@@ -2660,8 +2675,9 @@ Refresh token???
 
 ```bash
 curl 'https://p.sky.com/auth/tokens' -X PATCH -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0' -H 'Accept: application/vnd.tokens.v1+json' -H 'Accept-Language: de,en-US;q=0.7,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br' -H 'X-SkyOTT-Provider: NOWTV' -H 'X-SkyOTT-Territory: DE' -H 'X-SkyOTT-Proposition: NOWTV' -H 'X-SkyOTT-Platform: PC' -H 'X-SkyOTT-Device: COMPUTER' -H 'X-SkyOTT-UserToken: 65-gUi/ESO9M+FsCXZVGWdLEbx5KfzmnC2fr8DAKnmsqBcCzFoi0u/CD9nPEpxoq51nmWVUHDXvCICygpFO8I9cKXLKT9NVJATOB6uFjPUvCgFEfMnkZX9Qz6UfvdU9oTc/5qD2nCwP62sNweltMk52E5HPBCxsL3bNrrKUQNiKePehWyFFZZ2O41nUN62OFlIZwUaKj0MwRVCOrOFnXopKqqGBLc3q+xZROFXIObLugUuxApYARYYh5gkDFUdMp3livoHt895Os4/ARNg1YxAVOk5b3AFVyC6RAboKoQufzmdJxMgsaCZtDZ7zA8qwZKFW6eJPP+uQ1yzVkVQzq2UqveSnpwcpGFhoYGnRntuYCkWqBUKg9Z/NTza44rnSYoYu80QPYALmB22jT3YuQ74EfoCyJ0Ma1G8bH3rvZrgt08zmSTg059QXNSOI4b2o9BK/6b920VbfvlciTLMYYiLzKQ==' -H 'Content-Type: application/vnd.tokens.v1+json' -H 'x-sky-signature: SkyOTT client="NOWTV-WEBPLAYER-v1",signature="KMVRuk7U29IMB+TP6SL1hQGB3CM=",timestamp="1702932658",version="1.0"' -H 'Origin: https://www.wowtv.de' -H 'Connection: keep-alive' -H 'Referer: https://www.wowtv.de/' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: cross-site' --data-raw '{"auth":{"personaId":"b73a5a15-3174-4659-9209-394de2ef7520"}}'
-````
+```
 
 curl 'https://ottsas.sky.com/commerce/payments-manager/cancelrenewal' -X POST -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0' -H 'Accept: application/vnd.cancelrenewal.v1+json' -H 'Accept-Language: de,en-US;q=0.7,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/vnd.cancelrenewal.v1+json' -H 'X-SkyOTT-UserToken: 62-ECmIkzXfuw/8JIJ5WftvP3LK1cbr+Yfapy7GA4asDdOqYfJaU1tw2chEhmXxTCFWsJHOGgYCW7DM8H5s7+Rz2SoTxRDAyr/YzgVlMK0yISpaqiRLAMDaCoucJ0gBCjJiSyzImAw0nCwAgD61SBtLRvliho4GISIhwMXa2eP+v1AqH2g+sFR75W5L6HPs04WCYsUA+g22P8eBQiNaJVl+P4XlNWgQVNFMTEzS+Ss6AnhLWbv6LQQKsgj1k330vDnT5hsuPOlBdWXfXTvH/Gyjc2wJpRyn834FczEv6kWCUdpVxVPKSdCTy8q0xFKWZ1SUB9wr3LRWvFmvDjlVNNRfFitklSj2/tfUsY4zucQ/v/pEU/QTDEqSY9aQ16Its12j6DqXYSCudoYRhDPBgfcXT5ouSho5vrcEBTbdDfH2EfZixE+OugQ33mGeDcAGaQFZbeL0o8R2fYSIa21JTdny3BGkkywCuekotAtPcChElyWNXO7h3Oane3e88VDSNqbxeQJj4AMh6dJHjVEggT/6MA==' -H 'X-SkyOTT-Territory: DE' -H 'X-SkyOTT-Provider: NOWTV' -H 'X-SkyOTT-Proposition: NOWTV' -H 'X-SkyOTT-Platform: PC' -H 'X-SkyOTT-Device: COMPUTER' -H 'Content-MD5: 25df021f59b2aef326b326cd29133414' -H 'X-SkyInt-RequestId: bf7ef427-5606-41be-8dcb-00db2a295f5e' -H 'Origin: https://www.wowtv.de' -H 'Connection: keep-alive' -H 'Referer: https://www.wowtv.de/' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: cross-site' -H 'TE: trailers' --data-raw '{"subscriptionId":"bb48915f-853e-49f2-87d4-115779879838"}'
 
 curl 'https://ottsas.sky.com/commerce/payments-manager/reinstatesubscription' -X POST -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0' -H 'Accept: application/vnd.reinstate.v1+json' -H 'Accept-Language: de,en-US;q=0.7,en;q=0.3' -H 'Accept-Encoding: gzip, deflate, br' -H 'Content-Type: application/vnd.reinstate.v1+json' -H 'X-SkyOTT-UserToken: 62-ECmIkzXfuw/8JIJ5WftvP3LK1cbr+Yfapy7GA4asDdOqYfJaU1tw2chEhmXxTCFWsJHOGgYCW7DM8H5s7+Rz2SoTxRDAyr/YzgVlMK0yISpaqiRLAMDaCoucJ0gBCjJiSyzImAw0nCwAgD61SBtLRvliho4GISIhwMXa2eP+v1AqH2g+sFR75W5L6HPs04WCYsUA+g22P8eBQiNaJVl+P4XlNWgQVNFMTEzS+Ss6AnhLWbv6LQQKsgj1k330vDnT5hsuPOlBdWXfXTvH/Gyjc2wJpRyn834FczEv6kWCUdpVxVPKSdCTy8q0xFKWZ1SUB9wr3LRWvFmvDjlVNNRfFitklSj2/tfUsY4zucQ/v/pEU/QTDEqSY9aQ16Its12j6DqXYSCudoYRhDPBgfcXT5ouSho5vrcEBTbdDfH2EfZixE+OugQ33mGeDcAGaQFZbeL0o8R2fYSIa21JTdny3BGkkywCuekotAtPcChElyWNXO7h3Oane3e88VDSNqbxeQJj4AMh6dJHjVEggT/6MA==' -H 'X-SkyOTT-Territory: DE' -H 'X-SkyOTT-Provider: NOWTV' -H 'X-SkyOTT-Proposition: NOWTV' -H 'X-SkyOTT-Platform: PC' -H 'X-SkyOTT-Device: COMPUTER' -H 'Content-MD5: 25df021f59b2aef326b326cd29133414' -H 'X-SkyInt-RequestId: af660877-aa24-403b-a1c2-0814dd1b8da3' -H 'Origin: https://www.wowtv.de' -H 'Connection: keep-alive' -H 'Referer: https://www.wowtv.de/' -H 'Sec-Fetch-Dest: empty' -H 'Sec-Fetch-Mode: cors' -H 'Sec-Fetch-Site: cross-site' -H 'TE: trailers' --data-raw '{"subscriptionId":"bb48915f-853e-49f2-87d4-115779879838"}'
+````
