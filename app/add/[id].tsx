@@ -32,7 +32,6 @@ const Connect: React.FC = () => {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState('');
   const isOnline = useOnline();
 
   const hasRegisterApi = useMemo(() => !!getActionDefinition(service, 'register'), [service]);
@@ -102,7 +101,7 @@ const Connect: React.FC = () => {
         service: service.id,
         error: res.val.message,
       });
-      setError(res.val.message);
+      Toast.show(res.val.message, { duration: Toast.durations.LONG });
     }
   };
 
@@ -151,10 +150,6 @@ const Connect: React.FC = () => {
               />
             </>
           )}
-          {/* TODO: change view to xystack */}
-          <View>
-            <Text>{error}</Text>
-          </View>
         </YStack>
       </KeyboardAvoidingView>
       {loading && (

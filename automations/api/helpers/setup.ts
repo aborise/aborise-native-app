@@ -41,7 +41,7 @@ type ApiCallback = (options: {
   auth: Record<string, string>;
   client: Session;
   storage: Storage;
-  subscription: InstanceToPlain<Subscription>;
+  subscription?: InstanceToPlain<Subscription>;
 }) => AsyncResult<ActionReturn, ApiError>;
 
 type ApiOptions = {
@@ -54,9 +54,9 @@ export const api = (
 ): ((
   action: Action,
   service: keyof AllServices,
-  subscription: InstanceToPlain<Subscription>,
+  subscription?: InstanceToPlain<Subscription>,
 ) => AsyncResult<ApiResult, ApiError>) => {
-  return (action: Action, service: keyof AllServices, subscription: InstanceToPlain<Subscription>) => {
+  return (action: Action, service: keyof AllServices, subscription?: InstanceToPlain<Subscription>) => {
     return getServiceLogin(service)
       .andThen((login) => {
         const client = new Session();

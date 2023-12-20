@@ -9,7 +9,7 @@ type toActionFns<U extends string> = {
   [K in U]: (
     action: K,
     service: keyof AllServices,
-    subscription: InstanceToPlain<Subscription>,
+    subscription?: InstanceToPlain<Subscription>,
   ) => AsyncResult<ApiResult, ApiError>;
 }[U];
 

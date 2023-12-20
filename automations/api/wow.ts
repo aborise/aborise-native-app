@@ -173,7 +173,7 @@ export const connect = api(({ client }) => {
 });
 
 export const cancel = api(({ client, subscription }) => {
-  const body = { subscriptionId: subscription.productId };
+  const body = { subscriptionId: subscription!.productId };
   const hash = MD5(JSON.stringify(body));
   return ensureValidToken(client).andThen((apiAuth) => {
     return client
@@ -206,7 +206,7 @@ export const cancel = api(({ client, subscription }) => {
 });
 
 export const resume = api(({ client, subscription }) => {
-  const body = { subscriptionId: subscription.productId };
+  const body = { subscriptionId: subscription!.productId };
   const hash = MD5(JSON.stringify(body));
   return ensureValidToken(client).andThen((apiAuth) => {
     return client

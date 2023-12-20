@@ -180,7 +180,7 @@ type LoginResponse = {
           accountOwnerGuid: string;
           fields: {
             errorCode: {
-              value: string;
+              value: 'unrecognized_email' | 'incorrect_password';
             };
             moneyballSessionUuid: {
               value: string;
@@ -229,11 +229,18 @@ export const connect = api(({ auth, client }) => {
     })
     .andThen(({ cookies, data }) => {
       if (!data.value.moneyball.appleSignUp.login.accountOwnerGuid) {
-        console.log('Error', data.value.moneyball.appleSignUp.login.fields?.errorCode?.value);
+        const errorMsg = data.value.moneyball.appleSignUp.login.fields?.errorCode?.value;
+        console.log('Error', errorMsg);
+
+        let message = t('your-session-has-expired-please-reconnect-this-service');
+        if (errorMsg === 'unrecognized_email' || errorMsg === 'incorrect_password') {
+          message = t('login-failed-please-check-your-credentials');
+        }
+
         return Err({
           custom: data.value.moneyball.appleSignUp.login.fields.errorCode.value,
           errorMessage: 'Login failed',
-          message: t('your-session-has-expired-please-reconnect-this-service'),
+          message,
           statusCode: 401,
           userFriendly: true,
         });
