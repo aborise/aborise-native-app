@@ -27,7 +27,7 @@ const connectScript: AutomationScript = async (page) => {
     page.locator('input[name="password"]').fill(auth!.password),
   ]);
 
-  const wait1 = page.waitForNavigation();
+  const wait1 = page.waitForNavigation(10000, 'complete');
 
   await page.locator('#signInSubmit').click();
 
@@ -53,7 +53,7 @@ const connectScript: AutomationScript = async (page) => {
     }
 
     await page.locator('#input-box-otp').fill(otp);
-    const wait2 = page.waitForNavigation();
+    const wait2 = page.waitForNavigation(10000, 'complete');
     await page.locator('#cvf-submit-otp-button input[type="submit"]').click();
     await wait2;
   }
@@ -69,7 +69,7 @@ const connectScript: AutomationScript = async (page) => {
     }
 
     await page.locator('#auth-mfa-otpcode').fill(otp);
-    const wait3 = page.waitForNavigation();
+    const wait3 = page.waitForNavigation(10000, 'complete');
     await page.locator('#auth-signin-button').click();
     await wait3;
 
