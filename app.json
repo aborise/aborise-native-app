@@ -22,11 +22,11 @@
       "config": {
         "usesNonExemptEncryption": false
       },
-      "buildNumber": "1.0.12",
+      "buildNumber": "1.0.13",
       "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
-      "versionCode": 2,
+      "versionCode": 3,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
