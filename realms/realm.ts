@@ -239,6 +239,7 @@ type RealmContext = {
   useObject: ReturnType<typeof createUseObject>;
 };
 
-export const useRealm = getRealm;
-export const useQuery = createUseQuery(getRealm);
-export const useObject = createUseObject(getRealm);
+// export const useRealm = getRealm;
+// export const useQuery = createUseQuery(getRealm);
+// export const useObject = createUseObject(getRealm);
+export { useRealm, useQuery, useObject } from '@realm/react';

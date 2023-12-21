@@ -19,6 +19,9 @@ import { ensureDataLoaded, getUserId } from '~/shared/ensureDataLoaded';
 import { shouldLog, tagScreen } from '~/shared/helpers';
 import { ParseResult, setParse } from '~/shared/parser';
 import config from '~/tamagui.config';
+import { RealmProvider } from '@realm/react';
+import { Service } from '~/realms/Service';
+import { Subscription } from '~/realms/Subscription';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -103,45 +106,47 @@ export default function Layout() {
 
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <QueryClientProvider client={queryClient}>
-        <RootSiblingParent>
-          <TamaguiProvider config={config}>
-            <OnlineProvider>
-              <ExpoStack
-                screenOptions={{
-                  headerStyle: {
-                    backgroundColor: '#fff',
-                  },
-                  headerTintColor: '#000',
-                  headerShadowVisible: false,
-                  headerTitleStyle: {
-                    fontWeight: 'bold',
-                  },
-                  contentStyle: {
-                    backgroundColor: '#fff',
-                  },
-                }}
-              >
-                <ExpoStack.Screen
-                  name="add/index"
-                  options={{
-                    title: t('add-subscription'),
-                    // presentation: 'modal',
+      <RealmProvider schema={[Service, Subscription]} deleteRealmIfMigrationNeeded>
+        <QueryClientProvider client={queryClient}>
+          <RootSiblingParent>
+            <TamaguiProvider config={config}>
+              <OnlineProvider>
+                <ExpoStack
+                  screenOptions={{
+                    headerStyle: {
+                      backgroundColor: '#fff',
+                    },
+                    headerTintColor: '#000',
+                    headerShadowVisible: false,
+                    headerTitleStyle: {
+                      fontWeight: 'bold',
+                    },
+                    contentStyle: {
+                      backgroundColor: '#fff',
+                    },
                   }}
-                />
-                <ExpoStack.Screen
-                  name="add/[id]"
-                  options={
-                    {
+                >
+                  <ExpoStack.Screen
+                    name="add/index"
+                    options={{
+                      title: t('add-subscription'),
                       // presentation: 'modal',
+                    }}
+                  />
+                  <ExpoStack.Screen
+                    name="add/[id]"
+                    options={
+                      {
+                        // presentation: 'modal',
+                      }
                     }
-                  }
-                />
-              </ExpoStack>
-            </OnlineProvider>
-          </TamaguiProvider>
-        </RootSiblingParent>
-      </QueryClientProvider>
+                  />
+                </ExpoStack>
+              </OnlineProvider>
+            </TamaguiProvider>
+          </RootSiblingParent>
+        </QueryClientProvider>
+      </RealmProvider>
       {showWebView && (
         <WebView
           source={{ html: HTML }}
