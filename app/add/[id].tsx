@@ -113,7 +113,7 @@ const Connect: React.FC = () => {
         }}
       />
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <YStack alignItems="center" mt="$16" space={10}>
+        <YStack alignItems="center" space={10}>
           <Image source={getLogo(service.id)} style={styles.image} className="rounded-3xl" />
           <YStack width="$20" space={8} mb="$2">
             <Input placeholder="Email" value={email} onChangeText={(val) => setEmail(val)} />
