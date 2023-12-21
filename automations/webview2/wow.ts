@@ -30,22 +30,36 @@ const connectScript: AutomationScript = async (page) => {
     location.reload();
   });
 
-  await page.waitForNavigation();
+  const loginFormFound = await page.waitForCondition(
+    () => {
+      'use webview';
+      return !!document.querySelector('input[name="userIdentifier"]');
+    },
+    {},
+    10000,
+  );
 
-  await Promise.all([
-    page.locator('input[name="userIdentifier"]').fill(auth!.email),
-    page.locator('input[name="password"]').fill(auth!.password),
-  ]);
+  let timeout = 10000;
+  if (!loginFormFound) {
+    timeout = 1000 * 60 * 60 * 24;
+    page.reveal();
+    page.statusMessage(t('at-the-moment-automatic-login-is-unavailable-please-enter-your-credentials-manually'));
+  } else {
+    await Promise.all([
+      page.locator('input[name="userIdentifier"]').fill(auth!.email),
+      page.locator('input[name="password"]').fill(auth!.password),
+    ]);
 
-  console.log('inputs filled');
+    console.log('inputs filled');
 
-  await page.locator('[data-testid="sign-in-form__submit"]').click();
+    await page.locator('[data-testid="sign-in-form__submit"]').click();
 
-  // await wait();
+    // await wait();
 
-  if (await page.locator('.password-field__error').exists(500)) {
-    console.log('Login failed');
-    return Err({ message: t('login-failed-please-check-your-credentials') });
+    if (await page.locator('.password-field__error').exists(500)) {
+      console.log('Login failed');
+      return Err({ message: t('login-failed-please-check-your-credentials') });
+    }
   }
 
   const cookiesFound = await page.waitForCondition(
@@ -54,7 +68,7 @@ const connectScript: AutomationScript = async (page) => {
       return document.cookie.includes('skyCEsidismesso01') && document.cookie.includes('personaId');
     },
     {},
-    10000,
+    timeout,
   );
 
   if (!cookiesFound) {
