@@ -1,6 +1,6 @@
 import { Image } from 'expo-image';
 import { Stack as ExpoStack, Link, router } from 'expo-router';
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { FlatList, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { SizableText, Stack, View, XStack, YStack } from 'tamagui';
@@ -10,7 +10,7 @@ import AboItem from '~/components/AboItem';
 import Feedback from '~/components/Feedback';
 import { useI18n } from '~/composables/useI18n';
 import { Service } from '~/realms/Service';
-import { useQuery } from '~/realms/realm';
+import { setRealm, useQuery, useRealm } from '~/realms/realm';
 import { services } from '~/shared/allServices';
 
 const { t } = useI18n();
@@ -49,6 +49,11 @@ const App = () => {
       return acc + curr.getMonthlyPrice();
     }, 0);
   }, [connectedServices]);
+
+  const realm = useRealm();
+  useEffect(() => {
+    setRealm(realm);
+  }, [realm]);
 
   return (
     <>

@@ -21,3 +21,13 @@ Once you have completed these steps, you can use the following scripts to run th
 
 - `eas submit -p ios`: Submit to the Apple App Store
 - `eas submit -p android`: Submit to the Google Play Store
+
+# Release
+
+- Increase build number (ios) and versionCode (android)
+- Make ios build (`eas build -p ios`) and preview build for android (`npm run build:preview`)
+- Internal testing
+- Build android for production (`eas build -p android`)
+- `eas submit -p ios` (only works for ios for now => manual upload for android)
+- Release builds
+- Send mail
