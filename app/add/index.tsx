@@ -2,7 +2,6 @@ import { Image } from 'expo-image';
 import { Link } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Pressable } from 'react-native';
-import RNUxcam from 'react-native-ux-cam';
 import { Input, SizableText, Square, View, XStack } from 'tamagui';
 import { useI18n } from '~/composables/useI18n';
 import { Service, services } from '~/shared/allServices';

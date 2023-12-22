@@ -12,7 +12,7 @@ import { strToCookie } from '~/shared/helpers';
 import { ActionError, ActionReturn } from '../helpers/helpers';
 import { timeZoneToUtc } from '../helpers/strings';
 import { AccountData, Plan } from '../webview/validators/paramount_userData';
-import { WebViewConfig2 } from '../webview/webview.helpers';
+import { WebViewConfig2, wait } from '../webview/webview.helpers';
 
 const { t } = useI18n();
 type PartiallyRequired<T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>;
@@ -28,6 +28,7 @@ const dataConverter = (data: {
     .filter((c) => c.name === 'CBS_COM');
 
   const { user, currentSubscription } = data.accountData;
+  console.log(currentSubscription);
 
   if (user.statusCode === 'reg') {
     return Ok({
@@ -96,32 +97,48 @@ const paramountConnectScript: AutomationScript = async (page) => {
   const storage = useStorage((process.env.STORAGE_TYPE as 'local') || 'local', getUserId());
   const { email, password } = await storage.get(`services/paramount/login`);
 
+  console.log('fill in form');
   await Promise.all([page.locator('#email').fill(email), page.locator('#password').fill(password)]);
 
+  console.log('click sign in');
   await page.locator('#sign-in-form button').click();
 
-  const isLoggedIn = await page.waitForCondition((window, document) => {
-    'use webview';
-    const app = document.getElementById('app') as unknown as VueAppHostElement;
+  console.log('wait for login');
+  const isLoggedIn = await page.waitForCondition(
+    (window, document) => {
+      'use webview';
+      const app = document.getElementById('app') as unknown as VueAppHostElement;
 
-    const account = document.getElementById('account-app') as unknown as VueAppHostElement;
-    let accountData: AccountData;
-    if (app) {
+      const account = document.getElementById('account-app') as unknown as VueAppHostElement;
+      let accountData: AccountData;
+      if (app) {
+        // @ts-expect-error
+        accountData = { user: app.__vue__.$store.state.user };
+      }
+
+      if (account) {
+        accountData = account.__vue__.$store.state.serverData;
+      }
+
       // @ts-expect-error
-      accountData = { user: app.__vue__.$store.state.user };
-    }
+      const hasSub = !accountData?.user?.isSubscriber || accountData.currentSubscription;
 
-    if (account) {
-      accountData = account.__vue__.$store.state.serverData;
-    }
+      // @ts-expect-error
+      return accountData?.user?.isLoggedIn && hasSub;
+    },
+    undefined,
+    20000,
+  );
 
-    // @ts-expect-error
-    return accountData?.user?.isLoggedIn;
-  });
+  console.log('check if logged in');
 
   if (!isLoggedIn) {
     return Err({ message: t('login-failed-please-check-your-credentials') });
   }
+
+  console.log('evaluate');
+
+  // await wait(5000);
 
   const result = await page.evaluate((window, document) => {
     'use webview';

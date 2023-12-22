@@ -1,13 +1,13 @@
 const LOGIN_URL = 'https://www.wowtv.de/login';
 export const REGISTER_URL = 'https://www.wowtv.de/waehle-dein-abo';
 
+import { useI18n } from '~/composables/useI18n';
 import { useStorage } from '~/composables/useStorage';
 import { AutomationScript } from '~/shared/Page';
 import { Err, Ok } from '~/shared/Result';
-import { parseCookieString } from '../api/helpers/cookie';
-import { WebViewConfig2, standardConnectMessage, wait } from '../webview/webview.helpers';
 import { strToCookie } from '~/shared/helpers';
-import { useI18n } from '~/composables/useI18n';
+import { parseCookieString } from '../api/helpers/cookie';
+import { WebViewConfig2 } from '../webview/webview.helpers';
 
 const { t } = useI18n();
 

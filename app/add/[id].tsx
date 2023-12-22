@@ -2,9 +2,8 @@ import CookieManager from '@react-native-cookies/cookies';
 import { Image } from 'expo-image';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useMemo } from 'react';
-import { ActivityIndicator, Button, KeyboardAvoidingView, Platform, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Button, KeyboardAvoidingView, Platform, StyleSheet, View } from 'react-native';
 import Toast from 'react-native-root-toast';
-import RNUxcam from 'react-native-ux-cam';
 import { Input, SizableText, YStack } from 'tamagui';
 import * as apis from '~/automations/api/index';
 import { useI18n } from '~/composables/useI18n';
@@ -113,7 +112,7 @@ const Connect: React.FC = () => {
         }}
       />
       <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <YStack alignItems="center" mt="$16" flex={1} space={10}>
+        <YStack alignItems="center" space={10}>
           <Image source={getLogo(service.id)} style={styles.image} className="rounded-3xl" />
           <YStack width="$20" space={8} mb="$2">
             <Input placeholder="Email" value={email} onChangeText={(val) => setEmail(val)} />
