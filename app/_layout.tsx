@@ -3,13 +3,13 @@ import { useFonts } from 'expo-font';
 import { useGlobalSearchParams, usePathname } from 'expo-router';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
-import { useCallback, useEffect, useState } from 'react';
-import { Platform, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { Platform, Text, View } from 'react-native';
 import 'react-native-get-random-values';
 import { RootSiblingParent } from 'react-native-root-siblings';
 import RNUxcam, { UXCamConfiguration } from 'react-native-ux-cam';
 import WebView from 'react-native-webview';
-import { TamaguiProvider } from 'tamagui';
+import { SizableText, TamaguiProvider } from 'tamagui';
 import { javascript } from '~/automations/webview/webview.helpers';
 import { useAsyncStateReadonly } from '~/composables/useAsyncState';
 import { useI18n } from '~/composables/useI18n';
@@ -19,9 +19,11 @@ import { ensureDataLoaded, getUserId } from '~/shared/ensureDataLoaded';
 import { shouldLog, tagScreen } from '~/shared/helpers';
 import { ParseResult, setParse } from '~/shared/parser';
 import config from '~/tamagui.config';
-import { RealmProvider } from '@realm/react';
+import { AppProvider, RealmProvider, UserProvider, useApp, useAuth } from '@realm/react';
 import { Service } from '~/realms/Service';
 import { Subscription } from '~/realms/Subscription';
+import { appId, baseUrl } from '../atlasConfig.json';
+import { OpenRealmBehaviorType, OpenRealmTimeOutBehavior } from 'realm';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -49,6 +51,16 @@ if (shouldLog()) {
 
   RNUxcam.startWithConfiguration(configuration);
 }
+
+const Login = () => {
+  const { logInWithAnonymous } = useAuth();
+
+  useEffect(() => {
+    logInWithAnonymous();
+  }, [logInWithAnonymous]);
+
+  return <Text>Logging In</Text>;
+};
 
 export default function Layout() {
   const { t } = useI18n();
@@ -106,47 +118,66 @@ export default function Layout() {
 
   return (
     <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <RealmProvider schema={[Service, Subscription]} deleteRealmIfMigrationNeeded>
-        <QueryClientProvider client={queryClient}>
-          <RootSiblingParent>
-            <TamaguiProvider config={config}>
-              <OnlineProvider>
-                <ExpoStack
-                  screenOptions={{
-                    headerStyle: {
-                      backgroundColor: '#fff',
-                    },
-                    headerTintColor: '#000',
-                    headerShadowVisible: false,
-                    headerTitleStyle: {
-                      fontWeight: 'bold',
-                    },
-                    contentStyle: {
-                      backgroundColor: '#fff',
-                    },
-                  }}
-                >
-                  <ExpoStack.Screen
-                    name="add/index"
-                    options={{
-                      title: t('add-subscription'),
-                      // presentation: 'modal',
-                    }}
-                  />
-                  <ExpoStack.Screen
-                    name="add/[id]"
-                    options={
-                      {
-                        // presentation: 'modal',
-                      }
-                    }
-                  />
-                </ExpoStack>
-              </OnlineProvider>
-            </TamaguiProvider>
-          </RootSiblingParent>
-        </QueryClientProvider>
-      </RealmProvider>
+      <QueryClientProvider client={queryClient}>
+        <RootSiblingParent>
+          <TamaguiProvider config={config}>
+            <OnlineProvider>
+              <AppProvider id={appId} baseUrl={baseUrl}>
+                <UserProvider fallback={Login}>
+                  <RealmProvider
+                    schema={[Service, Subscription]}
+                    deleteRealmIfMigrationNeeded
+                    // sync={{
+                    //   flexible: true,
+                    //   onError: (_session, error) => {
+                    //     console.error(error);
+                    //   },
+                    //   existingRealmFileBehavior: {
+                    //     type: OpenRealmBehaviorType.DownloadBeforeOpen,
+                    //     timeOut: 1000,
+                    //     timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
+                    //   },
+                    // }}
+                  >
+                    <ExpoStack
+                      screenOptions={{
+                        headerStyle: {
+                          backgroundColor: '#fff',
+                        },
+                        headerTintColor: '#000',
+                        headerShadowVisible: false,
+                        headerTitleStyle: {
+                          fontWeight: 'bold',
+                        },
+                        contentStyle: {
+                          backgroundColor: '#fff',
+                        },
+                      }}
+                    >
+                      <ExpoStack.Screen
+                        name="add/index"
+                        options={{
+                          title: t('add-subscription'),
+                          // presentation: 'modal',
+                        }}
+                      />
+                      <ExpoStack.Screen
+                        name="add/[id]"
+                        options={
+                          {
+                            // presentation: 'modal',
+                          }
+                        }
+                      />
+                    </ExpoStack>
+                  </RealmProvider>
+                </UserProvider>
+              </AppProvider>
+            </OnlineProvider>
+          </TamaguiProvider>
+        </RootSiblingParent>
+      </QueryClientProvider>
+
       {showWebView && (
         <WebView
           source={{ html: HTML }}

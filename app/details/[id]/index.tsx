@@ -61,7 +61,7 @@ const Details: React.FC = () => {
   const queryClient = useQueryClient();
   // const serviceData = useObject(Service, local.id!);
 
-  const serviceData: Service | null = useQuery(Service).filtered('id == $0', local.id)[0];
+  const serviceData: Service | null = useQuery(Service).filtered('_id == $0', local.id)[0];
 
   const { data: login } = useServiceLogin(service.id);
   const [menuVisible, setMenuVisible] = useState(false);

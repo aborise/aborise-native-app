@@ -42,7 +42,7 @@ const factors: Record<ActionResultActive['billingCycle'], number> = {
 };
 
 const App = () => {
-  const connectedServices = useQuery(Service).sorted('id');
+  const connectedServices = useQuery(Service).sorted('_id');
 
   const price = useMemo(() => {
     return connectedServices.reduce((acc, curr) => {
@@ -54,6 +54,12 @@ const App = () => {
   useEffect(() => {
     setRealm(realm);
   }, [realm]);
+
+  // useEffect(() => {
+  //   realm.subscriptions.update((mutableSubs) => {
+  //     mutableSubs.add(connectedServices);
+  //   });
+  // }, [realm, connectedServices]);
 
   return (
     <>
@@ -82,8 +88,8 @@ const App = () => {
             <FlatList
               contentContainerStyle={{ gap: 8 }}
               data={connectedServices}
-              keyExtractor={({ id }) => id}
-              renderItem={({ item }) => <AboItem data={item} title={services[item.id].title} id={item.id} />}
+              keyExtractor={({ _id: id }) => id}
+              renderItem={({ item }) => <AboItem data={item} title={services[item._id].title} id={item._id} />}
               ListFooterComponent={<View marginVertical={50} />}
             />
           </YStack>
