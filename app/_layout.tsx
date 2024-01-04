@@ -24,6 +24,8 @@ import { Service } from '~/realms/Service';
 import { Subscription } from '~/realms/Subscription';
 import { appId, baseUrl } from '../atlasConfig.json';
 import { OpenRealmBehaviorType, OpenRealmTimeOutBehavior } from 'realm';
+import Login from '~/components/Login';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -51,16 +53,6 @@ if (shouldLog()) {
 
   RNUxcam.startWithConfiguration(configuration);
 }
-
-const Login = () => {
-  const { logInWithAnonymous } = useAuth();
-
-  useEffect(() => {
-    logInWithAnonymous();
-  }, [logInWithAnonymous]);
-
-  return <Text>Logging In</Text>;
-};
 
 export default function Layout() {
   const { t } = useI18n();
@@ -117,83 +109,85 @@ export default function Layout() {
   }, [loading, loaded]);
 
   return (
-    <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
-      <QueryClientProvider client={queryClient}>
-        <RootSiblingParent>
-          <TamaguiProvider config={config}>
-            <OnlineProvider>
-              <AppProvider id={appId} baseUrl={baseUrl}>
-                <UserProvider fallback={Login}>
-                  <RealmProvider
-                    schema={[Service, Subscription]}
-                    deleteRealmIfMigrationNeeded
-                    // sync={{
-                    //   flexible: true,
-                    //   onError: (_session, error) => {
-                    //     console.error(error);
-                    //   },
-                    //   existingRealmFileBehavior: {
-                    //     type: OpenRealmBehaviorType.DownloadBeforeOpen,
-                    //     timeOut: 1000,
-                    //     timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
-                    //   },
-                    // }}
-                  >
-                    <ExpoStack
-                      screenOptions={{
-                        headerStyle: {
-                          backgroundColor: '#fff',
-                        },
-                        headerTintColor: '#000',
-                        headerShadowVisible: false,
-                        headerTitleStyle: {
-                          fontWeight: 'bold',
-                        },
-                        contentStyle: {
-                          backgroundColor: '#fff',
-                        },
-                      }}
+    <SafeAreaProvider>
+      <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
+        <QueryClientProvider client={queryClient}>
+          <RootSiblingParent>
+            <TamaguiProvider config={config}>
+              <OnlineProvider>
+                <AppProvider id={appId} baseUrl={baseUrl}>
+                  <UserProvider fallback={Login}>
+                    <RealmProvider
+                      schema={[Service, Subscription]}
+                      deleteRealmIfMigrationNeeded
+                      // sync={{
+                      //   flexible: true,
+                      //   onError: (_session, error) => {
+                      //     console.error(error);
+                      //   },
+                      //   existingRealmFileBehavior: {
+                      //     type: OpenRealmBehaviorType.DownloadBeforeOpen,
+                      //     timeOut: 1000,
+                      //     timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
+                      //   },
+                      // }}
                     >
-                      <ExpoStack.Screen
-                        name="add/index"
-                        options={{
-                          title: t('add-subscription'),
-                          // presentation: 'modal',
+                      <ExpoStack
+                        screenOptions={{
+                          headerStyle: {
+                            backgroundColor: '#fff',
+                          },
+                          headerTintColor: '#000',
+                          headerShadowVisible: false,
+                          headerTitleStyle: {
+                            fontWeight: 'bold',
+                          },
+                          contentStyle: {
+                            backgroundColor: '#fff',
+                          },
                         }}
-                      />
-                      <ExpoStack.Screen
-                        name="add/[id]"
-                        options={
-                          {
+                      >
+                        <ExpoStack.Screen
+                          name="add/index"
+                          options={{
+                            title: t('add-subscription'),
                             // presentation: 'modal',
+                          }}
+                        />
+                        <ExpoStack.Screen
+                          name="add/[id]"
+                          options={
+                            {
+                              // presentation: 'modal',
+                            }
                           }
-                        }
-                      />
-                    </ExpoStack>
-                  </RealmProvider>
-                </UserProvider>
-              </AppProvider>
-            </OnlineProvider>
-          </TamaguiProvider>
-        </RootSiblingParent>
-      </QueryClientProvider>
+                        />
+                      </ExpoStack>
+                    </RealmProvider>
+                  </UserProvider>
+                </AppProvider>
+              </OnlineProvider>
+            </TamaguiProvider>
+          </RootSiblingParent>
+        </QueryClientProvider>
 
-      {showWebView && (
-        <WebView
-          source={{ html: HTML }}
-          injectedJavaScript={JS}
-          onMessage={handleMessage}
-          style={{
-            // display: 'none',
-            opacity: 0,
-            flex: 0,
-            width: 0,
-            height: 0,
-            zIndex: -1,
-            position: 'absolute',
-          }}
-        />
-      )}
-    </View>
+        {showWebView && (
+          <WebView
+            source={{ html: HTML }}
+            injectedJavaScript={JS}
+            onMessage={handleMessage}
+            style={{
+              // display: 'none',
+              opacity: 0,
+              flex: 0,
+              width: 0,
+              height: 0,
+              zIndex: -1,
+              position: 'absolute',
+            }}
+          />
+        )}
+      </View>
+    </SafeAreaProvider>
   );
 }
