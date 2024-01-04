@@ -1,4 +1,5 @@
 import CookieManager from '@react-native-cookies/cookies';
+import { useApp, useAuth } from '@realm/react';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import React, { useState } from 'react';
 import { Alert } from 'react-native';
@@ -34,6 +35,8 @@ const Settings = () => {
       console.log('Cookies =>', await getCookies('apple'));
     });
   };
+
+  const { logOut } = useAuth();
 
   return (
     <YStack padding="$4" space>
@@ -85,6 +88,18 @@ const Settings = () => {
       >
         <SizableText size="$6">Get Cookies</SizableText>
         <SizableText>Prints the amazon cookies to the console</SizableText>
+      </YStack>
+
+      <YStack
+        borderColor="black"
+        borderRadius="$2"
+        backgroundColor="$blue10"
+        padding="$4"
+        onPress={logOut}
+        elevation="$1"
+        pressStyle={{ backgroundColor: '$blue8' }}
+      >
+        <SizableText size="$6">Logout</SizableText>
       </YStack>
     </YStack>
   );
