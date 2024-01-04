@@ -1,5 +1,5 @@
 import { Image } from 'expo-image';
-import { Link } from 'expo-router';
+import { Link, Stack } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { FlatList, KeyboardAvoidingView, Pressable } from 'react-native';
 import { Input, SizableText, Square, View, XStack } from 'tamagui';

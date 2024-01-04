@@ -178,7 +178,7 @@ export const disney = _disney as DeepWriteable<Disney> satisfies Service;
 
 const _paramount = {
   id: 'paramount',
-  title: 'Paramount',
+  title: 'Paramount+',
   appleId: '1340650234',
   googleId: 'com.cbs.ca',
   schema: 'pplusintl://app',

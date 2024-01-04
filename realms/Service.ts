@@ -9,21 +9,21 @@ const { t } = useI18n();
 const dayjs = useDayJs();
 
 export class Service extends Realm.Object<Service, 'lastSyncedAt'> {
-  id!: keyof AllServices;
+  _id!: keyof AllServices;
   lastSyncedAt!: string;
   subscriptions!: Realm.List<Subscription>;
 
   static schema: Realm.ObjectSchema = {
     name: 'Service',
-    primaryKey: 'id',
+    primaryKey: '_id',
     properties: {
-      id: 'string',
+      _id: 'string',
       lastSyncedAt: 'string',
       subscriptions: 'Subscription[]',
     },
   };
 
-  static create(values: Partial<SchemaToData<typeof Service>> & { id: keyof AllServices }) {
+  static create(values: Partial<SchemaToData<typeof Service>> & { _id: keyof AllServices }) {
     const realm = getRealm();
     return realm.write(() =>
       realm.create(Service, {
@@ -42,7 +42,7 @@ export class Service extends Realm.Object<Service, 'lastSyncedAt'> {
         serviceObj?.removeSubscriptions();
         serviceObj?.remove();
         realm.create(Service, {
-          id: serviceId,
+          _id: serviceId,
           lastSyncedAt: new Date().toISOString(),
           subscriptions: data.map((sub, index) => Subscription.mapToData(sub, serviceId, index)),
         });
@@ -50,7 +50,7 @@ export class Service extends Realm.Object<Service, 'lastSyncedAt'> {
     }
 
     if (!serviceObj && !data) {
-      Service.create({ id: serviceId });
+      Service.create({ _id: serviceId });
     }
   }
 
