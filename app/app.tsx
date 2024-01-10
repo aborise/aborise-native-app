@@ -10,7 +10,8 @@ import AboItem from '~/components/AboItem';
 import Feedback from '~/components/Feedback';
 import { useI18n } from '~/composables/useI18n';
 import { Service } from '~/realms/Service';
-import { setRealm, useQuery, useRealm } from '~/realms/realm';
+import { useQuery, useRealm } from '~/realms/realm';
+import { setRealm } from '~/realms/realm.1';
 import { services } from '~/shared/allServices';
 
 const { t } = useI18n();

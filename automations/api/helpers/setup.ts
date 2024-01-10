@@ -9,7 +9,7 @@ import { ActionResult, ActionReturn, ApiResult } from '~/automations/helpers/hel
 import { AllServices } from '~/shared/allServices';
 import { Action } from '~/shared/validators';
 import { Service } from '~/realms/Service';
-import { getRealm } from '~/realms/realm';
+import { getRealm } from '~/realms/realm.1';
 import { Subscription } from '~/realms/Subscription';
 import { InstanceToPlain } from '~/shared/typeHelpers';
 

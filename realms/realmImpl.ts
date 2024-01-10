@@ -1,6 +1,6 @@
 import { Service } from './Service';
 import { Subscription } from './Subscription';
-import { setRealm } from './realm';
+import { setRealm } from './realm.1';
 import Realm from 'realm';
 import { appId as id, baseUrl } from '../atlasConfig.json';
 import { createContext } from 'react';

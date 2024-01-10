@@ -1,6 +1,7 @@
 import Realm from 'realm';
 import { Subscription } from './Subscription';
-import { SchemaToData, getRealm } from './realm';
+import { SchemaToData } from './realm';
+import { getRealm } from './realm.1';
 import { AllServices } from '~/shared/allServices';
 import { useDayJs, useI18n } from '~/composables/useI18n';
 import { ActionResult } from '~/automations/helpers/helpers';

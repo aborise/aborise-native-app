@@ -1,31 +1,32 @@
+import { AppProvider, UserProvider, createRealmContext } from '@realm/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { useGlobalSearchParams, usePathname } from 'expo-router';
 import { Stack as ExpoStack } from 'expo-router/stack';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Platform, Text, View } from 'react-native';
+import { Platform, View } from 'react-native';
 import 'react-native-get-random-values';
 import { RootSiblingParent } from 'react-native-root-siblings';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RNUxcam, { UXCamConfiguration } from 'react-native-ux-cam';
 import WebView from 'react-native-webview';
-import { SizableText, TamaguiProvider } from 'tamagui';
+import { OpenRealmBehaviorType } from 'realm';
+import { TamaguiProvider } from 'tamagui';
 import { javascript } from '~/automations/webview/webview.helpers';
+import Login from '~/components/Login';
 import { useAsyncStateReadonly } from '~/composables/useAsyncState';
 import { useI18n } from '~/composables/useI18n';
 import { OnlineProvider } from '~/composables/useOnline';
+import { Service } from '~/realms/Service';
+import { Subscription } from '~/realms/Subscription';
 import '~/realms/realmImpl';
 import { ensureDataLoaded, getUserId } from '~/shared/ensureDataLoaded';
 import { shouldLog, tagScreen } from '~/shared/helpers';
 import { ParseResult, setParse } from '~/shared/parser';
 import config from '~/tamagui.config';
-import { AppProvider, RealmProvider, UserProvider, useApp, useAuth } from '@realm/react';
-import { Service } from '~/realms/Service';
-import { Subscription } from '~/realms/Subscription';
 import { appId, baseUrl } from '../atlasConfig.json';
-import { OpenRealmBehaviorType, OpenRealmTimeOutBehavior } from 'realm';
-import Login from '~/components/Login';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { RealmProvider } from '~/realms/realm';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -119,18 +120,26 @@ export default function Layout() {
                   <UserProvider fallback={Login}>
                     <RealmProvider
                       schema={[Service, Subscription]}
-                      deleteRealmIfMigrationNeeded
-                      // sync={{
-                      //   flexible: true,
-                      //   onError: (_session, error) => {
-                      //     console.error(error);
-                      //   },
-                      //   existingRealmFileBehavior: {
-                      //     type: OpenRealmBehaviorType.DownloadBeforeOpen,
-                      //     timeOut: 1000,
-                      //     timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
-                      //   },
-                      // }}
+                      // deleteRealmIfMigrationNeeded
+                      sync={{
+                        newRealmFileBehavior: { type: OpenRealmBehaviorType.OpenImmediately },
+                        flexible: true,
+                        initialSubscriptions: {
+                          update(subs, realm) {
+                            subs.add(realm.objects(Service));
+                            subs.add(realm.objects(Subscription));
+                          },
+                        },
+                        onError: (_session, error) => {
+                          console.error(error);
+                        },
+
+                        existingRealmFileBehavior: {
+                          type: OpenRealmBehaviorType.OpenImmediately,
+                          // timeOut: 0,
+                          // timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
+                        },
+                      }}
                     >
                       <ExpoStack
                         screenOptions={{

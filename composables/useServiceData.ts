@@ -1,5 +1,5 @@
 import { Service } from '~/realms/Service';
-import { getRealm } from '~/realms/realm';
+import { getRealm } from '~/realms/realm.1';
 import { AllServices } from '~/shared/allServices';
 import { useLargeUnsafeStorage, useStorage } from './useStorage';
 

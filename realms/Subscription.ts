@@ -1,6 +1,7 @@
 import Realm from 'realm';
 import { ActionResult, status } from '~/automations/helpers/helpers';
-import { SchemaToData, getRealm } from './realm';
+import { SchemaToData } from './realm';
+import { getRealm } from './realm.1';
 
 export class Subscription extends Realm.Object<Subscription> {
   id!: string;

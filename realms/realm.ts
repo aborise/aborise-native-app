@@ -2,15 +2,6 @@ import { createUseQuery } from '@realm/react/src/useQuery';
 import { createUseRealm } from '@realm/react/src/useRealm';
 import Realm from 'realm';
 
-export let realm: Realm | null = null;
-export const getRealm = () => {
-  return realm!;
-};
-
-export const setRealm = (newRealm: Realm) => {
-  realm = newRealm;
-};
-
 export type SchemaToData<T extends { schema: Realm.ObjectSchema }> = T extends {
   schema: Realm.ObjectSchema;
   new (...args: any): any;
@@ -39,6 +30,9 @@ export type SchemaToData<T extends { schema: Realm.ObjectSchema }> = T extends {
 import { CachedObject, createCachedObject } from '@realm/react/src/cachedObject';
 import { CollectionCallback, getObjectForPrimaryKey, getObjects } from '@realm/react/src/helpers';
 import { useEffect, useMemo, useReducer, useRef } from 'react';
+import { createRealmContext } from '@realm/react';
+import { Service } from './Service';
+import { Subscription } from './Subscription';
 
 /**
  * Generates the `useObject` hook from a given `useRealm` hook.
@@ -238,8 +232,13 @@ type RealmContext = {
    */
   useObject: ReturnType<typeof createUseObject>;
 };
+// Create a configuration object
+const realmConfig: Realm.Configuration = { schema: [Service, Subscription] };
+// Create a realm context
+const { RealmProvider, useRealm, useQuery, useObject } = createRealmContext(realmConfig);
 
 // export const useRealm = getRealm;
 // export const useQuery = createUseQuery(getRealm);
 // export const useObject = createUseObject(getRealm);
-export { useRealm, useQuery, useObject } from '@realm/react';
+// export { useRealm, useQuery, useObject } from '@realm/react';
+export { RealmProvider, useRealm, useQuery, useObject };
