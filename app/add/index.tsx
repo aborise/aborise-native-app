@@ -41,40 +41,48 @@ const Add = () => {
   }, [search]);
 
   return (
-    <KeyboardAvoidingView className="h-full">
-      <XStack padding="$2" margin="$2" space>
-        <Input
-          value={search}
-          onChangeText={(value) => {
-            setSearch(value);
-            logEvent('search', { value });
-          }}
-          placeholder={t('search-for-a-service')}
-          returnKeyType="done"
-          autoCapitalize="none"
-          autoCorrect={false}
-          className="grow"
-          // autoFocus
-        />
-      </XStack>
-
-      {selectedService.length === 0 && (
-        <XStack padding="$2">
-          <Image source={image} className="w-full aspect-square" />
+    <>
+      <Stack.Screen
+        options={{
+          title: t('add-subscription'),
+          // presentation: 'modal',
+        }}
+      />
+      <KeyboardAvoidingView className="h-full">
+        <XStack padding="$2" margin="$2" space>
+          <Input
+            value={search}
+            onChangeText={(value) => {
+              setSearch(value);
+              logEvent('search', { value });
+            }}
+            placeholder={t('search-for-a-service')}
+            returnKeyType="done"
+            autoCapitalize="none"
+            autoCorrect={false}
+            className="grow"
+            // autoFocus
+          />
         </XStack>
-      )}
 
-      {selectedService.length > 0 && (
-        <FlatList
-          data={selectedService}
-          numColumns={2}
-          renderItem={({ item }) => <Item item={item} />}
-          keyExtractor={(item) => item.id}
-          style={{ flex: 1, paddingHorizontal: 4, paddingTop: 2 }}
-          ListFooterComponent={<View marginVertical={50} />}
-        />
-      )}
-    </KeyboardAvoidingView>
+        {selectedService.length === 0 && (
+          <XStack padding="$2">
+            <Image source={image} className="w-full aspect-square" />
+          </XStack>
+        )}
+
+        {selectedService.length > 0 && (
+          <FlatList
+            data={selectedService}
+            numColumns={2}
+            renderItem={({ item }) => <Item item={item} />}
+            keyExtractor={(item) => item.id}
+            style={{ flex: 1, paddingHorizontal: 4, paddingTop: 2 }}
+            ListFooterComponent={<View marginVertical={50} />}
+          />
+        )}
+      </KeyboardAvoidingView>
+    </>
   );
 };
 

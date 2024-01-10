@@ -69,7 +69,12 @@ const App = () => {
           headerTitle: () => <LogoTitle />,
           headerRight: () =>
             __DEV__ ? (
-              <TouchableOpacity onPress={() => router.push('/settings')}>
+              <TouchableOpacity
+                onPress={() => router.push('/settings')}
+                style={{
+                  marginRight: 10,
+                }}
+              >
                 <Icon name="navicon" size={24} color="#000000" />
               </TouchableOpacity>
             ) : null,

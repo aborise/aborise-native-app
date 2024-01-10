@@ -146,23 +146,7 @@ export default function Layout() {
                             backgroundColor: '#fff',
                           },
                         }}
-                      >
-                        <ExpoStack.Screen
-                          name="add/index"
-                          options={{
-                            title: t('add-subscription'),
-                            // presentation: 'modal',
-                          }}
-                        />
-                        <ExpoStack.Screen
-                          name="add/[id]"
-                          options={
-                            {
-                              // presentation: 'modal',
-                            }
-                          }
-                        />
-                      </ExpoStack>
+                      ></ExpoStack>
                     </RealmProvider>
                   </UserProvider>
                 </AppProvider>
