@@ -69,10 +69,11 @@ export const AutomatedWebView: React.FC<AutomatedWebViewProps> = ({
   const [loadingText, setLoadingText] = useState<string>();
   const [statusText, setStatusText] = useState<string>(t('please-wait-were-now-connecting-your-account'));
   const [promptOpen, setPromptOpen] = useState(false);
-  const [modalComponent, setModalComponent] = useState<React.ReactNode>(null);
+  const [modalComponent, setModalComponent] = useState<React.FC | null>(null);
   const [promptText, setPromptText] = useState('');
   const [promptTitle, setPromptTitle] = useState('');
   const [promptValue, setPromptValue] = useState<string>('');
+  const [CustomRender, setCustomRender] = useState<React.FC | null>(null);
 
   pageRef.current.statusMessage = setStatusText;
   pageRef.current.loadingMessage = setLoadingText;
@@ -94,6 +95,22 @@ export const AutomatedWebView: React.FC<AutomatedWebViewProps> = ({
 
   pageRef.current._hideWebView = () => {
     setVisible(false);
+  };
+
+  pageRef.current._render = (fn, onClose, onCancel) => {
+    setCustomRender(
+      () => () =>
+        fn({
+          onClose: (val) => {
+            setCustomRender(null);
+            onClose(val);
+          },
+          onCancel: () => {
+            setCustomRender(null);
+            onCancel();
+          },
+        }),
+    );
   };
 
   useEffect(() => {
@@ -209,6 +226,21 @@ export const AutomatedWebView: React.FC<AutomatedWebViewProps> = ({
               <ActivityIndicator size="large" />
             </>
           )}
+        </YStack>
+      )}
+
+      {CustomRender && (
+        <YStack
+          style={{
+            // @ts-expect-error
+            ...StyleSheet.absoluteFill,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+          backgroundColor="white"
+          padding="$4"
+        >
+          <CustomRender />
         </YStack>
       )}
     </>

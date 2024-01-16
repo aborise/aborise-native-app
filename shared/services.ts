@@ -49,7 +49,7 @@ const _netflix = {
     {
       name: 'register',
       type: 'manual',
-      webView: true,
+      webView: 'v2',
       states: [],
     },
   ],

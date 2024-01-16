@@ -1,4 +1,4 @@
-import { AppProvider, UserProvider, createRealmContext } from '@realm/react';
+import { AppProvider, UserProvider, useApp } from '@realm/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { useGlobalSearchParams, usePathname } from 'expo-router';
@@ -11,7 +11,7 @@ import { RootSiblingParent } from 'react-native-root-siblings';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RNUxcam, { UXCamConfiguration } from 'react-native-ux-cam';
 import WebView from 'react-native-webview';
-import { OpenRealmBehaviorType } from 'realm';
+import { OpenRealmBehaviorType, setLogLevel } from 'realm';
 import { TamaguiProvider } from 'tamagui';
 import { javascript } from '~/automations/webview/webview.helpers';
 import Login from '~/components/Login';
@@ -20,13 +20,13 @@ import { useI18n } from '~/composables/useI18n';
 import { OnlineProvider } from '~/composables/useOnline';
 import { Service } from '~/realms/Service';
 import { Subscription } from '~/realms/Subscription';
+import { RealmProvider } from '~/realms/realm';
 import '~/realms/realmImpl';
 import { ensureDataLoaded, getUserId } from '~/shared/ensureDataLoaded';
 import { shouldLog, tagScreen } from '~/shared/helpers';
 import { ParseResult, setParse } from '~/shared/parser';
 import config from '~/tamagui.config';
 import { appId, baseUrl } from '../atlasConfig.json';
-import { RealmProvider } from '~/realms/realm';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -56,7 +56,6 @@ if (shouldLog()) {
 }
 
 export default function Layout() {
-  const { t } = useI18n();
   const { loading } = useAsyncStateReadonly(ensureDataLoaded);
   const [loaded] = useFonts({
     Inter: require('@tamagui/font-inter/otf/Inter-Medium.otf'),
@@ -109,6 +108,8 @@ export default function Layout() {
     }
   }, [loading, loaded]);
 
+  // setLogLevel('trace');
+
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1 }} onLayout={onLayoutRootView}>
@@ -120,26 +121,26 @@ export default function Layout() {
                   <UserProvider fallback={Login}>
                     <RealmProvider
                       schema={[Service, Subscription]}
-                      // deleteRealmIfMigrationNeeded
-                      sync={{
-                        newRealmFileBehavior: { type: OpenRealmBehaviorType.OpenImmediately },
-                        flexible: true,
-                        initialSubscriptions: {
-                          update(subs, realm) {
-                            subs.add(realm.objects(Service));
-                            subs.add(realm.objects(Subscription));
-                          },
-                        },
-                        onError: (_session, error) => {
-                          console.error(error);
-                        },
+                      deleteRealmIfMigrationNeeded
+                      // sync={{
+                      //   newRealmFileBehavior: { type: OpenRealmBehaviorType.DownloadBeforeOpen },
+                      //   flexible: true,
+                      //   initialSubscriptions: {
+                      //     update(subs, realm) {
+                      //       subs.add(realm.objects(Service));
+                      //       // subs.add(realm.objects(Subscription));
+                      //     },
+                      //   },
+                      //   onError: (_session, error) => {
+                      //     console.error(error);
+                      //   },
 
-                        existingRealmFileBehavior: {
-                          type: OpenRealmBehaviorType.OpenImmediately,
-                          // timeOut: 0,
-                          // timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
-                        },
-                      }}
+                      //   existingRealmFileBehavior: {
+                      //     type: OpenRealmBehaviorType.DownloadBeforeOpen,
+                      //     // timeOut: 0,
+                      //     // timeOutBehavior: OpenRealmTimeOutBehavior.OpenLocalRealm,
+                      //   },
+                      // }}
                     >
                       <ExpoStack
                         screenOptions={{

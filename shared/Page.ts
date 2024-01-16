@@ -2,7 +2,7 @@ import WebView, { WebViewMessageEvent, WebViewNavigation } from 'react-native-we
 import { z } from 'zod';
 import { javascript } from '~/automations/webview/webview.helpers';
 import { tagScreen, uuid } from './helpers';
-import { MutableRefObject, Ref, useRef } from 'react';
+import React, { MutableRefObject, Ref, useRef } from 'react';
 import { Result } from './Result';
 import { ActionError, ActionReturn } from '~/automations/helpers/helpers';
 import { Awaitable } from './typeHelpers';
@@ -423,6 +423,18 @@ export class Page {
   _resolvePrompt(value: string | null) {
     this.promptResolver(value);
   }
+
+  render<T>(fn: React.FC<{ onClose: (val: T) => void; onCancel: () => void }>) {
+    return new Promise<T>((resolve, reject) => {
+      this._render(fn, resolve, reject);
+    });
+  }
+
+  _render(
+    fn: React.FC<{ onClose: (val: any) => void; onCancel: () => void }>,
+    onClose: (val: any) => void,
+    onCancel: () => void,
+  ) {}
 }
 
 class ElementHandle {
